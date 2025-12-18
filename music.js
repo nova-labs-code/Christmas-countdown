@@ -43,7 +43,6 @@ const playlist = [
 let currentIdx = 0;
 const audio = new Audio();
 let audioCtx, analyser, dataArray, source;
-let rotationDirection = 1; // 1 for right, -1 for left
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
@@ -60,7 +59,7 @@ function initVisualizer() {
         analyser.fftSize = 64; 
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("Visualizer blocked."); }
+    } catch(e) { console.warn("Visualizer failed."); }
 }
 
 function renderFrame() {
@@ -68,19 +67,19 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    // Calculate average volume
     let avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
     
-    // Switch direction if volume hits a certain threshold (simulating a beat hit)
-    if (avg > 50) { 
-        rotationDirection *= -1; 
-    }
-
+    // Pulse Logic
     let scale = 1 + (avg / 600); 
-    let rotation = (avg / 15) * rotationDirection; // Alternates left/right
     let bright = 1 + (avg / 300);
 
-    // scale(1.15) base ensures the background always fills the screen during sway
+    // Smooth Sway Logic (Both Sides)
+    // Uses time to sway back and forth, multiplied by volume intensity
+    let time = Date.now() * 0.002;
+    let swayIntensity = 5 + (avg / 10); 
+    let rotation = Math.sin(time) * swayIntensity;
+
+    // Apply only to body (The static-label is fixed and won't move)
     document.body.style.transform = `scale(${scale + 0.15}) rotate(${rotation}deg)`;
     document.body.style.filter = `brightness(${bright})`;
 }

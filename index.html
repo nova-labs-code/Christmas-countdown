@@ -11,18 +11,19 @@
             height: 100%;
             width: 100%;
             font-family: 'Segoe UI', sans-serif;
-            /* Background image with base scale to prevent white edges during sway */
+            /* Base scale is set to 1.2 to ensure rotation doesn't show white corners */
             background: url('https://png.pngtree.com/background/20210710/original/pngtree-red-christmas-snow-winter-cartoon-show-board-background-picture-image_979028.jpg') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
             position: relative;
-            transition: transform 0.05s ease-out, filter 0.05s ease-out;
+            transition: filter 0.05s ease-out;
             transform-origin: center;
             user-select: none;
             -webkit-user-select: none;
             cursor: none;
         }
 
+        /* Container for the countdown text */
         .container {
             position: fixed;
             top: 50%;
@@ -51,19 +52,7 @@
             -webkit-text-stroke: 1.5px #000000;
         }
 
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: white;
-            pointer-events: none;
-            animation: fall linear forwards;
-        }
-
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
-        }
-
-        /* Your requested VS Code text - untouched */
+        /* This label is OUTSIDE the body transformation logic in JS */
         .vscode-label {
             position: fixed;
             bottom: 10px;
@@ -73,7 +62,20 @@
             color: rgb(0, 0, 0);
             pointer-events: none;
             user-select: none;
-            z-index: 10000;
+            z-index: 99999; /* Highest priority */
+        }
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: white;
+            pointer-events: none;
+            animation: fall linear forwards;
+            z-index: 50;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
         }
 
         #start-audio-btn {
@@ -89,8 +91,7 @@
             font-size: 24px;
             font-weight: bold;
             border-radius: 12px;
-            cursor: pointer !important;
-            pointer-events: auto !important;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -101,7 +102,7 @@
     <div id="countdown">Loading…</div>
 </div>
 
-<div class="vscode-label">This was made in Visual Studio Code</div>
+<div class="vscode-label" id="static-label">This was made in Visual Studio Code</div>
 
 <script>
     const target = new Date(new Date().getFullYear(), 11, 25);
