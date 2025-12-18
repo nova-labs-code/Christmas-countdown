@@ -6,41 +6,100 @@
     <title>Christmas Countdown</title>
     <style>
         html, body {
-            margin: 0; padding: 0; height: 100%;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
             font-family: 'Segoe UI', sans-serif;
             background: url('https://png.pngtree.com/background/20210710/original/pngtree-red-christmas-snow-winter-cartoon-show-board-background-picture-image_979028.jpg') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
             position: relative;
+            /* Transition for reactive rotation/scaling */
             transition: transform 0.05s ease-out, filter 0.05s ease-out;
             transform-origin: center;
-            user-select: none; -webkit-user-select: none; cursor: none;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: none;
         }
+
+        /* Fixed container prevents text from flying off screen during rotations */
         .container {
-            position: absolute; top: 20px; left: 50%;
-            transform: translateX(-50%); text-align: center;
-            width: 100%; z-index: 5;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%;
+            max-width: 1200px;
+            z-index: 100;
+            pointer-events: none;
         }
+
         h1 {
-            font-size: 8vw; font-weight: 900; color: #ffffff;
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 900;
+            color: #ffffff;
             -webkit-text-stroke: 2px #000000;
-            text-shadow: 0 0 15px rgba(255,255,255,0.6);
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin: 0;
+            white-space: nowrap;
         }
+
         #countdown {
-            font-size: 5vw; font-weight: 900; color: #ffffff;
-            -webkit-text-stroke: 2px #000000;
+            font-size: clamp(1.5rem, 6vw, 4rem);
+            font-weight: 900;
+            color: #ffffff;
+            -webkit-text-stroke: 1.5px #000000;
+            text-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-        .snowflake { position: fixed; top: -10px; color: white; animation: fall linear forwards; }
-        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-        #santa { position: fixed; top: 15%; left: -200px; width: 180px; z-index: 9999; }
-        .vscode-label { position: absolute; bottom: 10px; right: 20px; font-size: 18px; color: #000; z-index: 10000; }
-        
-        /* Play Button Style */
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: white;
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        #santa {
+            position: fixed;
+            top: 15%;
+            left: -200px;
+            width: 180px;
+            z-index: 99;
+        }
+
+        .vscode-label {
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            font-size: clamp(10px, 2vw, 18px);
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.7);
+            z-index: 110;
+        }
+
         #start-audio-btn {
-            position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
-            z-index: 20000; background: #007bff; color: white; border: none;
-            padding: 20px 40px; font-size: 24px; font-weight: bold;
-            border-radius: 12px; cursor: pointer !important; pointer-events: auto !important;
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 200;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer !important;
+            pointer-events: auto !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
     </style>
@@ -52,15 +111,13 @@
     <div id="countdown">Loading…</div>
 </div>
 
-<div class="vscode-label">Made in VS Code</div>
+<div class="vscode-label">Made in Visual Studio Code</div>
 <img id="santa" src="https://pngimg.com/uploads/santa_sleigh/santa_sleigh_PNG81.png" alt="Santa">
 
 <script>
-    // Security/Control Overrides
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('mousedown', e => { if (e.target.id !== 'start-audio-btn') e.preventDefault(); });
 
-    // Countdown Logic
     const target = new Date(new Date().getFullYear(), 11, 25);
     if (new Date() > target) target.setFullYear(target.getFullYear() + 1);
 
@@ -73,7 +130,6 @@
         document.getElementById("countdown").textContent = `${d}d ${h}h ${m}m ${s}s`;
     }, 1000);
 
-    // Snow
     setInterval(() => {
         const s = document.createElement("div");
         s.className = "snowflake"; s.textContent = "❄";

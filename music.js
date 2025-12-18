@@ -1,8 +1,3 @@
-/**
- * music.js
- * Christmas Audio-Reactive Script - Final Fix
- */
-
 const playlist = [
     "Music Now, Trap Music Now, Dance Music Now - All I Want For Christmas Is You (SPOTISAVER).mp3",
     "Music Now, Trap Music Now, Dance Music Now - Baby It's Cold Outside (SPOTISAVER).mp3",
@@ -64,7 +59,7 @@ function initVisualizer() {
         analyser.fftSize = 64; 
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.log("Visualizer blocked."); }
+    } catch(e) { console.warn("AudioContext blocked."); }
 }
 
 function renderFrame() {
@@ -73,49 +68,41 @@ function renderFrame() {
     analyser.getByteFrequencyData(dataArray);
     let avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
     
-    // Increased sensitivity for a better "shack" (shake) effect
-    let scale = 1 + (avg / 800);
-    let bright = 1 + (avg / 400);
-    document.body.style.transform = `scale(${scale})`;
+    // SCALE (Pulse) and ROTATION (Twist)
+    let scale = 1 + (avg / 600); 
+    let rotation = (avg / 20); // Background rotates based on loudness
+    let bright = 1 + (avg / 300);
+
+    // Apply base scale 1.2 to hide edges during rotation
+    document.body.style.transform = `scale(${scale + 0.1}) rotate(${rotation}deg)`;
     document.body.style.filter = `brightness(${bright})`;
 }
 
 function playTrack(i) {
     if (i >= playlist.length) i = 0;
-    if (i < 0) i = playlist.length - 1;
     currentIdx = i;
-    
     const folder = "songs/";
     const filename = playlist[currentIdx];
     
-    // Use encodeURI instead of encodeURIComponent to preserve folder slashes
     audio.src = encodeURI(folder + filename);
     
     audio.play().then(() => {
         if ('mediaSession' in navigator) {
-            let cleanName = filename
-                .replace("Music Now, Trap Music Now, Dance Music Now - ", "")
-                .replace("(SPOTISAVER).mp3", "")
-                .trim();
-
+            let cleanTitle = filename.replace("Music Now, Trap Music Now, Dance Music Now - ", "").replace("(SPOTISAVER).mp3", "").trim();
             navigator.mediaSession.metadata = new MediaMetadata({ 
-                title: cleanName,
-                artist: "Christmas Countdown",
-                artwork: [{ src: 'https://pngimg.com/uploads/santa_sleigh/santa_sleigh_PNG81.png', sizes: '512x512', type: 'image/png' }]
+                title: cleanTitle,
+                artist: "Christmas Countdown"
             });
         }
     }).catch(err => {
-        console.error("Playback Error. Path searched: " + audio.src);
-        // Automatically skip if file is missing
-        setTimeout(() => playTrack(currentIdx + 1), 500);
+        console.error("Path Error:", audio.src);
+        setTimeout(() => playTrack(currentIdx + 1), 1000);
     });
 }
 
 audio.onended = () => playTrack(currentIdx + 1);
 
 if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => audio.play());
-    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
     navigator.mediaSession.setActionHandler('nexttrack', () => playTrack(currentIdx + 1));
     navigator.mediaSession.setActionHandler('previoustrack', () => playTrack(currentIdx - 1));
 }
