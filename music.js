@@ -43,6 +43,7 @@ const playlist = [
 let currentIdx = 0;
 const audio = new Audio();
 let audioCtx, analyser, dataArray, source;
+const visualLayer = document.getElementById('visual-layer');
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
@@ -56,10 +57,10 @@ function initVisualizer() {
         source = audioCtx.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
-        analyser.fftSize = 64; 
+        analyser.fftSize = 256; // Higher resolution for bass tracking
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("Visualizer failed."); }
+    } catch(e) { console.warn("Audio blocked."); }
 }
 
 function renderFrame() {
@@ -67,38 +68,36 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    let avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    // Focus on Low Frequencies (Bass) - usually first few bins
+    let bassSum = 0;
+    const bassBins = 10; 
+    for(let i = 0; i < bassBins; i++) {
+        bassSum += dataArray[i];
+    }
+    let bassAvg = bassSum / bassBins;
     
-    // Pulse Logic
-    let scale = 1 + (avg / 600); 
-    let bright = 1 + (avg / 300);
-
-    // Smooth Sway Logic (Both Sides)
-    // Uses time to sway back and forth, multiplied by volume intensity
+    // Smooth Sway Logic
     let time = Date.now() * 0.002;
-    let swayIntensity = 5 + (avg / 10); 
-    let rotation = Math.sin(time) * swayIntensity;
+    // Base sway + Bass boost
+    let swayRange = 3 + (bassAvg / 15); 
+    let rotation = Math.sin(time) * swayRange;
+    
+    // Scale pulse on bass hits
+    let scale = 1.15 + (bassAvg / 500); 
+    let bright = 1 + (bassAvg / 400);
 
-    // Apply only to body (The static-label is fixed and won't move)
-    document.body.style.transform = `scale(${scale + 0.15}) rotate(${rotation}deg)`;
-    document.body.style.filter = `brightness(${bright})`;
+    // ONLY transform the visualLayer, not the whole body
+    if(visualLayer) {
+        visualLayer.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+        visualLayer.style.filter = `brightness(${bright})`;
+    }
 }
 
 function playTrack(i) {
     if (i >= playlist.length) i = 0;
     currentIdx = i;
-    const folder = "songs/";
-    const filename = playlist[currentIdx];
-    audio.src = encodeURI(folder + filename);
-    
-    audio.play().then(() => {
-        if ('mediaSession' in navigator) {
-            let cleanTitle = filename.replace("Music Now, Trap Music Now, Dance Music Now - ", "").replace("(SPOTISAVER).mp3", "").trim();
-            navigator.mediaSession.metadata = new MediaMetadata({ title: cleanTitle, artist: "Christmas Countdown" });
-        }
-    }).catch(err => {
-        setTimeout(() => playTrack(currentIdx + 1), 1000);
-    });
+    audio.src = encodeURI("songs/" + playlist[currentIdx]);
+    audio.play().catch(() => setTimeout(() => playTrack(currentIdx + 1), 1000));
 }
 
 audio.onended = () => playTrack(currentIdx + 1);
