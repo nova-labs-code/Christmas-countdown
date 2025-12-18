@@ -11,11 +11,11 @@
             height: 100%;
             width: 100%;
             font-family: 'Segoe UI', sans-serif;
+            /* Background image with base scale to prevent white edges during sway */
             background: url('https://png.pngtree.com/background/20210710/original/pngtree-red-christmas-snow-winter-cartoon-show-board-background-picture-image_979028.jpg') no-repeat center center fixed;
             background-size: cover;
             overflow: hidden;
             position: relative;
-            /* Transition for reactive rotation/scaling */
             transition: transform 0.05s ease-out, filter 0.05s ease-out;
             transform-origin: center;
             user-select: none;
@@ -23,15 +23,13 @@
             cursor: none;
         }
 
-        /* Fixed container prevents text from flying off screen during rotations */
         .container {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            width: 90%;
-            max-width: 1200px;
+            width: 95%;
             z-index: 100;
             pointer-events: none;
         }
@@ -51,14 +49,12 @@
             font-weight: 900;
             color: #ffffff;
             -webkit-text-stroke: 1.5px #000000;
-            text-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
 
         .snowflake {
             position: fixed;
             top: -10px;
             color: white;
-            user-select: none;
             pointer-events: none;
             animation: fall linear forwards;
         }
@@ -67,22 +63,17 @@
             to { transform: translateY(110vh) rotate(360deg); }
         }
 
-        #santa {
-            position: fixed;
-            top: 15%;
-            left: -200px;
-            width: 180px;
-            z-index: 99;
-        }
-
+        /* Your requested VS Code text - untouched */
         .vscode-label {
             position: fixed;
             bottom: 10px;
             right: 20px;
-            font-size: clamp(10px, 2vw, 18px);
+            font-size: 24px;
             font-weight: bold;
-            color: rgba(0, 0, 0, 0.7);
-            z-index: 110;
+            color: rgb(0, 0, 0);
+            pointer-events: none;
+            user-select: none;
+            z-index: 10000;
         }
 
         #start-audio-btn {
@@ -90,7 +81,7 @@
             right: 30px;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 200;
+            z-index: 20000;
             background: #007bff;
             color: white;
             border: none;
@@ -100,7 +91,6 @@
             border-radius: 12px;
             cursor: pointer !important;
             pointer-events: auto !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -111,13 +101,9 @@
     <div id="countdown">Loading…</div>
 </div>
 
-<div class="vscode-label">Made in Visual Studio Code</div>
-<img id="santa" src="https://pngimg.com/uploads/santa_sleigh/santa_sleigh_PNG81.png" alt="Santa">
+<div class="vscode-label">This was made in Visual Studio Code</div>
 
 <script>
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('mousedown', e => { if (e.target.id !== 'start-audio-btn') e.preventDefault(); });
-
     const target = new Date(new Date().getFullYear(), 11, 25);
     if (new Date() > target) target.setFullYear(target.getFullYear() + 1);
 

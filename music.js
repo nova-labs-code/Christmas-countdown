@@ -43,6 +43,7 @@ const playlist = [
 let currentIdx = 0;
 const audio = new Audio();
 let audioCtx, analyser, dataArray, source;
+let rotationDirection = 1; // 1 for right, -1 for left
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
@@ -66,50 +67,42 @@ function renderFrame() {
     requestAnimationFrame(renderFrame);
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
+    
+    // Calculate average volume
     let avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
     
-    // SCALE (Pulse) and ROTATION (Twist)
+    // Switch direction if volume hits a certain threshold (simulating a beat hit)
+    if (avg > 50) { 
+        rotationDirection *= -1; 
+    }
+
     let scale = 1 + (avg / 600); 
-    let rotation = (avg / 20); 
+    let rotation = (avg / 15) * rotationDirection; // Alternates left/right
     let bright = 1 + (avg / 300);
 
-    // Using scale(1.1) base + audio scale to ensure background covers screen while rotating
-    document.body.style.transform = `scale(${scale + 0.1}) rotate(${rotation}deg)`;
+    // scale(1.15) base ensures the background always fills the screen during sway
+    document.body.style.transform = `scale(${scale + 0.15}) rotate(${rotation}deg)`;
     document.body.style.filter = `brightness(${bright})`;
 }
 
 function playTrack(i) {
     if (i >= playlist.length) i = 0;
-    if (i < 0) i = playlist.length - 1;
     currentIdx = i;
-    
     const folder = "songs/";
     const filename = playlist[currentIdx];
-    
     audio.src = encodeURI(folder + filename);
     
     audio.play().then(() => {
         if ('mediaSession' in navigator) {
             let cleanTitle = filename.replace("Music Now, Trap Music Now, Dance Music Now - ", "").replace("(SPOTISAVER).mp3", "").trim();
-            navigator.mediaSession.metadata = new MediaMetadata({ 
-                title: cleanTitle,
-                artist: "Christmas Countdown"
-            });
+            navigator.mediaSession.metadata = new MediaMetadata({ title: cleanTitle, artist: "Christmas Countdown" });
         }
     }).catch(err => {
-        console.error("Path Error:", audio.src);
         setTimeout(() => playTrack(currentIdx + 1), 1000);
     });
 }
 
 audio.onended = () => playTrack(currentIdx + 1);
-
-if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('nexttrack', () => playTrack(currentIdx + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => playTrack(currentIdx - 1));
-    navigator.mediaSession.setActionHandler('play', () => audio.play());
-    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-}
 
 btn.onclick = () => {
     initVisualizer();
