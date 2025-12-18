@@ -42,21 +42,26 @@ const playlist = [
 
 let currentIdx = 0;
 const audio = new Audio();
-let audioCtx, analyser, dataArray, source;
+let audioCtx, analyser, dataArray, source, gainNode;
 const visualLayer = document.getElementById('visual-layer');
+const FADE_TIME = 2; // Fade in/out time in seconds
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
-btn.innerHTML = "START Music";
+btn.innerHTML = "START PARTY";
 document.body.appendChild(btn);
 
 function initVisualizer() {
     try {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioCtx.createAnalyser();
+        gainNode = audioCtx.createGain(); // For smooth fading
+        
         source = audioCtx.createMediaElementSource(audio);
-        source.connect(analyser);
+        source.connect(gainNode);
+        gainNode.connect(analyser);
         analyser.connect(audioCtx.destination);
+        
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
@@ -68,16 +73,11 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    // Frequencies: Bass (0-5), Mid (10-20)
     let bass = dataArray[2]; 
     let mid = dataArray[15];
-
     let time = Date.now() * 0.003;
     
-    // Frequency-based Sway (targeting ~15px)
     let shiftX = (Math.sin(time) * 10) + (mid / 20); 
-    
-    // Zoom/Scale and Brightness reactive to bass hits
     let scale = 1.05 + (bass / 600);
     let bright = 1 + (bass / 350);
     let rotation = Math.sin(time) * (bass / 200);
@@ -85,6 +85,17 @@ function renderFrame() {
     if(visualLayer) {
         visualLayer.style.transform = `scale(${scale}) translateX(${shiftX}px) rotate(${rotation}deg)`;
         visualLayer.style.filter = `brightness(${bright})`;
+    }
+
+    // Auto-Fade Out logic near end of song
+    if (audio.duration && audio.currentTime > audio.duration - FADE_TIME) {
+        fadeVolume(0, FADE_TIME);
+    }
+}
+
+function fadeVolume(target, duration) {
+    if (gainNode) {
+        gainNode.gain.linearRampToValueAtTime(target, audioCtx.currentTime + duration);
     }
 }
 
@@ -96,31 +107,37 @@ function playTrack(i) {
     const filename = playlist[currentIdx];
     audio.src = encodeURI("songs/" + filename);
     
-    // Song title cleanup for browser/media keys
     let cleanTitle = filename
         .replace("Music Now, Trap Music Now, Dance Music Now - ", "")
         .replace("(SPOTISAVER).mp3", "")
         .trim();
 
+    // Start track with volume at 0, then fade in
+    if (gainNode) gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
     audio.play().then(() => {
+        fadeVolume(1, FADE_TIME); // Smoothly fade in to full volume
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: cleanTitle,
                 artist: "Christmas Countdown"
             });
         }
-    }).catch(() => {
-        // Auto-skip if file not found
-        setTimeout(() => playTrack(currentIdx + 1), 500);
-    });
+    }).catch(() => setTimeout(() => playTrack(currentIdx + 1), 500));
 }
 
-// Media Key Handling
+// Media Keys
 if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => audio.play());
     navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-    navigator.mediaSession.setActionHandler('nexttrack', () => playTrack(currentIdx + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => playTrack(currentIdx - 1));
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        fadeVolume(0, 0.5); // Fast fade out on skip
+        setTimeout(() => playTrack(currentIdx + 1), 500);
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        fadeVolume(0, 0.5);
+        setTimeout(() => playTrack(currentIdx - 1), 500);
+    });
 }
 
 audio.onended = () => playTrack(currentIdx + 1);
