@@ -59,7 +59,7 @@ function initVisualizer() {
         analyser.fftSize = 64; 
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("AudioContext blocked."); }
+    } catch(e) { console.warn("Visualizer blocked."); }
 }
 
 function renderFrame() {
@@ -70,17 +70,19 @@ function renderFrame() {
     
     // SCALE (Pulse) and ROTATION (Twist)
     let scale = 1 + (avg / 600); 
-    let rotation = (avg / 20); // Background rotates based on loudness
+    let rotation = (avg / 20); 
     let bright = 1 + (avg / 300);
 
-    // Apply base scale 1.2 to hide edges during rotation
+    // Using scale(1.1) base + audio scale to ensure background covers screen while rotating
     document.body.style.transform = `scale(${scale + 0.1}) rotate(${rotation}deg)`;
     document.body.style.filter = `brightness(${bright})`;
 }
 
 function playTrack(i) {
     if (i >= playlist.length) i = 0;
+    if (i < 0) i = playlist.length - 1;
     currentIdx = i;
+    
     const folder = "songs/";
     const filename = playlist[currentIdx];
     
@@ -105,6 +107,8 @@ audio.onended = () => playTrack(currentIdx + 1);
 if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('nexttrack', () => playTrack(currentIdx + 1));
     navigator.mediaSession.setActionHandler('previoustrack', () => playTrack(currentIdx - 1));
+    navigator.mediaSession.setActionHandler('play', () => audio.play());
+    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
 }
 
 btn.onclick = () => {
