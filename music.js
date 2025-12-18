@@ -60,7 +60,7 @@ function initVisualizer() {
         analyser.fftSize = 128;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("Visualizer failed."); }
+    } catch(e) { console.warn("Audio blocked."); }
 }
 
 function renderFrame() {
@@ -68,30 +68,57 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    // Target Bass
+    // Bass tracking (first few bins)
     let bass = dataArray[1]; 
     
-    // Calculate Sway Position (targeting ~15px range)
+    // Linear Sway (15px target range)
     let time = Date.now() * 0.003;
     let shiftX = Math.sin(time) * (5 + (bass / 12)); 
     
-    // Subtle rotation (only 1-2 degrees max)
-    let rotation = Math.sin(time) * (bass / 150);
-    
-    // Subtle Pulse
+    // Beat Reaction: Zoom/Scale and Brightness
     let scale = 1.05 + (bass / 800);
+    let bright = 1 + (bass / 350);
+    let rotation = Math.sin(time) * (bass / 180);
 
+    // Apply to visualLayer (contains Background AND Countdown)
     if(visualLayer) {
-        // This shifts the background 15px side to side based on the beat
         visualLayer.style.transform = `scale(${scale}) translateX(${shiftX}px) rotate(${rotation}deg)`;
+        visualLayer.style.filter = `brightness(${bright})`;
     }
 }
 
 function playTrack(i) {
     if (i >= playlist.length) i = 0;
+    if (i < 0) i = playlist.length - 1;
     currentIdx = i;
-    audio.src = encodeURI("songs/" + playlist[currentIdx]);
-    audio.play().catch(() => {});
+
+    const filename = playlist[currentIdx];
+    audio.src = encodeURI("songs/" + filename);
+    
+    // Clean Title for Media Metadata
+    let cleanTitle = filename
+        .replace("Music Now, Trap Music Now, Dance Music Now - ", "")
+        .replace("(SPOTISAVER).mp3", "")
+        .trim();
+
+    audio.play().then(() => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: cleanTitle,
+                artist: "Christmas Countdown"
+            });
+        }
+    }).catch(() => {
+        setTimeout(() => playTrack(currentIdx + 1), 1000);
+    });
+}
+
+// Media Key Handlers
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => audio.play());
+    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+    navigator.mediaSession.setActionHandler('nexttrack', () => playTrack(currentIdx + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => playTrack(currentIdx - 1));
 }
 
 audio.onended = () => playTrack(currentIdx + 1);
