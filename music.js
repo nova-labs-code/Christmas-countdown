@@ -48,7 +48,7 @@ const FADE_TIME = 2; // Fade in/out time in seconds
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
-btn.innerHTML = "START PARTY";
+btn.innerHTML = "START Music";
 document.body.appendChild(btn);
 
 function initVisualizer() {
