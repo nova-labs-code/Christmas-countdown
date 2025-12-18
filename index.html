@@ -48,10 +48,10 @@
             font-size: clamp(1.8rem, 7vw, 5rem);
             font-weight: 900; color: #ffffff;
             -webkit-text-stroke: 2px #000;
-            font-variant-numeric: tabular-nums; /* Prevents text jumping */
+            font-variant-numeric: tabular-nums;
         }
 
-        /* STATIC LAYER - This is never transformed by the JS */
+        /* STATIC LAYER */
         .vscode-label {
             position: fixed;
             bottom: 20px;
@@ -72,12 +72,22 @@
         }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 
+        /* MOVED TO BOTTOM LEFT */
         #start-audio-btn {
-            position: fixed; right: 30px; top: 50%;
-            z-index: 10000; background: #ff0000; color: white; 
-            padding: 25px 50px; font-size: 28px; border-radius: 15px;
-            cursor: pointer; border: 4px solid white; font-weight: bold;
+            position: fixed; 
+            left: 30px; 
+            bottom: 30px;
+            z-index: 10000; 
+            background: #ff0000; 
+            color: white; 
+            padding: 15px 30px; 
+            font-size: 20px; 
+            border-radius: 12px;
+            cursor: pointer; 
+            border: 3px solid white; 
+            font-weight: bold;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            pointer-events: auto; /* Ensures the button is clickable */
         }
     </style>
 </head>
@@ -97,21 +107,18 @@
     function updateCountdown() {
         const now = new Date();
         const currentYear = now.getFullYear();
-        let christmas = new Date(currentYear, 11, 25); // Dec 25
+        let christmas = new Date(currentYear, 11, 25);
 
-        // If Christmas has passed this year, point to next year
         if (now > christmas) {
             christmas = new Date(currentYear + 1, 11, 25);
         }
 
         const diff = christmas - now;
-
         const d = Math.floor(diff / (1000 * 60 * 60 * 24));
         const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-        // Leading zeros for cleaner look
         const displayH = h < 10 ? '0' + h : h;
         const displayM = m < 10 ? '0' + m : m;
         const displayS = s < 10 ? '0' + s : s;
