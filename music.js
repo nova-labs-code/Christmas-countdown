@@ -57,10 +57,10 @@ function initVisualizer() {
         source = audioCtx.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
-        analyser.fftSize = 128;
+        analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("Audio blocked."); }
+    } catch(e) { console.warn("Audio Context blocked."); }
 }
 
 function renderFrame() {
@@ -68,19 +68,22 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    // Bass tracking (first few bins)
-    let bass = dataArray[1]; 
-    
-    // Linear Sway (15px target range)
-    let time = Date.now() * 0.003;
-    let shiftX = Math.sin(time) * (5 + (bass / 12)); 
-    
-    // Beat Reaction: Zoom/Scale and Brightness
-    let scale = 1.05 + (bass / 800);
-    let bright = 1 + (bass / 350);
-    let rotation = Math.sin(time) * (bass / 180);
+    // Low-end freq for bass/beats
+    let bass = dataArray[2]; 
+    // Mid-end freq for melody/vocal sway
+    let mid = dataArray[10];
 
-    // Apply to visualLayer (contains Background AND Countdown)
+    // CUMULATIVE SWAY: We use a sine wave, but let the bass/mid control the intensity
+    let time = Date.now() * 0.003;
+    
+    // horizontal sway targeting ~15px range, jittering to frequency
+    let shiftX = (Math.sin(time) * 8) + (mid / 25); 
+    
+    // Zoom (scale) and Brightness strictly tied to bass hits
+    let scale = 1.05 + (bass / 700);
+    let bright = 1 + (bass / 400);
+    let rotation = Math.sin(time) * (bass / 200);
+
     if(visualLayer) {
         visualLayer.style.transform = `scale(${scale}) translateX(${shiftX}px) rotate(${rotation}deg)`;
         visualLayer.style.filter = `brightness(${bright})`;
@@ -95,7 +98,6 @@ function playTrack(i) {
     const filename = playlist[currentIdx];
     audio.src = encodeURI("songs/" + filename);
     
-    // Clean Title for Media Metadata
     let cleanTitle = filename
         .replace("Music Now, Trap Music Now, Dance Music Now - ", "")
         .replace("(SPOTISAVER).mp3", "")
@@ -108,12 +110,9 @@ function playTrack(i) {
                 artist: "Christmas Countdown"
             });
         }
-    }).catch(() => {
-        setTimeout(() => playTrack(currentIdx + 1), 1000);
-    });
+    }).catch(() => setTimeout(() => playTrack(currentIdx + 1), 1000));
 }
 
-// Media Key Handlers
 if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => audio.play());
     navigator.mediaSession.setActionHandler('pause', () => audio.pause());
