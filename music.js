@@ -47,7 +47,7 @@ const visualLayer = document.getElementById('visual-layer');
 
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
-btn.innerHTML = "PLAY AUDIO";
+btn.innerHTML = "START PARTY";
 document.body.appendChild(btn);
 
 function initVisualizer() {
@@ -60,7 +60,7 @@ function initVisualizer() {
         analyser.fftSize = 256;
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         renderFrame();
-    } catch(e) { console.warn("Audio Context blocked."); }
+    } catch(e) { console.warn("Audio Context init failed."); }
 }
 
 function renderFrame() {
@@ -68,20 +68,18 @@ function renderFrame() {
     if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
     
-    // Low-end freq for bass/beats
+    // Frequencies: Bass (0-5), Mid (10-20)
     let bass = dataArray[2]; 
-    // Mid-end freq for melody/vocal sway
-    let mid = dataArray[10];
+    let mid = dataArray[15];
 
-    // CUMULATIVE SWAY: We use a sine wave, but let the bass/mid control the intensity
     let time = Date.now() * 0.003;
     
-    // horizontal sway targeting ~15px range, jittering to frequency
-    let shiftX = (Math.sin(time) * 8) + (mid / 25); 
+    // Frequency-based Sway (targeting ~15px)
+    let shiftX = (Math.sin(time) * 10) + (mid / 20); 
     
-    // Zoom (scale) and Brightness strictly tied to bass hits
-    let scale = 1.05 + (bass / 700);
-    let bright = 1 + (bass / 400);
+    // Zoom/Scale and Brightness reactive to bass hits
+    let scale = 1.05 + (bass / 600);
+    let bright = 1 + (bass / 350);
     let rotation = Math.sin(time) * (bass / 200);
 
     if(visualLayer) {
@@ -98,6 +96,7 @@ function playTrack(i) {
     const filename = playlist[currentIdx];
     audio.src = encodeURI("songs/" + filename);
     
+    // Song title cleanup for browser/media keys
     let cleanTitle = filename
         .replace("Music Now, Trap Music Now, Dance Music Now - ", "")
         .replace("(SPOTISAVER).mp3", "")
@@ -110,9 +109,13 @@ function playTrack(i) {
                 artist: "Christmas Countdown"
             });
         }
-    }).catch(() => setTimeout(() => playTrack(currentIdx + 1), 1000));
+    }).catch(() => {
+        // Auto-skip if file not found
+        setTimeout(() => playTrack(currentIdx + 1), 500);
+    });
 }
 
+// Media Key Handling
 if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => audio.play());
     navigator.mediaSession.setActionHandler('pause', () => audio.pause());
