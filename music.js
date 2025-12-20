@@ -46,11 +46,14 @@ const songs = [
 
 const playlist = [];
 for (let song of songs){
-    playlist.push({name:song, src:`songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`});
-    playlist.push({name:"Speech", src:"speech.mp3"});
+    playlist.push({
+        name: song,
+        src: `songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`
+    });
+    playlist.push({name:"Speech", src:"songs/speech.mp3"});
 }
 
-// Placeholder durations
+// Placeholder durations for sync (in seconds)
 const songDurations = playlist.map(()=>180);
 
 // Live radio start: Dec 1, 2025
@@ -69,7 +72,7 @@ function getCurrentSongIndexAndOffset(){
     return {index:0, offset:0};
 }
 
-// AudioContext for dancing effects
+// AudioContext for visual effects
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let analyser;
 let dataArray;
