@@ -50,19 +50,17 @@ const playlist = [
 ];
 
 // ===============================
-// AUDIO
+// AUDIO SETUP
 // ===============================
 const audio = new Audio();
 audio.preload = "metadata";
-
 let audioCtx, analyser, gainNode, source;
 let started = false;
 let currentIdx = 0;
 const visualLayer = document.getElementById("visual-layer");
+const songLabel = document.getElementById("current-song");
 
-// ===============================
-// START BUTTON
-// ===============================
+// Start button
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
 btn.textContent = "START MUSIC";
@@ -73,7 +71,7 @@ document.body.appendChild(btn);
 // ===============================
 function initVisualizer() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    audioCtx.resume(); // 🔑 Chrome requires user gesture
+    audioCtx.resume();
 
     analyser = audioCtx.createAnalyser();
     gainNode = audioCtx.createGain();
@@ -100,83 +98,92 @@ function renderFrame() {
     const t = Date.now() * 0.003;
 
     if (visualLayer) {
-        visualLayer.style.transform =
-            `scale(${1.05 + bass / 600}) translateX(${Math.sin(t) * 10}px)`;
-        visualLayer.style.filter = `brightness(${1 + bass / 350})`;
+        visualLayer.style.transform = `scale(${1.05+bass/600}) translateX(${Math.sin(t)*10}px)`;
+        visualLayer.style.filter = `brightness(${1+bass/350})`;
     }
 
-    if (audio.duration && audio.currentTime > audio.duration - FADE_TIME) {
+    if(audio.duration && audio.currentTime > audio.duration-FADE_TIME){
         fadeVolume(0, FADE_TIME);
     }
 }
 
-function fadeVolume(target, duration) {
+function fadeVolume(target,duration){
     gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(
-        target,
-        audioCtx.currentTime + duration
-    );
+    gainNode.gain.linearRampToValueAtTime(target,audioCtx.currentTime+duration);
 }
 
 // ===============================
-// SYNC HELPERS
+// LIVE SYNC
 // ===============================
-function getLiveOffset(duration) {
-    return ((Date.now() - GLOBAL_START_TIME) / 1000) % duration;
+function preloadDurations() {
+    return Promise.all(playlist.map(filename => {
+        return new Promise(res=>{
+            const a = new Audio();
+            a.src = "songs/"+filename;
+            a.addEventListener("loadedmetadata",()=>res(a.duration));
+            a.addEventListener("error",()=>res(180)); // fallback
+        });
+    }));
+}
+
+let trackDurations = [];
+function getLiveTrackAndOffset(){
+    const now = Date.now();
+    let elapsed = (now-GLOBAL_START_TIME)/1000;
+    let idx = 0;
+    while(true){
+        const dur = trackDurations[idx]||180;
+        if(elapsed < dur) return {trackIndex: idx, offset: elapsed};
+        elapsed -= dur;
+        idx = (idx+1)%playlist.length;
+    }
+}
+
+function updateSongLabel(){
+    const filename = playlist[currentIdx];
+    const cleanName = filename.replace("Music Now, Trap Music Now, Dance Music Now - ","")
+                              .replace("(SPOTISAVER).mp3","")
+                              .trim();
+    if(songLabel) songLabel.textContent = cleanName;
 }
 
 // ===============================
-// PLAY LOGIC
+// PLAYBACK
 // ===============================
-function playTrack(index, offset = 0) {
-    currentIdx = index;
-    audio.src = encodeURI("songs/" + playlist[currentIdx]);
-
-    audio.onloadedmetadata = () => {
+function playLiveTrack(){
+    const {trackIndex, offset} = getLiveTrackAndOffset();
+    currentIdx = trackIndex;
+    audio.src = encodeURI("songs/"+playlist[currentIdx]);
+    audio.onloadedmetadata = ()=>{
         audio.currentTime = offset;
+        audio.play();
+        fadeVolume(1,FADE_TIME);
+        updateSongLabel();
     };
-
-    audio.play(); // 🔑 Immediate, user gesture legal
-    fadeVolume(1, FADE_TIME);
+    audio.onended = playLiveTrack;
 }
 
-function startLiveRadio() {
-    // Start first track immediately (audio.play legal)
-    playTrack(0, 0);
-
-    // After metadata, jump to live position
-    audio.onloadedmetadata = () => {
-        const live = getLiveOffset(audio.duration);
-        audio.currentTime = live;
-    };
-
-    audio.onended = () => {
-        playTrack((currentIdx + 1) % playlist.length, 0);
-    };
-}
-
-// ===============================
-// LOCK CONTROLS
-// ===============================
-if ("mediaSession" in navigator) {
-    navigator.mediaSession.setActionHandler("nexttrack", null);
-    navigator.mediaSession.setActionHandler("previoustrack", null);
-}
-
-// Pause allowed, resume = live
-audio.addEventListener("play", () => {
-    if (!started || !audio.duration) return;
-    audio.currentTime = getLiveOffset(audio.duration);
+audio.addEventListener("play",()=>{
+    if(!started || !audio.duration) return;
+    const {offset} = getLiveTrackAndOffset();
+    audio.currentTime = offset;
+    updateSongLabel();
 });
+
+// Disable skip/prev
+if("mediaSession" in navigator){
+    navigator.mediaSession.setActionHandler("nexttrack",null);
+    navigator.mediaSession.setActionHandler("previoustrack",null);
+}
 
 // ===============================
 // START BUTTON CLICK
 // ===============================
-btn.onclick = () => {
-    if (started) return;
-    started = true;
-
+btn.onclick = async ()=>{
+    if(started) return;
+    started=true;
     initVisualizer();
-    startLiveRadio();
-    btn.remove(); // always remove immediately
+    trackDurations = await preloadDurations();
+    playLiveTrack();
+    btn.remove();
 };
