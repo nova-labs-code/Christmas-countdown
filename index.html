@@ -228,7 +228,7 @@ function calculateLiveIndexAndTime(){
     return {index:0, time:0};
 }
 
-// Play next track with crossfade speech
+// Play next track with speech overlay
 function playNextTrack(){
     if(currentIndex >= playlist.length) currentIndex = 0;
     const track = playlist[currentIndex];
@@ -238,19 +238,21 @@ function playNextTrack(){
     audio.currentTime = 0;
 
     audio.play().then(()=>{
-        // setup crossfade
         if(track.name !== "Speech"){
-            audio.addEventListener('timeupdate', function crossfade(){
+            audio.addEventListener('timeupdate', function playSpeech(){
                 const remaining = audio.duration - audio.currentTime;
                 if(remaining <= 5){
-                    speechGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 5);
-                    songGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 5);
+                    // Halve music volume while speech plays
+                    songGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    speechGain.gain.setValueAtTime(1, audioCtx.currentTime);
                     speechAudio.currentTime = 0;
                     speechAudio.play();
-                    audio.removeEventListener('timeupdate', crossfade);
+                    audio.removeEventListener('timeupdate', playSpeech);
+
                     speechAudio.onended = ()=>{
-                        speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                        // Restore music volume
                         songGain.gain.setValueAtTime(1, audioCtx.currentTime);
+                        speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
                         currentIndex++;
                         playNextTrack();
                     };
