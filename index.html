@@ -133,20 +133,31 @@ for(let i=0;i<50;i++){
     document.body.appendChild(snow);
 }
 
-// Animate container/text
+// Animate container/text + background brightness
 function animateEffects(){
     requestAnimationFrame(animateEffects);
     if(!analyser) return;
+
     analyser.getByteFrequencyData(dataArray);
     const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+
+    // Zoom + shake
     const scale = 1 + avg/1000;
     const xShake = (Math.random()-0.5)*avg/50;
     const yShake = (Math.random()-0.5)*avg/50;
     container.style.transform = `scale(${scale}) translate(${xShake}px,${yShake}px)`;
+
+    // Background brightness
+    const brightness = 1 + avg/500; // adjust for intensity
+    document.body.style.filter = `brightness(${brightness})`;
     document.body.style.backgroundSize = `${100 + avg/5}% ${100 + avg/5}%`;
+
+    // Text scaling/shake
     titleEl.style.transform = `scale(${1 + avg/1200}) translate(${xShake/2}px,${yShake/2}px)`;
     subtitleEl.style.transform = `scale(${1 + avg/1200}) translate(${xShake/2}px,${yShake/2}px)`;
     countdownEl.style.transform = `scale(${1 + avg/1400}) translate(${xShake/2}px,${yShake/2}px)`;
+
+    // Snowflakes
     document.querySelectorAll('.snowflake').forEach((flake,i)=>{
         flake.style.transform = `translateY(${Math.sin(Date.now()/1000+i)*5 + avg/15}px)`;
         flake.style.opacity = 0.5 + avg/512;
