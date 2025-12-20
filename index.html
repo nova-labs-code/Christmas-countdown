@@ -97,7 +97,7 @@ const songs = [
     "Winter Wonderland","Wonderful Christmastime","Your A Mean One Mr Grinch",
 ];
 
-// Build playlist with speech after songs
+// Playlist without repeated speech
 const playlist = [];
 songs.forEach(song => {
     playlist.push({name: song, src: `songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`});
@@ -155,6 +155,7 @@ function animateEffects(){
 
 let currentIndex = 0;
 let audio, speechAudio;
+let speechScheduled = false;
 let speechPlaying = false;
 
 // Preload durations
@@ -167,7 +168,7 @@ async function preloadDurations(){
     }
 }
 
-// Calculate live track and position
+// Calculate live track
 function calculateLiveIndexAndTime(){
     const now = new Date().getTime();
     const start = new Date("Dec 1, 2025 00:00:00").getTime();
@@ -192,7 +193,7 @@ function calculateLiveIndexAndTime(){
     return {index:0, time:0};
 }
 
-// Play track with speech overlay spanning two songs
+// Play track with speech spanning two songs
 function playTrackAt(index, startTime=0){
     const track = playlist[index];
     audio.src = track.src;
@@ -200,10 +201,11 @@ function playTrackAt(index, startTime=0){
     audio.onended = null;
 
     audio.play().then(()=>{
-        if(!speechPlaying){
+        if(!speechScheduled && !speechPlaying){
             audio.addEventListener('timeupdate', function scheduleSpeech(){
                 const remaining = audio.duration - audio.currentTime;
-                if(remaining <= 5){ // last 5s crossfade into speech
+                if(remaining <= 5){ // start speech
+                    speechScheduled = true;
                     speechPlaying = true;
 
                     // Reduce music by 40%
@@ -216,14 +218,17 @@ function playTrackAt(index, startTime=0){
 
                     audio.removeEventListener('timeupdate', scheduleSpeech);
 
-                    // When speech ends, restore song volume
                     speechAudio.onended = () => {
+                        // Restore music
                         songGain.gain.setValueAtTime(1, audioCtx.currentTime);
                         speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+                        // Reset flags
+                        speechScheduled = false;
                         speechPlaying = false;
 
                         currentIndex++;
-                        if(currentIndex >= playlist.length) currentIndex=0;
+                        if(currentIndex >= playlist.length) currentIndex = 0;
                         playTrackAt(currentIndex);
                     };
                 }
@@ -231,7 +236,7 @@ function playTrackAt(index, startTime=0){
         } else {
             audio.onended = () => {
                 currentIndex++;
-                if(currentIndex >= playlist.length) currentIndex=0;
+                if(currentIndex >= playlist.length) currentIndex = 0;
                 playTrackAt(currentIndex);
             };
         }
