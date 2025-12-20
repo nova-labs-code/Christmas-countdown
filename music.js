@@ -1,8 +1,8 @@
 // ===============================
 // CONFIG
 // ===============================
-const GLOBAL_START_TIME = Date.UTC(2025, 11, 1, 0, 0, 0);
-const FADE_TIME = 2;
+const GLOBAL_START_TIME = Date.UTC(2025, 11, 1, 0, 0, 0); // Dec 1 UTC
+const FADE_TIME = 2; // seconds
 
 // ===============================
 // PLAYLIST
@@ -61,7 +61,7 @@ let currentIdx = 0;
 const visualLayer = document.getElementById("visual-layer");
 
 // ===============================
-// BUTTON
+// START BUTTON
 // ===============================
 const btn = document.createElement("button");
 btn.id = "start-audio-btn";
@@ -73,6 +73,8 @@ document.body.appendChild(btn);
 // ===============================
 function initVisualizer() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume(); // 🔑 Chrome requires user gesture
+
     analyser = audioCtx.createAnalyser();
     gainNode = audioCtx.createGain();
 
@@ -83,6 +85,7 @@ function initVisualizer() {
 
     analyser.fftSize = 256;
     gainNode.gain.value = 0;
+
     renderFrame();
 }
 
@@ -101,10 +104,14 @@ function renderFrame() {
             `scale(${1.05 + bass / 600}) translateX(${Math.sin(t) * 10}px)`;
         visualLayer.style.filter = `brightness(${1 + bass / 350})`;
     }
+
+    if (audio.duration && audio.currentTime > audio.duration - FADE_TIME) {
+        fadeVolume(0, FADE_TIME);
+    }
 }
 
 function fadeVolume(target, duration) {
-    if (!gainNode) return;
+    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
     gainNode.gain.linearRampToValueAtTime(
         target,
         audioCtx.currentTime + duration
@@ -112,52 +119,64 @@ function fadeVolume(target, duration) {
 }
 
 // ===============================
-// SYNC LOGIC (NO play() USED HERE)
+// SYNC HELPERS
 // ===============================
-function findSyncedTrack() {
-    return new Promise(async resolve => {
-        let elapsed = (Date.now() - GLOBAL_START_TIME) / 1000;
-        let idx = 0;
-
-        while (true) {
-            audio.src = encodeURI("songs/" + playlist[idx]);
-            audio.load();
-
-            await new Promise(r => audio.onloadedmetadata = r);
-
-            if (elapsed < audio.duration) {
-                resolve({ index: idx, offset: elapsed });
-                return;
-            }
-
-            elapsed -= audio.duration;
-            idx = (idx + 1) % playlist.length;
-        }
-    });
+function getLiveOffset(duration) {
+    return ((Date.now() - GLOBAL_START_TIME) / 1000) % duration;
 }
 
-async function playSynced() {
-    const { index, offset } = await findSyncedTrack();
+// ===============================
+// PLAY LOGIC
+// ===============================
+function playTrack(index, offset = 0) {
     currentIdx = index;
-
     audio.src = encodeURI("songs/" + playlist[currentIdx]);
+
     audio.onloadedmetadata = () => {
         audio.currentTime = offset;
-        audio.play(); // 🔑 ONLY play() call
-        fadeVolume(1, FADE_TIME);
     };
 
-    audio.onended = playSynced;
+    audio.play(); // 🔑 Immediate, user gesture legal
+    fadeVolume(1, FADE_TIME);
+}
+
+function startLiveRadio() {
+    // Start first track immediately (audio.play legal)
+    playTrack(0, 0);
+
+    // After metadata, jump to live position
+    audio.onloadedmetadata = () => {
+        const live = getLiveOffset(audio.duration);
+        audio.currentTime = live;
+    };
+
+    audio.onended = () => {
+        playTrack((currentIdx + 1) % playlist.length, 0);
+    };
 }
 
 // ===============================
-// START
+// LOCK CONTROLS
 // ===============================
-btn.onclick = async () => {
+if ("mediaSession" in navigator) {
+    navigator.mediaSession.setActionHandler("nexttrack", null);
+    navigator.mediaSession.setActionHandler("previoustrack", null);
+}
+
+// Pause allowed, resume = live
+audio.addEventListener("play", () => {
+    if (!started || !audio.duration) return;
+    audio.currentTime = getLiveOffset(audio.duration);
+});
+
+// ===============================
+// START BUTTON CLICK
+// ===============================
+btn.onclick = () => {
     if (started) return;
     started = true;
 
     initVisualizer();
-    await playSynced();
-    btn.remove();
+    startLiveRadio();
+    btn.remove(); // always remove immediately
 };
