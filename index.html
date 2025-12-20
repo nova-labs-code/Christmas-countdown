@@ -90,6 +90,7 @@ const titleEl = document.getElementById('title');
 const subtitleEl = document.getElementById('subtitle');
 const container = document.getElementById('container');
 const audio = new Audio();
+const speechAudio = new Audio('songs/speech.mp3');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let analyser, dataArray;
 
@@ -115,6 +116,8 @@ songs.forEach(song => {
     playlist.push({name: song, src: `songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`});
     playlist.push({name:"Speech", src:"songs/speech.mp3"});
 });
+
+const trackDurations = [];
 
 // Countdown
 function updateCountdown(){
@@ -145,11 +148,22 @@ for(let i=0;i<50;i++){
 
 // Setup analyser
 function setupAudio(){
-    const track = audioCtx.createMediaElementSource(audio);
+    const songSource = audioCtx.createMediaElementSource(audio);
+    const speechSource = audioCtx.createMediaElementSource(speechAudio);
+
     analyser = audioCtx.createAnalyser();
-    track.connect(analyser);
+    const songGain = audioCtx.createGain();
+    const speechGain = audioCtx.createGain();
+    songGain.gain.value = 1;
+    speechGain.gain.value = 0;
+
+    songSource.connect(songGain).connect(analyser);
     analyser.connect(audioCtx.destination);
+    speechSource.connect(speechGain).connect(audioCtx.destination);
+
     dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    return {songGain, speechGain};
 }
 
 // Animate container and text
@@ -159,55 +173,97 @@ function animateEffects(){
     analyser.getByteFrequencyData(dataArray);
     const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-    // Container zoom & shake
     const scale = 1 + avg/1000;
     const xShake = (Math.random()-0.5)*avg/50;
     const yShake = (Math.random()-0.5)*avg/50;
     container.style.transform = `scale(${scale}) translate(${xShake}px,${yShake}px)`;
-
-    // Background size pulsate
     document.body.style.backgroundSize = `${100 + avg/5}% ${100 + avg/5}%`;
 
-    // Text minor pulsate
     titleEl.style.transform = `scale(${1 + avg/1200}) translate(${xShake/2}px,${yShake/2}px)`;
     subtitleEl.style.transform = `scale(${1 + avg/1200}) translate(${xShake/2}px,${yShake/2}px)`;
     countdownEl.style.transform = `scale(${1 + avg/1400}) translate(${xShake/2}px,${yShake/2}px)`;
 
-    // Snowflakes react
     document.querySelectorAll('.snowflake').forEach((flake,i)=>{
         flake.style.transform = `translateY(${Math.sin(Date.now()/1000+i)*5 + avg/15}px)`;
         flake.style.opacity = 0.5 + avg/512;
     });
 }
 
-// Playlist player with live jump support
 let currentIndex = 0;
-let liveIndex = 0;
-const trackDurationMs = 3*60*1000; // Approx 3min per song+speech, adjust if needed
+let songGain, speechGain;
 
-function calculateLiveIndex(){
-    const now = new Date();
-    const start = new Date("Dec 1, 2025 00:00:00").getTime();
-    if(now.getTime() < start) return 0;
-    const elapsed = now.getTime() - start;
-    const trackNumber = Math.floor(elapsed / trackDurationMs);
-    return trackNumber % playlist.length;
+// Preload durations
+async function preloadDurations(){
+    for(const track of playlist){
+        const tempAudio = new Audio(track.src);
+        await new Promise(resolve=>{
+            tempAudio.addEventListener('loadedmetadata', ()=>{
+                trackDurations.push(tempAudio.duration);
+                resolve();
+            });
+        });
+    }
 }
 
+// Calculate live track index and position
+function calculateLiveIndexAndTime(){
+    const now = new Date().getTime();
+    const start = new Date("Dec 1, 2025 00:00:00").getTime();
+    if(now < start) return {index:0, time:0};
+    const elapsed = (now - start)/1000;
+    let sum = 0;
+    for(let i=0; i<trackDurations.length; i++){
+        if(sum + trackDurations[i] > elapsed){
+            return {index:i, time: elapsed - sum};
+        }
+        sum += trackDurations[i];
+    }
+    const total = trackDurations.reduce((a,b)=>a+b,0);
+    const remaining = elapsed % total;
+    sum = 0;
+    for(let i=0; i<trackDurations.length; i++){
+        if(sum + trackDurations[i] > remaining){
+            return {index:i, time: remaining - sum};
+        }
+        sum += trackDurations[i];
+    }
+    return {index:0, time:0};
+}
+
+// Play next track
 function playNextTrack(){
     if(currentIndex >= playlist.length) currentIndex = 0;
     const track = playlist[currentIndex];
 
-    liveIndex = currentIndex; // update liveIndex
     audio.onended = null;
     audio.src = track.src;
     audio.currentTime = 0;
 
     audio.play().then(()=>{
-        audio.onended = ()=>{
-            currentIndex++;
-            playNextTrack();
-        };
+        // setup crossfade
+        if(track.name !== "Speech"){
+            audio.addEventListener('timeupdate', function crossfade(){
+                const remaining = audio.duration - audio.currentTime;
+                if(remaining <= 5){ // last 5 seconds
+                    speechGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 5);
+                    songGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 5);
+                    speechAudio.currentTime = 0;
+                    speechAudio.play();
+                    audio.removeEventListener('timeupdate', crossfade);
+                    speechAudio.onended = ()=>{
+                        speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                        songGain.gain.setValueAtTime(1, audioCtx.currentTime);
+                        currentIndex++;
+                        playNextTrack();
+                    };
+                }
+            });
+        } else {
+            audio.onended = ()=>{
+                currentIndex++;
+                playNextTrack();
+            };
+        }
     }).catch(err=>{
         console.error("Audio play failed:", err);
         currentIndex++;
@@ -224,16 +280,23 @@ function playNextTrack(){
     }
 }
 
-// Jump to live track when unpausing
-function jumpToLive(){
-    currentIndex = calculateLiveIndex();
-    playNextTrack();
+// Jump to live track
+async function jumpToLive(){
+    await preloadDurations();
+    const {index, time} = calculateLiveIndexAndTime();
+    currentIndex = index;
+    const track = playlist[currentIndex];
+    audio.src = track.src;
+    audio.currentTime = time;
+    audio.play();
 }
 
 // Start music button
 document.getElementById('playButton').addEventListener('click', async ()=>{
     if(audioCtx.state==='suspended') await audioCtx.resume();
-    setupAudio();
+    const gains = setupAudio();
+    songGain = gains.songGain;
+    speechGain = gains.speechGain;
     animateEffects();
     jumpToLive();
     document.getElementById('playButton').style.display='none';
