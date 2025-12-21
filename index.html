@@ -160,19 +160,19 @@ function animateEffects(){
     });
 }
 
-// --- Load audio buffers ---
-async function loadAudioBuffer(url){
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return audioCtx.decodeAudioData(arrayBuffer);
-}
+// --- Load audio buffers in parallel ---
+async function preloadAllParallel(){
+    // Load songs in parallel
+    const songPromises = playlist.map(track =>
+        fetch(track.src)
+            .then(r => r.arrayBuffer())
+            .then(buffer => audioCtx.decodeAudioData(buffer))
+    );
+    songBuffers = await Promise.all(songPromises);
 
-async function preloadAll(){
-    for(let track of playlist){
-        const buffer = await loadAudioBuffer(track.src);
-        songBuffers.push(buffer);
-    }
-    speechBuffer = await loadAudioBuffer(speechTrack.src);
+    // Load speech
+    const speechArray = await fetch(speechTrack.src).then(r => r.arrayBuffer());
+    speechBuffer = await audioCtx.decodeAudioData(speechArray);
 }
 
 // --- Play tracks like live radio ---
@@ -198,7 +198,7 @@ function scheduleNextSong(startOffset=0){
 
     // Schedule speech near end
     const duration = songSource.buffer.duration;
-    const speechTime = duration - 5; // play speech 5s before end
+    const speechTime = duration - 5;
     if(speechBuffer){
         speechSource = audioCtx.createBufferSource();
         speechSource.buffer = speechBuffer;
@@ -241,9 +241,9 @@ function blockControls(){
 // --- Start live radio ---
 document.getElementById('playButton').addEventListener('click', async ()=>{
     if(audioCtx.state === 'suspended') await audioCtx.resume();
-    await preloadAll();
+    await preloadAllParallel();
 
-    // Determine “live” position based on date
+    // Determine “live” position
     const now = new Date().getTime();
     const start = new Date("Dec 1, 2025 00:00:00").getTime();
     let elapsed = Math.max(0,(now - start)/1000);
