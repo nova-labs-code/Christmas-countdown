@@ -77,6 +77,7 @@ document.title = "Christmas Countdown (Radio)";
 
 /* ------------------- CONFIG ------------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
+
 const SONG_NAMES = [
   "All I Want For Christmas Is You",
   "Baby It's Cold Outside",
@@ -115,6 +116,7 @@ const SONG_NAMES = [
   "Wonderful Christmastime",
   "You're A Mean One, Mr. Grinch"
 ];
+
 const PLAYLIST = SONG_NAMES.map(name => `songs/Music Now, Trap Music Now, Dance Music Now - ${name} (SPOTISAVER).mp3`);
 const SPEECH_SRC = "songs/speech.mp3";
 
@@ -228,19 +230,10 @@ document.getElementById('playButton').onclick = async ()=>{
     playLive(index, offset);
 };
 
-/* ------------------- HARD CONTROL LOCK ------------------- */
-document.addEventListener("keydown",e=>{
-    if(e.code==="Space"||e.code.startsWith("Media")||e.ctrlKey||e.metaKey||e.altKey){
-        e.preventDefault(); e.stopPropagation();
-    }
-},{capture:true});
-document.addEventListener("contextmenu",e=>e.preventDefault());
-
 /* ------------------- ANIMATE EFFECTS ------------------- */
 function animateEffects(){
     requestAnimationFrame(animateEffects);
     if(!audioCtx) return;
-    // simple zoom/shake
     const scale = 1 + Math.random()*0.02;
     const xShake = (Math.random()-0.5)*2;
     const yShake = (Math.random()-0.5)*2;
