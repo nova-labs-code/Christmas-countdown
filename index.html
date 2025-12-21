@@ -100,8 +100,11 @@ const songs = [
 const playlist = songs.map(song => ({name: song, src: `songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`}));
 const speechTrack = {name:"Speech", src:"songs/speech.mp3"};
 
+// Precomputed approximate durations in seconds for all songs (can be adjusted)
+const estimatedDurations = Array(playlist.length).fill(240); // replace with real numbers if known
+let trackDurations = [...estimatedDurations];
+
 let speechBuffer = null;
-let trackDurations = []; 
 
 // Countdown
 function updateCountdown(){
@@ -163,7 +166,7 @@ async function loadAudioBuffer(url){
     return audioCtx.decodeAudioData(arrayBuffer);
 }
 
-// Play current + next song only with live durations
+// Play current + next song with live durations
 let currentIndex = 0;
 let songSource = null;
 let nextSongBuffer = null;
@@ -220,7 +223,7 @@ async function playLiveSong(index, offset=0){
     }, duration*1000);
 }
 
-// Block media keys only
+// Block media keys
 function blockControls(){
     if('mediaSession' in navigator){
         ['play','pause','previoustrack','nexttrack','stop','seekbackward','seekforward','seekto'].forEach(a=>{
@@ -241,6 +244,7 @@ function blockControls(){
 document.getElementById('playButton').addEventListener('click', async ()=>{
     if(audioCtx.state === 'suspended') await audioCtx.resume();
 
+    // Calculate live song from Dec 1, 2025
     const now = new Date().getTime();
     const start = new Date("Dec 1, 2025 00:00:00").getTime();
     let elapsed = Math.max(0,(now - start)/1000);
@@ -248,9 +252,8 @@ document.getElementById('playButton').addEventListener('click', async ()=>{
     let liveIndex = 0;
     let offset = 0;
     let sum = 0;
-
     for(let i=0;i<playlist.length;i++){
-        const dur = trackDurations[i] || 240;
+        const dur = trackDurations[i];
         if(sum + dur > elapsed){
             liveIndex = i;
             offset = elapsed - sum;
