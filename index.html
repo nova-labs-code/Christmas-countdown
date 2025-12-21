@@ -14,7 +14,7 @@ body {
     height: 100vh;
     background: url('christmas-background.jpg') no-repeat center center fixed;
     background-size: cover;
-    user-select: none; /* prevent text selection */
+    user-select: none;
 }
 #container {
     display: flex;
@@ -74,15 +74,17 @@ body {
 </div>
 
 <script>
-document.title = "Christmas Countdown (Radio)";
 const countdownEl = document.getElementById('countdown');
 const titleEl = document.getElementById('title');
 const subtitleEl = document.getElementById('subtitle');
 const container = document.getElementById('container');
 
+// --- Audio Setup ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let analyser, dataArray, songGain, speechGain;
+let analyser, dataArray;
+let songGain, speechGain;
 
+// Track list
 const songs = [
     "All I Want For Christmas Is You","Baby It's Cold Outside","Blue Christmas",
     "Carol Of The Bells","Christmas (Baby Please Come Home)","Christmas Canon",
@@ -101,7 +103,8 @@ const songs = [
 const playlist = songs.map(song => ({name: song, src: `songs/Music Now, Trap Music Now, Dance Music Now - ${song} (SPOTISAVER).mp3`}));
 const speechTrack = {name:"Speech", src:"songs/speech.mp3"};
 
-const trackDurations = [];
+let songBuffers = [];
+let speechBuffer = null;
 
 // Countdown
 function updateCountdown(){
@@ -157,131 +160,109 @@ function animateEffects(){
     });
 }
 
+// --- Load audio buffers ---
+async function loadAudioBuffer(url){
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return audioCtx.decodeAudioData(arrayBuffer);
+}
+
+async function preloadAll(){
+    for(let track of playlist){
+        const buffer = await loadAudioBuffer(track.src);
+        songBuffers.push(buffer);
+    }
+    speechBuffer = await loadAudioBuffer(speechTrack.src);
+}
+
+// --- Play tracks like live radio ---
 let currentIndex = 0;
-let audio, speechAudio;
-let speechScheduled = false;
-let speechPlaying = false;
+let songSource = null;
+let speechSource = null;
+let songStartTime = 0;
 
-async function preloadDurations(){
-    for(const track of playlist){
-        const tempAudio = new Audio(track.src);
-        await new Promise(resolve=>{ tempAudio.addEventListener('loadedmetadata', ()=>{ trackDurations.push(tempAudio.duration); resolve(); }); });
-    }
-}
+function scheduleNextSong(startOffset=0){
+    songSource = audioCtx.createBufferSource();
+    songSource.buffer = songBuffers[currentIndex];
 
-function calculateLiveIndexAndTime(){
-    const now = new Date().getTime();
-    const start = new Date("Dec 1, 2025 00:00:00").getTime();
-    if(now < start) return {index:0, time:0};
-    const elapsed = (now - start)/1000;
-    let sum = 0;
-    for(let i=0; i<trackDurations.length; i++){
-        if(sum + trackDurations[i] > elapsed) return {index:i, time: elapsed - sum};
-        sum += trackDurations[i];
-    }
-    const total = trackDurations.reduce((a,b)=>a+b,0);
-    const remaining = elapsed % total;
-    sum = 0;
-    for(let i=0; i<trackDurations.length; i++){
-        if(sum + trackDurations[i] > remaining) return {index:i, time: remaining - sum};
-        sum += trackDurations[i];
-    }
-    return {index:0, time:0};
-}
+    songGain = audioCtx.createGain();
+    songGain.gain.value = 1;
 
-function playTrackAt(index, startTime=0){
-    const track = playlist[index];
-    audio.src = track.src;
-    audio.currentTime = startTime;
-    audio.onended = null;
+    analyser = audioCtx.createAnalyser();
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    audio.play().then(()=>{
-        if(!speechScheduled && !speechPlaying){
-            audio.addEventListener('timeupdate', function scheduleSpeech(){
-                const remaining = audio.duration - audio.currentTime;
-                if(remaining <= 5){
-                    speechScheduled = true;
-                    speechPlaying = true;
+    songSource.connect(songGain).connect(analyser).connect(audioCtx.destination);
 
-                    songGain.gain.setValueAtTime(0.6, audioCtx.currentTime);
-                    speechGain.gain.setValueAtTime(1, audioCtx.currentTime);
-                    speechAudio.currentTime = 0;
-                    speechAudio.play();
+    songStartTime = audioCtx.currentTime - startOffset;
+    songSource.start(0, startOffset);
 
-                    audio.removeEventListener('timeupdate', scheduleSpeech);
+    // Schedule speech near end
+    const duration = songSource.buffer.duration;
+    const speechTime = duration - 5; // play speech 5s before end
+    if(speechBuffer){
+        speechSource = audioCtx.createBufferSource();
+        speechSource.buffer = speechBuffer;
+        speechGain = audioCtx.createGain();
+        speechGain.gain.value = 0;
+        speechSource.connect(speechGain).connect(audioCtx.destination);
 
-                    speechAudio.onended = () => {
-                        songGain.gain.setValueAtTime(1, audioCtx.currentTime);
-                        speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
-
-                        speechScheduled = false;
-                        speechPlaying = false;
-
-                        currentIndex++;
-                        if(currentIndex >= playlist.length) currentIndex = 0;
-                        playTrackAt(currentIndex);
-                    };
-                }
-            });
-        } else {
-            audio.onended = () => {
-                currentIndex++;
-                if(currentIndex >= playlist.length) currentIndex = 0;
-                playTrackAt(currentIndex);
+        setTimeout(()=>{
+            songGain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+            speechGain.gain.setValueAtTime(1, audioCtx.currentTime);
+            speechSource.start();
+            speechSource.onended = ()=>{
+                songGain.gain.setValueAtTime(1, audioCtx.currentTime);
+                speechGain.gain.setValueAtTime(0, audioCtx.currentTime);
             };
-        }
-    }).catch(err=>{
-        console.warn("Audio play failed:", err);
-        currentIndex++;
-        if(currentIndex >= playlist.length) currentIndex=0;
-        playTrackAt(currentIndex);
-    });
+        }, speechTime * 1000);
+    }
+
+    // Schedule next song
+    setTimeout(()=>{
+        currentIndex = (currentIndex + 1) % songBuffers.length;
+        scheduleNextSong(0);
+    }, (duration - startOffset) * 1000);
 }
 
-// **Completely block pause/skip**
+// --- Block media keys & controls ---
 function blockControls(){
     if('mediaSession' in navigator){
-        ['play','pause','previoustrack','nexttrack','stop','seekbackward','seekforward','seekto'].forEach(action=>{
-            navigator.mediaSession.setActionHandler(action,null);
+        ['play','pause','previoustrack','nexttrack','stop','seekbackward','seekforward','seekto'].forEach(a=>{
+            navigator.mediaSession.setActionHandler(a,null);
         });
     }
-    // Prevent right-click context
-    window.addEventListener('contextmenu', e => e.preventDefault());
-    // Prevent Ctrl+W / Ctrl+R / F5 / etc.
-    window.addEventListener('keydown', e => {
+    window.addEventListener('contextmenu', e=> e.preventDefault());
+    window.addEventListener('keydown', e=>{
         if(e.ctrlKey || e.metaKey || e.key === "F5") e.preventDefault();
         if(["MediaPlayPause","MediaTrackNext","MediaTrackPrevious","MediaStop"].includes(e.code)) e.preventDefault();
     });
 }
 
-// Start live radio
+// --- Start live radio ---
 document.getElementById('playButton').addEventListener('click', async ()=>{
-    if(audioCtx.state==='suspended') await audioCtx.resume();
+    if(audioCtx.state === 'suspended') await audioCtx.resume();
+    await preloadAll();
 
-    audio = new Audio();
-    speechAudio = new Audio(speechTrack.src);
+    // Determine “live” position based on date
+    const now = new Date().getTime();
+    const start = new Date("Dec 1, 2025 00:00:00").getTime();
+    let elapsed = Math.max(0,(now - start)/1000);
 
-    const songSource = audioCtx.createMediaElementSource(audio);
-    const speechSource = audioCtx.createMediaElementSource(speechAudio);
+    // Sum durations to find current track
+    let sum = 0;
+    let liveIndex = 0;
+    for(let i=0;i<songBuffers.length;i++){
+        if(sum + songBuffers[i].duration > elapsed){
+            liveIndex = i;
+            break;
+        }
+        sum += songBuffers[i].duration;
+    }
+    const offset = elapsed - sum;
+    currentIndex = liveIndex;
 
-    analyser = audioCtx.createAnalyser();
-    songGain = audioCtx.createGain();
-    speechGain = audioCtx.createGain();
-    songGain.gain.value = 1;
-    speechGain.gain.value = 0;
-
-    songSource.connect(songGain).connect(analyser);
-    analyser.connect(audioCtx.destination);
-    speechSource.connect(speechGain).connect(audioCtx.destination);
-
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-
+    scheduleNextSong(offset);
     animateEffects();
-    await preloadDurations();
-    const {index, time} = calculateLiveIndexAndTime();
-    currentIndex = index;
-    playTrackAt(currentIndex, time);
-
     blockControls();
     document.getElementById('playButton').style.display='none';
 });
