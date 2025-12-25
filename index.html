@@ -133,28 +133,34 @@ let speechBuffer = null;
     
 function updateCountdown(){
     const now = new Date();
-    let year = now.getFullYear();
-    let target = new Date(`Dec 25, ${year} 00:00:00`).getTime();
-    if(now.getTime() > target) target = new Date(`Dec 25, ${year+1} 00:00:00`).getTime();
+    const year = now.getFullYear();
 
-    const distance = target - now.getTime();
+    const christmas = new Date(`Dec 25, ${year} 00:00:00`);
+    const newYear = new Date(`Jan 1, ${year + 1} 00:00:00`);
 
-    if (distance <= 0) {
+    // 🎄 Christmas period (Dec 25 → Jan 1)
+    if (now >= christmas && now < newYear) {
         countdownEl.textContent = "🎄🎅 Merry Christmas! 🎁✨";
         titleEl.textContent = "Merry";
         subtitleEl.textContent = "Christmas";
         return;
     }
 
-    const days = Math.floor(distance/(1000*60*60*24));
-    const hours = Math.floor((distance % (1000*60*60*24))/(1000*60*60));
-    const minutes = Math.floor((distance % (1000*60*60))/(1000*60));
-    const seconds = Math.floor((distance % (1000*60))/1000);
+    // ⏭ If past Jan 1, count down to next Christmas
+    let targetYear = now >= newYear ? year + 1 : year;
+    const target = new Date(`Dec 25, ${targetYear} 00:00:00`).getTime();
+
+    const distance = target - now.getTime();
+
+    const days = Math.floor(distance / (1000*60*60*24));
+    const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+    const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+    const seconds = Math.floor((distance % (1000*60)) / 1000);
 
     countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
-setInterval(updateCountdown,1000);
+setInterval(updateCountdown, 1000);
 updateCountdown();
 
 
