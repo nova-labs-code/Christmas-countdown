@@ -20,7 +20,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Fullscreen background */
+/* Background layer */
 body::before {
   content: "";
   position: fixed;
@@ -29,9 +29,20 @@ body::before {
   background-image: url('christmas-background.jpg');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: cover; /* Always fill screen */
-  z-index: -1; /* Behind all content */
-  will-change: transform;
+  background-size: cover;
+  z-index: -2;
+  will-change: transform, opacity;
+}
+
+/* Flash overlay */
+#flash {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 #container {
@@ -41,8 +52,6 @@ body::before {
   align-items: center;
   height: 100%;
   text-align: center;
-  padding: 1rem;
-  transition: transform 0.05s ease;
 }
 
 #title, #subtitle {
@@ -50,6 +59,7 @@ body::before {
   color: #fff;
   text-shadow: var(--glow);
   margin: 0;
+  transform-origin: center;
 }
 
 #countdown {
@@ -57,6 +67,7 @@ body::before {
   color: #fff;
   text-shadow: 0 0 10px red, 0 0 20px green;
   margin-top: 1rem;
+  transform-origin: center;
 }
 
 #playButton {
@@ -71,10 +82,6 @@ body::before {
   text-shadow: 1px 1px 2px #000;
 }
 
-#playButton:active {
-  transform: scale(0.95);
-}
-
 .snowflake {
   position: absolute;
   top: -10px;
@@ -84,23 +91,13 @@ body::before {
   animation: fall linear infinite;
 }
 
-@keyframes fall {
-  to { transform: translateY(110vh); }
-}
+@keyframes fall { to { transform: translateY(110vh); } }
 
-@media (max-width: 768px) {
-  .snowflake { opacity: 0.7; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #container, #title, #subtitle, #countdown {
-    transition: none !important;
-    transform: none !important;
-  }
-}
+@media (max-width: 768px) { .snowflake { opacity: 0.7; } }
 </style>
 </head>
 <body>
+<div id="flash"></div>
 <div id="container">
   <h1 id="title">Christmas</h1>
   <h1 id="subtitle">Countdown</h1>
@@ -112,24 +109,25 @@ body::before {
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
 const SONG_NAMES = [
-  "All I Want For Christmas Is You", "Baby It's Cold Outside", "Blue Christmas", "Carol Of The Bells",
-  "Christmas (Baby Please Come Home)", "Christmas Canon", "Deck The Halls", "Do You Want To Build A Snowman",
-  "Feliz Navidad", "Frosty The Snowman", "God Rest Ye Merry Gentlemen", "Here Comes Santa Claus",
-  "Holly Jolly Christmas", "I Want A Hippopotamus For Christmas", "It's Beginning To Look A Lot Like Christmas",
-  "It's The Most Wonderful Time Of The Year", "Jingle Bell Rock", "Jingle Bells", "Last Christmas",
-  "Let It Snow! Let It Snow!", "Little Drummer Boy", "Mistletoe", "O Christmas Tree",
-  "Rockin Around The Christmas Tree", "Rudolph The Red-Nosed Reindeer", "Santa Baby",
-  "Santa Claus Is Comin' To Town", "Silent Night", "Sleigh Ride", "The Christmas Song",
-  "Up On The Housetop", "We Wish You A Merry Christmas", "White Christmas", "Winter Wonderland",
-  "Wonderful Christmastime", "You're A Mean One, Mr. Grinch"
+  "All I Want For Christmas Is You","Baby It's Cold Outside","Blue Christmas","Carol Of The Bells",
+  "Christmas (Baby Please Come Home)","Christmas Canon","Deck The Halls","Do You Want To Build A Snowman",
+  "Feliz Navidad","Frosty The Snowman","God Rest Ye Merry Gentlemen","Here Comes Santa Claus",
+  "Holly Jolly Christmas","I Want A Hippopotamus For Christmas","It's Beginning To Look A Lot Like Christmas",
+  "It's The Most Wonderful Time Of The Year","Jingle Bell Rock","Jingle Bells","Last Christmas",
+  "Let It Snow! Let It Snow!","Little Drummer Boy","Mistletoe","O Christmas Tree",
+  "Rockin Around The Christmas Tree","Rudolph The Red-Nosed Reindeer","Santa Baby",
+  "Santa Claus Is Comin' To Town","Silent Night","Sleigh Ride","The Christmas Song",
+  "Up On The Housetop","We Wish You A Merry Christmas","White Christmas","Winter Wonderland",
+  "Wonderful Christmastime","You're A Mean One, Mr. Grinch"
 ];
-const PLAYLIST = SONG_NAMES.map(n => `songs/Music Now, Trap Music Now, Dance Music Now - ${n} (SPOTISAVER).mp3`);
+const PLAYLIST = SONG_NAMES.map(n=>`songs/Music Now, Trap Music Now, Dance Music Now - ${n} (SPOTISAVER).mp3`);
 const SPEECH_SRC = "songs/speech.mp3";
 
 const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const container = document.getElementById("container");
+const flashEl = document.getElementById("flash");
 
 let audioCtx;
 let durations = [];
@@ -144,136 +142,85 @@ function updateCountdown() {
   const year = now.getFullYear();
   const christmas = new Date(`Dec 25, ${year} 00:00:00`);
   const newYear = new Date(`Jan 1, ${year + 1} 00:00:00`);
-
-  if (now >= christmas && now < newYear) {
-    countdownEl.textContent = "";
-    titleEl.textContent = "Merry";
-    subtitleEl.textContent = "Christmas";
+  if (now>=christmas && now<newYear) {
+    countdownEl.textContent=""; titleEl.textContent="Merry"; subtitleEl.textContent="Christmas";
     return;
   }
-
-  const targetYear = now >= newYear ? year + 1 : year;
+  const targetYear = now>=newYear ? year+1 : year;
   const target = new Date(`Dec 25, ${targetYear} 00:00:00`).getTime();
-  const d = target - now.getTime();
-
-  const days = Math.floor(d / 86400000);
-  const hours = Math.floor((d % 86400000) / 3600000);
-  const minutes = Math.floor((d % 3600000) / 60000);
-  const seconds = Math.floor((d % 60000) / 1000);
-
-  countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  const d = target-now.getTime();
+  const days=Math.floor(d/86400000), hours=Math.floor((d%86400000)/3600000),
+        minutes=Math.floor((d%3600000)/60000), seconds=Math.floor((d%60000)/1000);
+  countdownEl.textContent=`${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
-setInterval(updateCountdown, 1000);
-updateCountdown();
+setInterval(updateCountdown,1000); updateCountdown();
 
 /* ---------------- SNOW ---------------- */
-const snowCount = window.innerWidth < 768 ? 25 : 50;
-for (let i = 0; i < snowCount; i++) {
-  const s = document.createElement("div");
-  s.className = "snowflake";
-  s.textContent = "❄";
-  s.style.left = Math.random() * 100 + "vw";
-  s.style.fontSize = 10 + Math.random() * 20 + "px";
-  s.style.animationDuration = 5 + Math.random() * 6 + "s";
+const snowCount = window.innerWidth<768?25:50;
+for(let i=0;i<snowCount;i++){
+  const s=document.createElement("div"); s.className="snowflake"; s.textContent="❄";
+  s.style.left=Math.random()*100+"vw";
+  s.style.fontSize=10+Math.random()*20+"px";
+  s.style.animationDuration=5+Math.random()*6+"s";
   document.body.appendChild(s);
 }
 
 /* ---------------- AUDIO ---------------- */
-function getDuration(src) {
-  return new Promise(r => {
-    const a = new Audio();
-    a.preload = "metadata";
-    a.src = src;
-    a.onloadedmetadata = () => r(a.duration);
-    a.onerror = () => r(240);
-  });
-}
-async function loadDurations() {
-  for (const s of PLAYLIST) durations.push(await getDuration(s));
-}
-async function loadBuffer(src) {
-  const res = await fetch(src);
-  const buf = await res.arrayBuffer();
-  return await audioCtx.decodeAudioData(buf);
-}
+function getDuration(src){return new Promise(r=>{const a=new Audio(); a.preload="metadata"; a.src=src; a.onloadedmetadata=()=>r(a.duration); a.onerror=()=>r(240);});}
+async function loadDurations(){for(const s of PLAYLIST) durations.push(await getDuration(s));}
+async function loadBuffer(src){const res=await fetch(src); const buf=await res.arrayBuffer(); return await audioCtx.decodeAudioData(buf);}
 
 /* ---------------- LIVE RADIO ---------------- */
-async function playLive(index, offset) {
-  const buffer = await loadBuffer(PLAYLIST[index]);
-  if (offset >= buffer.duration) return playLive((index + 1) % PLAYLIST.length, offset - buffer.duration);
-
-  const source = audioCtx.createBufferSource();
-  const gain = audioCtx.createGain();
-  source.buffer = buffer;
-
-  if (!analyser) {
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 64;
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    source.connect(analyser).connect(audioCtx.destination);
-  } else {
-    source.connect(analyser).connect(audioCtx.destination);
-  }
-
-  source.connect(gain).connect(audioCtx.destination);
-  source.start(0, offset);
-
-  if ((globalSongIndex + 1) % 3 === 0) {
-    if (!speechBuffer) speechBuffer = await loadBuffer(SPEECH_SRC);
-    const delay = Math.max(0, buffer.duration - offset - 5);
-    setTimeout(() => {
-      gain.gain.value = 0.6;
-      const s = audioCtx.createBufferSource();
-      s.buffer = speechBuffer;
-      s.connect(audioCtx.destination);
-      s.start();
-      s.onended = () => gain.gain.value = 1;
-    }, delay * 1000);
-  }
-
-  setTimeout(() => {
-    globalSongIndex = (globalSongIndex + 1) % PLAYLIST.length;
-    playLive(globalSongIndex, 0);
-  }, (buffer.duration - offset) * 1000);
+async function playLive(index, offset){
+  const buffer=await loadBuffer(PLAYLIST[index]);
+  if(offset>=buffer.duration) return playLive((index+1)%PLAYLIST.length, offset-buffer.duration);
+  const source=audioCtx.createBufferSource();
+  const gain=audioCtx.createGain();
+  source.buffer=buffer;
+  if(!analyser){analyser=audioCtx.createAnalyser(); analyser.fftSize=64; dataArray=new Uint8Array(analyser.frequencyBinCount); source.connect(analyser).connect(audioCtx.destination);}
+  else source.connect(analyser).connect(audioCtx.destination);
+  source.connect(gain).connect(audioCtx.destination); source.start(0,offset);
+  if((globalSongIndex+1)%3===0){if(!speechBuffer) speechBuffer=await loadBuffer(SPEECH_SRC);
+    const delay=Math.max(0, buffer.duration-offset-5);
+    setTimeout(()=>{gain.gain.value=0.6; const s=audioCtx.createBufferSource(); s.buffer=speechBuffer; s.connect(audioCtx.destination); s.start(); s.onended=()=>gain.gain.value=1;},delay*1000);}
+  setTimeout(()=>{globalSongIndex=(globalSongIndex+1)%PLAYLIST.length; playLive(globalSongIndex,0);},(buffer.duration-offset)*1000);
 }
 
 /* ---------------- START ---------------- */
-document.getElementById("playButton").onclick = async () => {
-  document.getElementById("playButton").style.display = "none";
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+document.getElementById("playButton").onclick=async()=>{
+  document.getElementById("playButton").style.display="none";
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   await audioCtx.resume();
   await loadDurations();
-
-  let elapsed = (Date.now() - RADIO_START) / 1000;
-  const total = durations.reduce((a, b) => a + b, 0);
-  elapsed = ((elapsed % total) + total) % total;
-
-  let sum = 0;
-  for (let i = 0; i < durations.length; i++) {
-    if (sum + durations[i] > elapsed) {
-      globalSongIndex = i;
-      playLive(i, elapsed - sum);
-      break;
-    }
-    sum += durations[i];
+  let elapsed=(Date.now()-RADIO_START)/1000;
+  const total=durations.reduce((a,b)=>a+b,0); elapsed=((elapsed%total)+total)%total;
+  let sum=0;
+  for(let i=0;i<durations.length;i++){
+    if(sum+durations[i]>elapsed){globalSongIndex=i; playLive(i,elapsed-sum); break;} sum+=durations[i];
   }
 };
 
-/* ---------------- SUBTLE DANCE ---------------- */
-function animateEffects() {
+/* ---------------- BOUNCE & FLASH ---------------- */
+function animateEffects(){
   requestAnimationFrame(animateEffects);
-  if (!analyser) return;
-
+  if(!analyser) return;
   analyser.getByteFrequencyData(dataArray);
-  const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+  const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // subtle, readable effects
-  const scale = 1 + avg / 2000;
-  const x = (avg / 4000 - 0.05) * 6;
-  const y = (avg / 4000 - 0.05) * 6;
-  const rot = (avg / 8000 - 0.05) * 0.03;
+  // Scale background slightly
+  const bgScale = 1 + avg/8000;
+  document.body.style.setProperty("--bg-scale",bgScale);
+  document.body.querySelector("body::before")?.style?.setProperty("transform",`scale(${bgScale})`);
 
-  container.style.transform = `translate(${x}px, ${y}px) scale(${scale}) rotate(${rot}rad)`;
+  // Text bounce/pulse
+  const textScale = 1 + avg/3000;
+  titleEl.style.transform=`scale(${textScale})`;
+  subtitleEl.style.transform=`scale(${textScale})`;
+  countdownEl.style.transform=`scale(${textScale})`;
+
+  // Flash/strobe effect
+  const flashIntensity = Math.min(avg/100,1);
+  flashEl.style.opacity=flashIntensity;
 }
 animateEffects();
 </script>
