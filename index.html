@@ -48,7 +48,7 @@ button{
 #bg{
   position:fixed;
   inset:0;
-  background:url("/christmas-background.jpg") center/cover no-repeat;
+  background:url("./christmas-background.jpg") center/cover no-repeat;
   z-index:-1;
   transition:transform .05s, filter .05s;
 }
@@ -63,7 +63,6 @@ button{
   <button id="start">Start Live Radio</button>
 </div>
 
-<!-- hidden audio element for background playback -->
 <audio id="audio" playsinline></audio>
 
 <script>
@@ -193,9 +192,14 @@ function animate(){
   if(!analyser) return;
   analyser.getByteFrequencyData(data);
   const avg = data.reduce((a,b)=>a+b,0)/data.length;
+
+  // Background scale
   const scale = 1 + avg/7000;
   bg.style.transform = `scale(${scale})`;
-  bg.style.filter = `brightness(${1 - Math.min(avg/400,0.5)})`;
+
+  // Background brightness - never goes below 0.7
+  const brightness = 1 - Math.min(avg / 1200, 0.3); 
+  bg.style.filter = `brightness(${brightness})`;
 }
 
 /* ================= START ================= */
