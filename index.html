@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Countdown (Radio)</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
+<!-- Manifest for PWA -->
+<link rel="manifest" href="manifest.json">
 <style>
 :root { --glow: 0 0 15px red, 0 0 25px green; }
 
@@ -85,6 +87,9 @@ html, body {
   <button id="playButton">Start Live Radio</button>
 </div>
 
+<!-- Audio element for background playback -->
+<audio id="player" preload="auto"></audio>
+
 <script>
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
@@ -107,13 +112,14 @@ const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const bgEl = document.getElementById("bg");
+const audioEl = document.getElementById("player");
 
 let audioCtx;
+let analyser;
+let dataArray;
 let durations = [];
 let speechBuffer = null;
 let globalSongIndex = 0;
-let analyser;
-let dataArray;
 
 /* ---------------- COUNTDOWN ---------------- */
 function updateCountdown() {
@@ -144,42 +150,55 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ---------------- AUDIO ---------------- */
+/* ---------------- AUDIO UTILS ---------------- */
 function getDuration(src){return new Promise(r=>{const a=new Audio(); a.preload="metadata"; a.src=src; a.onloadedmetadata=()=>r(a.duration); a.onerror=()=>r(240);});}
 async function loadDurations(){for(const s of PLAYLIST) durations.push(await getDuration(s));}
 async function loadBuffer(src){const res=await fetch(src); const buf=await res.arrayBuffer(); return await audioCtx.decodeAudioData(buf);}
 
 /* ---------------- LIVE RADIO ---------------- */
-async function playLive(index, offset){
-  const buffer=await loadBuffer(PLAYLIST[index]);
-  if(offset>=buffer.duration) return playLive((index+1)%PLAYLIST.length, offset-buffer.duration);
-  const source=audioCtx.createBufferSource();
-  const gain=audioCtx.createGain();
-  source.buffer=buffer;
-  if(!analyser){analyser=audioCtx.createAnalyser(); analyser.fftSize=64; dataArray=new Uint8Array(analyser.frequencyBinCount); source.connect(analyser).connect(audioCtx.destination);}
-  else source.connect(analyser).connect(audioCtx.destination);
-  source.connect(gain).connect(audioCtx.destination); source.start(0,offset);
+async function playLive(index, offset) {
+  audioEl.src = PLAYLIST[index];
+  audioEl.currentTime = offset;
+  audioEl.play();
 
-  if((globalSongIndex+1)%3===0){
-    if(!speechBuffer) speechBuffer=await loadBuffer(SPEECH_SRC);
-    const delay=Math.max(0, buffer.duration-offset-5);
-    setTimeout(()=>{gain.gain.value=0.6; const s=audioCtx.createBufferSource(); s.buffer=speechBuffer; s.connect(audioCtx.destination); s.start(); s.onended=()=>gain.gain.value=1;},delay*1000);
+  if ((globalSongIndex+1)%3 === 0) {
+    if (!speechBuffer) speechBuffer = await loadBuffer(SPEECH_SRC);
+    setTimeout(() => {
+      const speech = audioCtx.createBufferSource();
+      speech.buffer = speechBuffer;
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.6;
+      speech.connect(gain).connect(audioCtx.destination);
+      speech.start();
+    }, Math.max(0, audioEl.duration - offset - 5) * 1000);
   }
 
-  setTimeout(()=>{globalSongIndex=(globalSongIndex+1)%PLAYLIST.length; playLive(globalSongIndex,0);},(buffer.duration-offset)*1000);
+  globalSongIndex = (globalSongIndex + 1) % PLAYLIST.length;
+  setTimeout(() => playLive(globalSongIndex, 0), (audioEl.duration - offset) * 1000);
 }
 
-/* ---------------- START ---------------- */
-document.getElementById("playButton").onclick=async()=>{
-  document.getElementById("playButton").style.display="none";
-  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+/* ---------------- START BUTTON ---------------- */
+document.getElementById("playButton").onclick = async () => {
+  document.getElementById("playButton").style.display = "none";
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioCtx.createMediaElementSource(audioEl);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 64;
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+  source.connect(analyser).connect(audioCtx.destination);
+
   await audioCtx.resume();
   await loadDurations();
-  let elapsed=(Date.now()-RADIO_START)/1000;
-  const total=durations.reduce((a,b)=>a+b,0); elapsed=((elapsed%total)+total)%total;
+
+  let elapsed = (Date.now() - RADIO_START)/1000;
+  const total = durations.reduce((a,b)=>a+b,0); 
+  elapsed = ((elapsed%total)+total)%total;
+
   let sum=0;
   for(let i=0;i<durations.length;i++){
-    if(sum+durations[i]>elapsed){globalSongIndex=i; playLive(i,elapsed-sum); break;} sum+=durations[i];
+    if(sum+durations[i]>elapsed){globalSongIndex=i; playLive(i, elapsed-sum); break;} 
+    sum+=durations[i];
   }
 };
 
@@ -190,21 +209,21 @@ function animateEffects(){
   analyser.getByteFrequencyData(dataArray);
   const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Background bounce (more sensitive)
+  // Background bounce
   const bgScale = 1 + avg/8000; 
   bgEl.style.transform = `scale(${bgScale})`;
 
-  // Background brightness pulse (more sensitive)
+  // Background brightness pulse
   const brightness = 1 - Math.min(avg/300, 0.5);
   bgEl.style.filter = `brightness(${brightness})`;
 
-  // Text bounce (more sensitive)
+  // Text bounce
   const textScale = 1 + avg/2000;
-  titleEl.style.transform=`scale(${textScale})`;
-  subtitleEl.style.transform=`scale(${textScale})`;
-  countdownEl.style.transform=`scale(${textScale})`;
+  titleEl.style.transform = `scale(${textScale})`;
+  subtitleEl.style.transform = `scale(${textScale})`;
+  countdownEl.style.transform = `scale(${textScale})`;
 
-  // Device vibration (subtle)
+  // Device vibration
   if(navigator.vibrate && avg > 100){ navigator.vibrate(12); }
 }
 animateEffects();
