@@ -20,7 +20,6 @@ html, body {
   overflow: hidden;
 }
 
-/* Background */
 body::before {
   content: "";
   position: fixed;
@@ -29,7 +28,7 @@ body::before {
   background-image: url('christmas-background.jpg');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: cover; 
+  background-size: cover;
   z-index: -1;
   will-change: transform, filter;
   transform-origin: center center;
@@ -199,20 +198,22 @@ function animateEffects(){
   analyser.getByteFrequencyData(dataArray);
   const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Background darkening based on beat (max 0.5 darkness)
-  const darkness = Math.min(avg/300,0.5);
-  document.body.querySelector("body::before")?.style?.setProperty("filter", `brightness(${1-darkness})`);
+  // Background bounce (smaller sensitivity)
+  const bgScale = 1 + avg/12000;
+  document.body.querySelector("body::before")?.style?.setProperty("transform", `scale(${bgScale})`);
 
-  // Text bounce/pulse
+  // Background brightness pulse
+  const brightness = 1 - Math.min(avg/400, 0.5); // darken up to 50%
+  document.body.querySelector("body::before")?.style?.setProperty("filter", `brightness(${brightness})`);
+
+  // Text bounce (larger sensitivity)
   const textScale = 1 + avg/3000;
   titleEl.style.transform=`scale(${textScale})`;
   subtitleEl.style.transform=`scale(${textScale})`;
   countdownEl.style.transform=`scale(${textScale})`;
 
-  // Device vibration (subtle, only if supported)
-  if (navigator.vibrate && avg > 120) { 
-    navigator.vibrate(10); // short vibration
-  }
+  // Device vibration (subtle)
+  if(navigator.vibrate && avg > 120){ navigator.vibrate(10); }
 }
 animateEffects();
 </script>
