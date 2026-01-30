@@ -20,7 +20,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Background layer */
+/* Background */
 body::before {
   content: "";
   position: fixed;
@@ -29,9 +29,10 @@ body::before {
   background-image: url('christmas-background.jpg');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: cover;
-  z-index: -2;
-  will-change: transform, opacity;
+  background-size: cover; /* fills screen */
+  z-index: -2; /* behind everything */
+  will-change: transform;
+  transform-origin: center center;
 }
 
 /* Flash overlay */
@@ -42,7 +43,8 @@ body::before {
   background: white;
   opacity: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0; /* above background, below content */
+  transition: opacity 0.05s linear;
 }
 
 #container {
@@ -180,9 +182,13 @@ async function playLive(index, offset){
   if(!analyser){analyser=audioCtx.createAnalyser(); analyser.fftSize=64; dataArray=new Uint8Array(analyser.frequencyBinCount); source.connect(analyser).connect(audioCtx.destination);}
   else source.connect(analyser).connect(audioCtx.destination);
   source.connect(gain).connect(audioCtx.destination); source.start(0,offset);
-  if((globalSongIndex+1)%3===0){if(!speechBuffer) speechBuffer=await loadBuffer(SPEECH_SRC);
+
+  if((globalSongIndex+1)%3===0){
+    if(!speechBuffer) speechBuffer=await loadBuffer(SPEECH_SRC);
     const delay=Math.max(0, buffer.duration-offset-5);
-    setTimeout(()=>{gain.gain.value=0.6; const s=audioCtx.createBufferSource(); s.buffer=speechBuffer; s.connect(audioCtx.destination); s.start(); s.onended=()=>gain.gain.value=1;},delay*1000);}
+    setTimeout(()=>{gain.gain.value=0.6; const s=audioCtx.createBufferSource(); s.buffer=speechBuffer; s.connect(audioCtx.destination); s.start(); s.onended=()=>gain.gain.value=1;},delay*1000);
+  }
+
   setTimeout(()=>{globalSongIndex=(globalSongIndex+1)%PLAYLIST.length; playLive(globalSongIndex,0);},(buffer.duration-offset)*1000);
 }
 
@@ -200,17 +206,17 @@ document.getElementById("playButton").onclick=async()=>{
   }
 };
 
-/* ---------------- BOUNCE & FLASH ---------------- */
+/* ---------------- BOUNCE, FLASH & BG PULSE ---------------- */
 function animateEffects(){
   requestAnimationFrame(animateEffects);
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArray);
   const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Scale background slightly
+  // Background pulse
   const bgScale = 1 + avg/8000;
-  document.body.style.setProperty("--bg-scale",bgScale);
-  document.body.querySelector("body::before")?.style?.setProperty("transform",`scale(${bgScale})`);
+  document.body.style.setProperty("--bg-scale", bgScale);
+  document.body.querySelector("body::before")?.style?.setProperty("transform", `scale(${bgScale})`);
 
   // Text bounce/pulse
   const textScale = 1 + avg/3000;
@@ -218,9 +224,9 @@ function animateEffects(){
   subtitleEl.style.transform=`scale(${textScale})`;
   countdownEl.style.transform=`scale(${textScale})`;
 
-  // Flash/strobe effect
-  const flashIntensity = Math.min(avg/100,1);
-  flashEl.style.opacity=flashIntensity;
+  // Flash/strobe effect, max opacity 0.4
+  const flashIntensity = Math.min(avg/200, 0.4);
+  flashEl.style.opacity = flashIntensity;
 }
 animateEffects();
 </script>
