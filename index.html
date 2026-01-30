@@ -139,7 +139,7 @@ async function playLive(index, offset=0){
   }, (buffer.duration-offset)*1000);
 }
 
-/* ---------------- START BUTTON + SMOOTH LOADING ---------------- */
+/* ---------------- START BUTTON + LOAD ALL SONGS ---------------- */
 document.getElementById("playButton").onclick = async ()=>{
   document.getElementById("playButton").style.display="none";
   loadingBarContainer.style.display="block";
@@ -147,30 +147,20 @@ document.getElementById("playButton").onclick = async ()=>{
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   await audioCtx.resume();
 
-  let loadedCount = 0;
-
   for(let i=0;i<PLAYLIST.length;i++){
-    const buf = await loadBuffer(PLAYLIST[i]);
-    if(buf){ buffers[i]=buf; durations[i]=buf.duration; }
-    loadedCount++;
-    targetProgress = (loadedCount / PLAYLIST.length) * 100;
+    buffers[i] = await loadBuffer(PLAYLIST[i]);
+    durations[i] = buffers[i]?.duration || 240; 
+    targetProgress = ((i+1)/PLAYLIST.length)*100;
+    animateLoadingBar(); // smooth animation per song
   }
 
   // Load speech
   speechBuffer = await loadBuffer(SPEECH_SRC);
   targetProgress = 100;
-
-  // Animate loading bar smoothly
-  function smoothLoading(){
-    loadingProgress += (targetProgress - loadingProgress) * 0.05;
-    loadingBar.style.width = loadingProgress + "%";
-    if(loadingProgress < 99.9) requestAnimationFrame(smoothLoading);
-  }
-  smoothLoading();
-
+  animateLoadingBar();
   setTimeout(()=>{ loadingBarContainer.style.display="none"; },500);
 
-  // Determine current song & offset
+  // Calculate current song and offset from RADIO_START
   const elapsedSec = (Date.now()-RADIO_START)/1000;
   let sum=0, idx=0;
   for(let i=0;i<durations.length;i++){
@@ -182,6 +172,15 @@ document.getElementById("playButton").onclick = async ()=>{
 
   playLive(idx, offset);
 };
+
+/* ---------------- LOADING BAR SMOOTH ANIMATION ---------------- */
+function animateLoadingBar(){
+  requestAnimationFrame(()=>{
+    loadingProgress += (targetProgress-loadingProgress)*0.05;
+    loadingBar.style.width = loadingProgress + "%";
+    if(loadingProgress < 99.9) animateLoadingBar();
+  });
+}
 
 /* ---------------- AUDIO-REACTIVE ANIMATION ---------------- */
 function animateEffects(){
