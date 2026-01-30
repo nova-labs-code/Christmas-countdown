@@ -5,16 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Live Radio</title>
 <style>
-html,body{
+html, body {
   margin:0;
   padding:0;
   height:100%;
-  background:black;
-  color:white;
+  width:100%;
   font-family:Arial,Helvetica,sans-serif;
   overflow:hidden;
+  background:black;
 }
-#container{
+#bg {
+  position:fixed;
+  inset:0;
+  background:url("./christmas-background.jpg") center/cover no-repeat;
+  z-index:-1;
+  transform:scale(1);
+  filter:brightness(1);
+}
+#container {
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -22,20 +30,20 @@ html,body{
   height:100%;
   text-align:center;
 }
-#title{
+#title {
   font-size:3rem;
   text-shadow:0 0 15px red,0 0 25px green;
 }
-#countdown{
+#countdown {
   font-size:2rem;
   margin-top:1rem;
 }
-#nowPlaying{
+#nowPlaying {
   margin-top:1.5rem;
   font-size:1.2rem;
   opacity:.9;
 }
-button{
+button {
   margin-top:2rem;
   padding:1rem 2rem;
   font-size:1.2rem;
@@ -44,13 +52,6 @@ button{
   background:red;
   color:white;
   cursor:pointer;
-}
-#bg{
-  position:fixed;
-  inset:0;
-  background:url("./christmas-background.jpg") center/cover no-repeat;
-  z-index:-1;
-  transition:transform .05s, filter .05s;
 }
 </style>
 </head>
@@ -63,13 +64,12 @@ button{
   <button id="start">Start Live Radio</button>
 </div>
 
+<!-- hidden audio element -->
 <audio id="audio" playsinline></audio>
 
 <script>
 /* ================= CONFIG ================= */
-
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
-
 const FILE_PREFIX = "Music Now, Trap Music Now, Dance Music Now - ";
 const FILE_SUFFIX = " (SPOTISAVER).mp3";
 
@@ -114,14 +114,12 @@ const SONG_NAMES = [
 ];
 
 /* ================= HELPERS ================= */
-
 function filePath(name){
-  if(name === "speech") return "songs/speech.mp3";
+  if(name==="speech") return "songs/speech.mp3";
   return encodeURI("songs/" + FILE_PREFIX + name + FILE_SUFFIX);
 }
 
 /* ================= COUNTDOWN ================= */
-
 const countdown = document.getElementById("countdown");
 function updateCountdown(){
   const now = new Date();
@@ -142,23 +140,21 @@ setInterval(updateCountdown,1000);
 updateCountdown();
 
 /* ================= AUDIO ================= */
-
 const audio = document.getElementById("audio");
 const startBtn = document.getElementById("start");
 const nowPlaying = document.getElementById("nowPlaying");
 const bg = document.getElementById("bg");
 
-let ctx, analyser, data, durations = [];
-let index = 0;
+let ctx, analyser, data, durations=[], index=0;
 
 /* duration loader */
 function getDuration(src){
   return new Promise(res=>{
     const a = new Audio();
     a.src = encodeURI(src);
-    a.preload = "metadata";
-    a.onloadedmetadata = ()=>res(a.duration || 240);
-    a.onerror = ()=>res(240);
+    a.preload="metadata";
+    a.onloadedmetadata=()=>res(a.duration||240);
+    a.onerror=()=>res(240);
   });
 }
 
@@ -169,15 +165,12 @@ async function loadDurations(){
 }
 
 /* ================= PLAYBACK ================= */
-
 function playTrack(i, offset=0){
-  const src = filePath(SONG_NAMES[i]);
-  audio.src = src;
+  audio.src = filePath(SONG_NAMES[i]);
   audio.currentTime = offset;
   audio.play();
-  nowPlaying.textContent =
-    SONG_NAMES[i] === "speech" ? "Speech" : SONG_NAMES[i];
-  console.log("Playing:", src);
+  nowPlaying.textContent = SONG_NAMES[i]==="speech"?"Speech":SONG_NAMES[i];
+  console.log("Playing:", audio.src);
 }
 
 audio.onended = ()=>{
@@ -186,28 +179,24 @@ audio.onended = ()=>{
 };
 
 /* ================= VISUALIZER ================= */
-
 function animate(){
   requestAnimationFrame(animate);
   if(!analyser) return;
   analyser.getByteFrequencyData(data);
   const avg = data.reduce((a,b)=>a+b,0)/data.length;
 
-  // Background scale
-  const scale = 1 + avg/7000;
+  // only scale, do NOT darken image
+  const scale = 1 + avg/10000; // subtle pulse
   bg.style.transform = `scale(${scale})`;
-
-  // Background brightness - never goes below 0.7
-  const brightness = 1 - Math.min(avg / 1200, 0.3); 
-  bg.style.filter = `brightness(${brightness})`;
 }
 
-/* ================= START ================= */
+animate(); // start visualizer animation loop
 
+/* ================= START ================= */
 startBtn.onclick = async ()=>{
   startBtn.remove();
 
-  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  ctx = new (window.AudioContext||window.webkitAudioContext)();
   analyser = ctx.createAnalyser();
   analyser.fftSize = 64;
   data = new Uint8Array(analyser.frequencyBinCount);
@@ -218,21 +207,19 @@ startBtn.onclick = async ()=>{
 
   await loadDurations();
 
-  let elapsed = (Date.now() - RADIO_START) / 1000;
+  let elapsed = (Date.now() - RADIO_START)/1000;
   const total = durations.reduce((a,b)=>a+b,0);
-  elapsed = ((elapsed % total) + total) % total;
+  elapsed = ((elapsed % total)+total)%total;
 
-  let sum = 0;
+  let sum=0;
   for(let i=0;i<durations.length;i++){
-    if(sum + durations[i] > elapsed){
-      index = i;
+    if(sum+durations[i]>elapsed){
+      index=i;
       playTrack(i, elapsed - sum);
       break;
     }
     sum += durations[i];
   }
-
-  animate();
 };
 </script>
 </body>
