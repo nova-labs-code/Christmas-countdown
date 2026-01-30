@@ -5,151 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Live Radio</title>
 <style>
+:root { --glow: 0 0 15px red, 0 0 25px green; }
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  font-family: Arial, Helvetica, sans-serif;
-  overflow: hidden;
-  background: black;
-  color: white;
+  margin:0; padding:0; height:100%; width:100%;
+  font-family: Arial, Helvetica, sans-serif; overflow:hidden;
+  background:black; color:white;
 }
 #bg {
-  position: fixed;
-  inset: 0;
-  background: url("./christmas-background.jpg") center/cover no-repeat;
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  background-image: url('christmas-background.jpg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   z-index: -1;
+  transform-origin: center;
 }
 #container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  text-align: center;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  height:100%; text-align:center;
 }
-#title {
-  font-size: 3rem;
-  text-shadow: 0 0 15px red, 0 0 25px green;
+#title, #subtitle {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  color:#fff;
+  text-shadow: var(--glow);
+  margin:0;
 }
 #countdown {
-  font-size: 2rem;
-  margin-top: 1rem;
+  font-size: clamp(2rem,6vw,5rem);
+  color:#fff;
+  text-shadow: 0 0 10px red,0 0 20px green;
+  margin-top:1rem;
 }
 #nowPlaying {
-  margin-top: 1.5rem;
-  font-size: 1.2rem;
+  margin-top:1rem;
+  font-size:1.2rem;
 }
 #start {
-  margin-top: 2rem;
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 14px;
-  background: red;
-  color: white;
-  cursor: pointer;
+  margin-top:2rem;
+  padding:1rem 2rem;
+  font-size:1.2rem;
+  border:none;
+  border-radius:16px;
+  background:red;
+  color:white;
+  cursor:pointer;
 }
 </style>
 </head>
 <body>
+
 <div id="bg"></div>
 <div id="container">
-  <div id="title">Christmas Live Radio</div>
-  <div id="countdown">Loading…</div>
+  <h1 id="title">Christmas</h1>
+  <h1 id="subtitle">Countdown</h1>
+  <div id="countdown">00d 00h 00m 00s</div>
   <div id="nowPlaying"></div>
   <button id="start">Start Live Radio</button>
 </div>
 
-<!-- Hidden audio element, no controls -->
 <audio id="audio" playsinline style="display:none;"></audio>
 
 <script>
-/* ================= CONFIG ================= */
+/* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
 const FILE_PREFIX = "Music Now, Trap Music Now, Dance Music Now - ";
 const FILE_SUFFIX = " (SPOTISAVER).mp3";
 
 const SONG_NAMES = [
-  "All I Want For Christmas Is You",
-  "Baby It's Cold Outside",
-  "Blue Christmas",
-  "Carol Of The Bells",
-  "Christmas (Baby Please Come Home)",
-  "Christmas Canon",
-  "Deck The Halls",
-  "Do You Want To Build A Snowman",
-  "Feliz Navidad",
-  "Frosty The Snowman",
-  "God Rest Ye Merry Gentlemen",
-  "Here Comes Santa Claus",
-  "Holly Jolly Christmas",
-  "I Want A Hippopotamus For Christmas",
-  "It's Beginning To Look A Lot Like Christmas",
-  "It's The Most Wonderful Time Of The Year",
-  "Jingle Bell Rock",
-  "Jingle Bells",
-  "Last Christmas",
-  "Let It Snow! Let It Snow!",
-  "Little Drummer Boy",
-  "Mistletoe",
-  "O Christmas Tree",
-  "Rockin Around The Christmas Tree",
-  "Rudolph The Red-Nosed Reindeer",
-  "Santa Baby",
-  "Santa Claus Is Comin' To Town",
-  "Silent Night",
-  "Sleigh Ride",
-  "The Christmas Song",
-  "Up On The Housetop",
-  "We Wish You A Merry Christmas",
-  "White Christmas",
-  "Winter Wonderland",
-  "Wonderful Christmastime",
-  "You're A Mean One, Mr. Grinch",
-  "speech"
+"All I Want For Christmas Is You","Baby It's Cold Outside","Blue Christmas","Carol Of The Bells",
+"Christmas (Baby Please Come Home)","Christmas Canon","Deck The Halls","Do You Want To Build A Snowman",
+"Feliz Navidad","Frosty The Snowman","God Rest Ye Merry Gentlemen","Here Comes Santa Claus",
+"Holly Jolly Christmas","I Want A Hippopotamus For Christmas","It's Beginning To Look A Lot Like Christmas",
+"It's The Most Wonderful Time Of The Year","Jingle Bell Rock","Jingle Bells","Last Christmas",
+"Let It Snow! Let It Snow!","Little Drummer Boy","Mistletoe","O Christmas Tree",
+"Rockin Around The Christmas Tree","Rudolph The Red-Nosed Reindeer","Santa Baby",
+"Santa Claus Is Comin' To Town","Silent Night","Sleigh Ride","The Christmas Song",
+"Up On The Housetop","We Wish You A Merry Christmas","White Christmas","Winter Wonderland",
+"Wonderful Christmastime","You're A Mean One, Mr. Grinch",
+"speech"
 ];
 
-/* ================= HELPERS ================= */
+/* ---------------- HELPERS ---------------- */
 function filePath(name){
-  return encodeURI(name==="speech"?"songs/speech.mp3":"songs/"+FILE_PREFIX+name+FILE_SUFFIX);
+  return name==="speech"?"songs/speech.mp3":"songs/"+FILE_PREFIX+name+FILE_SUFFIX;
 }
 
-/* ================= COUNTDOWN ================= */
+/* ---------------- COUNTDOWN ---------------- */
 const countdown = document.getElementById("countdown");
 function updateCountdown(){
   const now = new Date();
   const year = now.getFullYear();
   const target = new Date(`Dec 25, ${year} 00:00:00`);
-  const diff = target - now;
+  const diff = target-now;
   if(diff<=0){
-    countdown.textContent = "Merry Christmas!";
+    countdown.textContent="Merry Christmas!";
     return;
   }
-  const d = Math.floor(diff/86400000);
-  const h = Math.floor(diff%86400000/3600000);
-  const m = Math.floor(diff%3600000/60000);
-  const s = Math.floor(diff%60000/1000);
-  countdown.textContent = `${d}d ${h}h ${m}m ${s}s`;
+  const d=Math.floor(diff/86400000), h=Math.floor(diff%86400000/3600000),
+        m=Math.floor(diff%3600000/60000), s=Math.floor(diff%60000/1000);
+  countdown.textContent=`${d}d ${h}h ${m}m ${s}s`;
 }
 setInterval(updateCountdown,1000);
 updateCountdown();
 
-/* ================= AUDIO PLAYBACK ================= */
+/* ---------------- AUDIO ---------------- */
 const audio = document.getElementById("audio");
 const startBtn = document.getElementById("start");
 const nowPlaying = document.getElementById("nowPlaying");
+const bg = document.getElementById("bg");
+
 let durations=[], index=0;
 
-/* Load metadata for durations */
+/* load song durations for hybrid start */
 function getDuration(src){
   return new Promise(res=>{
-    const a = new Audio();
-    a.src = src;
+    const a=new Audio();
+    a.src=src;
     a.preload="metadata";
-    a.onloadedmetadata = ()=>res(a.duration||240);
-    a.onerror = ()=>res(240);
+    a.onloadedmetadata=()=>res(a.duration||240);
+    a.onerror=()=>res(240);
   });
 }
 
@@ -159,40 +134,47 @@ async function loadDurations(){
   }
 }
 
-/* Play track at index with optional offset */
+/* play a track */
 function playTrack(i, offset=0){
-  audio.src = filePath(SONG_NAMES[i]);
-  audio.currentTime = offset;
+  audio.src=filePath(SONG_NAMES[i]);
+  audio.currentTime=offset;
   audio.play();
   nowPlaying.textContent = SONG_NAMES[i]==="speech"?"Speech":SONG_NAMES[i];
-  console.log("Playing:", audio.src);
 }
 
-/* Auto-next track */
+/* auto next track */
 audio.onended = ()=>{
-  index = (index+1) % SONG_NAMES.length;
+  index = (index+1)%SONG_NAMES.length;
   playTrack(index,0);
 };
 
-/* ================= START ================= */
+/* ---------------- START ---------------- */
 startBtn.onclick = async ()=>{
   startBtn.remove();
   await loadDurations();
 
-  let elapsed = (Date.now() - RADIO_START)/1000;
-  const total = durations.reduce((a,b)=>a+b,0);
-  elapsed = ((elapsed % total)+total)%total;
+  let elapsed=(Date.now()-RADIO_START)/1000;
+  const total=durations.reduce((a,b)=>a+b,0);
+  elapsed=((elapsed%total)+total)%total;
 
   let sum=0;
   for(let i=0;i<durations.length;i++){
     if(sum+durations[i]>elapsed){
       index=i;
-      playTrack(i, elapsed - sum);
+      playTrack(i,elapsed-sum);
       break;
     }
     sum+=durations[i];
   }
 };
+
+/* ---------------- BACKGROUND PULSE (subtle) ---------------- */
+function animate(){
+  requestAnimationFrame(animate);
+  const scale = 1 + Math.random()*0.01; // tiny pulse so image always visible
+  bg.style.transform=`scale(${scale})`;
+}
+animate();
 </script>
 </body>
 </html>
