@@ -5,26 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Countdown (Radio)</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-
 <style>
-:root {
-  --glow: 0 0 15px red, 0 0 25px green;
-}
+:root { --glow: 0 0 15px red, 0 0 25px green; }
 
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  font-family: Arial, sans-serif; overflow: hidden;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+/* Real background div */
+#bg {
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
   background-image: url('christmas-background.jpg');
   background-position: center center;
   background-repeat: no-repeat;
@@ -39,8 +31,7 @@ body::before {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  text-align: center;
+  height: 100%; text-align: center;
 }
 
 #title, #subtitle {
@@ -86,6 +77,8 @@ body::before {
 </style>
 </head>
 <body>
+
+<div id="bg"></div>
 <div id="container">
   <h1 id="title">Christmas</h1>
   <h1 id="subtitle">Countdown</h1>
@@ -114,7 +107,7 @@ const SPEECH_SRC = "songs/speech.mp3";
 const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
-const container = document.getElementById("container");
+const bgEl = document.getElementById("bg");
 
 let audioCtx;
 let durations = [];
@@ -196,15 +189,15 @@ function animateEffects(){
   requestAnimationFrame(animateEffects);
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArray);
-  const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+  const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
   // Background bounce (smaller sensitivity)
   const bgScale = 1 + avg/12000;
-  document.body.querySelector("body::before")?.style?.setProperty("transform", `scale(${bgScale})`);
+  bgEl.style.transform = `scale(${bgScale})`;
 
-  // Background brightness pulse
-  const brightness = 1 - Math.min(avg/400, 0.5); // darken up to 50%
-  document.body.querySelector("body::before")?.style?.setProperty("filter", `brightness(${brightness})`);
+  // Background brightness pulse (darken/undarken)
+  const brightness = 1 - Math.min(avg/400, 0.5);
+  bgEl.style.filter = `brightness(${brightness})`;
 
   // Text bounce (larger sensitivity)
   const textScale = 1 + avg/3000;
