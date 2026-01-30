@@ -33,7 +33,6 @@ html, body { margin:0; padding:0; height:100%; width:100%; font-family: Arial,sa
   <button id="playButton">Start Live Radio</button>
 </div>
 
-<!-- Audio elements -->
 <audio id="player" playsinline preload="auto"></audio>
 <audio id="speech" preload="auto"></audio>
 
@@ -105,7 +104,6 @@ async function playLive(index, offset){
   audioEl.currentTime = offset;
   await audioEl.play();
 
-  // Calculate number of songs since RADIO_START
   let elapsedSec = (Date.now() - RADIO_START)/1000;
   const totalDur = durations.reduce((a,b)=>a+b,0);
   elapsedSec = ((elapsedSec % totalDur) + totalDur) % totalDur;
@@ -116,9 +114,9 @@ async function playLive(index, offset){
     sum+=durations[i];
   }
 
-  // Play speech every 3 songs
+  // Speech every 3 songs
   if(songCount % 3 === 0){
-    setTimeout(()=>{ speechEl.src = SPEECH_SRC; speechEl.play(); }, (audioEl.duration - offset - 0.1)*1000);
+    setTimeout(()=>{ speechEl.src=SPEECH_SRC; speechEl.play(); }, (audioEl.duration - offset - 0.1)*1000);
   }
 
   globalSongIndex = (index+1)%PLAYLIST.length;
@@ -127,7 +125,7 @@ async function playLive(index, offset){
 
 /* ---------- START BUTTON ---------- */
 document.getElementById("playButton").onclick = async ()=>{
-  document.getElementById("playButton").style.display = "none";
+  document.getElementById("playButton").style.display="none";
   await loadDurations();
 
   let elapsed = (Date.now()-RADIO_START)/1000;
@@ -139,7 +137,6 @@ document.getElementById("playButton").onclick = async ()=>{
     sum+=durations[i];
   }
 
-  // Media Session for iOS
   if('mediaSession' in navigator){
     navigator.mediaSession.metadata = new MediaMetadata({
       title:"Christmas Countdown",
@@ -153,23 +150,17 @@ document.getElementById("playButton").onclick = async ()=>{
 /* ---------- SIMULATED BEAT EFFECTS ---------- */
 function animateEffects(){
   requestAnimationFrame(animateEffects);
-
-  // Simulate a beat from current time
   const t = Date.now()/1000;
-  const beat = Math.sin(t*2*Math.PI*0.5); // 0.5Hz beat
+  const beat = Math.sin(t*2*Math.PI*0.5); // 0.5Hz
   const scale = 1 + beat*0.03; // text bounce
-  titleEl.style.transform = `scale(${1 + beat*0.03})`;
-  subtitleEl.style.transform = `scale(${1 + beat*0.03})`;
-  countdownEl.style.transform = `scale(${1 + beat*0.03})`;
+  titleEl.style.transform=`scale(${scale})`;
+  subtitleEl.style.transform=`scale(${scale})`;
+  countdownEl.style.transform=`scale(${scale})`;
 
-  // Background darken/light
   const brightness = 1 - Math.abs(beat)*0.2;
   bgEl.style.filter = `brightness(${brightness})`;
-
-  // Background small bounce
   bgEl.style.transform = `scale(${1 + Math.abs(beat)*0.02})`;
 
-  // Vibration
   if(navigator.vibrate && Math.abs(beat)>0.8) navigator.vibrate(10);
 }
 animateEffects();
