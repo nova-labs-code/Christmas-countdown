@@ -50,8 +50,9 @@ html, body { margin:0; padding:0; height:100%; width:100%; font-family: Arial,sa
   <button id="playButton">Start Live Radio</button>
 </div>
 
-<!-- Single audio element for PWA/iOS background playback -->
+<!-- Audio elements -->
 <audio id="player" playsinline preload="auto"></audio>
+<audio id="speech" preload="auto"></audio>
 
 <script>
 /* ---------- CONFIG ---------- */
@@ -76,9 +77,9 @@ const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const bgEl = document.getElementById("bg");
 const audioEl = document.getElementById("player");
+const speechEl = document.getElementById("speech");
 
 let durations = [];
-let speechBuffer = null;
 let globalSongIndex = 0;
 let analyser, dataArray;
 let audioCtx;
@@ -115,47 +116,55 @@ for(let i=0;i<snowCount;i++){
 /* ---------- AUDIO UTILITIES ---------- */
 function getDuration(src){return new Promise(r=>{const a=new Audio();a.preload="metadata";a.src=src;a.onloadedmetadata=()=>r(a.duration);a.onerror=()=>r(240);});}
 async function loadDurations(){for(const s of PLAYLIST) durations.push(await getDuration(s));}
-async function loadSpeech(){ const res = await fetch(SPEECH_SRC); const buf = await res.arrayBuffer(); return await audioCtx.decodeAudioData(buf);}
 
 /* ---------- LIVE RADIO ---------- */
 async function playLive(index, offset){
   audioEl.src = PLAYLIST[index];
   audioEl.currentTime = offset;
-  audioEl.play();
+  await audioEl.play();
 
-  // play speech every 3 songs
-  if((globalSongIndex+1)%3===0 && speechBuffer){
-    setTimeout(()=>{
-      const speechSource = audioCtx.createBufferSource();
-      speechSource.buffer = speechBuffer;
-      const gain = audioCtx.createGain(); gain.gain.value=0.6;
-      speechSource.connect(gain).connect(audioCtx.destination);
-      speechSource.start();
-    }, Math.max(0, audioEl.duration - offset - 5)*1000);
+  // Determine how many songs have played since RADIO_START
+  let elapsedSec = (Date.now() - RADIO_START) / 1000;
+  const totalDuration = durations.reduce((a,b)=>a+b,0);
+  elapsedSec = ((elapsedSec % totalDuration) + totalDuration) % totalDuration;
+
+  let sum=0;
+  let songCount=0;
+  for(let i=0;i<durations.length;i++){
+    if(sum+durations[i]>elapsedSec){
+      songCount=i+1; break;
+    }
+    sum+=durations[i];
   }
 
-  globalSongIndex = (globalSongIndex+1)%PLAYLIST.length;
-  setTimeout(()=>playLive(globalSongIndex,0),(audioEl.duration-offset)*1000);
+  // Play speech every 3 songs
+  if(songCount % 3 === 0){
+    setTimeout(()=>{
+      speechEl.src = SPEECH_SRC;
+      speechEl.play();
+    }, (audioEl.duration - offset - 0.1)*1000);
+  }
+
+  // Schedule next song
+  globalSongIndex = (index+1)%PLAYLIST.length;
+  setTimeout(()=>playLive(globalSongIndex,0),(audioEl.duration - offset)*1000);
 }
 
 /* ---------- START BUTTON ---------- */
 document.getElementById("playButton").onclick = async ()=>{
   document.getElementById("playButton").style.display = "none";
 
-  // setup Web Audio for beat detection
+  // Setup Web Audio for visualization
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioCtx.createMediaElementSource(audioEl);
   analyser = audioCtx.createAnalyser(); analyser.fftSize=64;
   dataArray = new Uint8Array(analyser.frequencyBinCount);
   source.connect(analyser).connect(audioCtx.destination);
 
-  // load speech buffer
-  speechBuffer = await loadSpeech();
-
-  // resume context & load song durations
   await audioCtx.resume();
   await loadDurations();
 
+  // Start from the correct song
   let elapsed = (Date.now()-RADIO_START)/1000;
   const total = durations.reduce((a,b)=>a+b,0);
   elapsed = ((elapsed%total)+total)%total;
@@ -165,13 +174,13 @@ document.getElementById("playButton").onclick = async ()=>{
     sum+=durations[i];
   }
 
-  // optional: Media Session API for iOS background playback
+  // Media Session API for iOS background playback
   if('mediaSession' in navigator){
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: "Christmas Countdown",
-      artist: "Radio",
-      album: "",
-      artwork: [{src:"favicon.ico",sizes:"96x96",type:"image/png"}]
+      title:"Christmas Countdown",
+      artist:"Radio",
+      album:"",
+      artwork:[{src:"favicon.ico",sizes:"96x96",type:"image/png"}]
     });
   }
 };
@@ -182,25 +191,3 @@ function animateEffects(){
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArray);
   const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-
-  // Background bounce
-  const bgScale = 1 + avg/8000; 
-  bgEl.style.transform = `scale(${bgScale})`;
-
-  // Background brightness
-  const brightness = 1 - Math.min(avg/300,0.5);
-  bgEl.style.filter = `brightness(${brightness})`;
-
-  // Text bounce
-  const textScale = 1 + avg/2000;
-  titleEl.style.transform=`scale(${textScale})`;
-  subtitleEl.style.transform=`scale(${textScale})`;
-  countdownEl.style.transform=`scale(${textScale})`;
-
-  // Device vibration
-  if(navigator.vibrate && avg>100){ navigator.vibrate(12); }
-}
-animateEffects();
-</script>
-</body>
-</html>
