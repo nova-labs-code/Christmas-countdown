@@ -3,17 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Christmas Countdown Radio</title>
+<title>Christmas Live Radio</title>
 
 <style>
-:root { --glow: 0 0 15px red, 0 0 25px green; }
-html,body { margin:0; padding:0; height:100%; width:100%; font-family:Arial,sans-serif; overflow:hidden; }
-#bg { position:fixed; inset:0; background:url('christmas-background.jpg') center/cover no-repeat; z-index:-1; }
-#container { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center; }
-#title,#subtitle { font-size:clamp(2.5rem,8vw,6rem); color:#fff; text-shadow:var(--glow); margin:0; }
-#countdown { font-size:clamp(2rem,6vw,5rem); color:#fff; margin-top:1rem; }
-#playButton { margin-top:2rem; font-size:1.5rem; padding:1rem 2rem; background:red; color:white; border:none; border-radius:16px; }
-#nowPlaying { color:white; margin-top:1rem; font-size:1.3rem; }
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:black;
+  color:white;
+  font-family:Arial,Helvetica,sans-serif;
+  overflow:hidden;
+}
+
+#container{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
+  text-align:center;
+}
+
+#title{
+  font-size:3rem;
+  text-shadow:0 0 15px red,0 0 25px green;
+}
+
+#countdown{
+  font-size:2rem;
+  margin-top:1rem;
+}
+
+#nowPlaying{
+  margin-top:1.5rem;
+  font-size:1.2rem;
+  opacity:.9;
+}
+
+button{
+  margin-top:2rem;
+  padding:1rem 2rem;
+  font-size:1.2rem;
+  border:none;
+  border-radius:14px;
+  background:red;
+  color:white;
+  cursor:pointer;
+}
+
+#bg{
+  position:fixed;
+  inset:0;
+  background:url("christmas-background.jpg") center/cover no-repeat;
+  z-index:-1;
+  transition:transform .05s, filter .05s;
+}
 </style>
 </head>
 
@@ -21,20 +66,22 @@ html,body { margin:0; padding:0; height:100%; width:100%; font-family:Arial,sans
 <div id="bg"></div>
 
 <div id="container">
-  <h1 id="title">Christmas</h1>
-  <h1 id="subtitle">Countdown</h1>
-  <div id="countdown"></div>
-  <button id="playButton">Start Live Radio</button>
+  <div id="title">Christmas Live Radio</div>
+  <div id="countdown">Loading…</div>
   <div id="nowPlaying"></div>
+  <button id="start">Start Live Radio</button>
 </div>
 
-<!-- BACKGROUND-SAFE PLAYER -->
-<audio id="radio" playsinline></audio>
+<!-- hidden audio element for background playback -->
+<audio id="audio" playsinline></audio>
 
 <script>
 /* ================= CONFIG ================= */
 
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
+
+const FILE_PREFIX = "Music Now, Trap Music Now, Dance Music Now - ";
+const FILE_SUFFIX = " (SPOTISAVER).mp3";
 
 const SONG_NAMES = [
   "All I Want For Christmas Is You",
@@ -44,31 +91,17 @@ const SONG_NAMES = [
   "Christmas (Baby Please Come Home)",
   "Christmas Canon",
   "Deck The Halls",
-  "Do You Want To Build A Snowman",
   "Feliz Navidad",
   "Frosty The Snowman",
-  "God Rest Ye Merry Gentlemen",
-  "Here Comes Santa Claus",
   "Holly Jolly Christmas",
-  "I Want A Hippopotamus For Christmas",
   "It's Beginning To Look A Lot Like Christmas",
-  "It's The Most Wonderful Time Of The Year",
   "Jingle Bell Rock",
-  "Jingle Bells",
   "Last Christmas",
   "Let It Snow! Let It Snow!",
-  "Little Drummer Boy",
-  "Mistletoe",
-  "O Christmas Tree",
   "Rockin Around The Christmas Tree",
   "Rudolph The Red-Nosed Reindeer",
-  "Santa Baby",
-  "Santa Claus Is Comin' To Town",
   "Silent Night",
-  "Sleigh Ride",
   "The Christmas Song",
-  "Up On The Housetop",
-  "We Wish You A Merry Christmas",
   "White Christmas",
   "Winter Wonderland",
   "Wonderful Christmastime",
@@ -76,98 +109,127 @@ const SONG_NAMES = [
   "speech"
 ];
 
-const FILES = SONG_NAMES.map(n =>
-  n === "speech" ? "songs/speech.mp3" : `songs/${n}.mp3`
-);
+/* ================= HELPERS ================= */
 
-/* ================= DOM ================= */
+function filePath(name){
+  if(name === "speech") return "songs/speech.mp3";
+  return "songs/" + FILE_PREFIX + name + FILE_SUFFIX;
+}
 
-const audio = document.getElementById("radio");
-const playBtn = document.getElementById("playButton");
+/* ================= COUNTDOWN ================= */
+
+function updateCountdown(){
+  const now = new Date();
+  const year = now.getFullYear();
+  const target = new Date(`Dec 25, ${year} 00:00:00`);
+  const diff = target - now;
+
+  if(diff <= 0){
+    countdown.textContent = "Merry Christmas!";
+    return;
+  }
+
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor(diff%86400000/3600000);
+  const m = Math.floor(diff%3600000/60000);
+  const s = Math.floor(diff%60000/1000);
+
+  countdown.textContent = `${d}d ${h}h ${m}m ${s}s`;
+}
+setInterval(updateCountdown,1000);
+updateCountdown();
+
+/* ================= AUDIO ================= */
+
+const audio = document.getElementById("audio");
+const startBtn = document.getElementById("start");
 const nowPlaying = document.getElementById("nowPlaying");
 const bg = document.getElementById("bg");
 
-/* ================= AUDIO CONTEXT ================= */
+let ctx, analyser, data, durations = [];
+let index = 0;
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const analyser = audioCtx.createAnalyser();
-analyser.fftSize = 64;
-const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-const sourceNode = audioCtx.createMediaElementSource(audio);
-sourceNode.connect(analyser).connect(audioCtx.destination);
-
-/* ================= EXACT DURATIONS ================= */
-
-const durations = [];
-
-async function getDuration(src){
-  return new Promise(resolve=>{
+/* duration loader */
+function getDuration(src){
+  return new Promise(res=>{
     const a = new Audio();
     a.src = encodeURI(src);
     a.preload = "metadata";
-    a.onloadedmetadata = () => resolve(a.duration);
+    a.onloadedmetadata = ()=>res(a.duration || 240);
+    a.onerror = ()=>res(240);
   });
 }
 
 async function loadDurations(){
-  for(const file of FILES){
-    durations.push(await getDuration(file));
+  for(const n of SONG_NAMES){
+    durations.push(await getDuration(filePath(n)));
   }
 }
 
-/* ================= LIVE POSITION ================= */
+/* ================= PLAY ================= */
 
-function getLivePosition(){
-  const elapsed = (Date.now() - RADIO_START) / 1000;
-  const total = durations.reduce((a,b)=>a+b,0);
-  let t = elapsed % total;
-
-  for(let i=0;i<durations.length;i++){
-    if(t < durations[i]) return { index:i, offset:t };
-    t -= durations[i];
-  }
-  return { index:0, offset:0 };
-}
-
-/* ================= PLAYBACK ================= */
-
-function playIndex(i, offset=0){
-  audio.src = encodeURI(FILES[i]);
+function playTrack(i, offset=0){
+  const src = encodeURI(filePath(SONG_NAMES[i]));
+  audio.src = src;
   audio.currentTime = offset;
   audio.play();
-  nowPlaying.textContent = SONG_NAMES[i] === "speech"
-    ? "Now Playing: Speech"
-    : "Now Playing: " + SONG_NAMES[i];
+
+  nowPlaying.textContent =
+    SONG_NAMES[i] === "speech"
+      ? "Speech"
+      : SONG_NAMES[i];
 }
 
-audio.onended = () => {
-  currentIndex = (currentIndex + 1) % FILES.length;
-  playIndex(currentIndex);
+audio.onended = ()=>{
+  index = (index + 1) % SONG_NAMES.length;
+  playTrack(index,0);
 };
-
-let currentIndex = 0;
 
 /* ================= VISUALIZER ================= */
 
 function animate(){
   requestAnimationFrame(animate);
-  analyser.getByteFrequencyData(dataArray);
-  const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-  bg.style.transform = `scale(${1 + avg/9000})`;
-  bg.style.filter = `brightness(${1 - avg/400})`;
+  if(!analyser) return;
+
+  analyser.getByteFrequencyData(data);
+  const avg = data.reduce((a,b)=>a+b,0)/data.length;
+
+  const scale = 1 + avg/7000;
+  bg.style.transform = `scale(${scale})`;
+  bg.style.filter = `brightness(${1 - Math.min(avg/400,0.5)})`;
 }
-animate();
 
 /* ================= START ================= */
 
-playBtn.onclick = async () => {
-  playBtn.style.display = "none";
-  await audioCtx.resume();
+startBtn.onclick = async ()=>{
+  startBtn.remove();
+
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = ctx.createAnalyser();
+  analyser.fftSize = 64;
+  data = new Uint8Array(analyser.frequencyBinCount);
+
+  const source = ctx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(ctx.destination);
+
   await loadDurations();
-  const pos = getLivePosition();
-  currentIndex = pos.index;
-  playIndex(pos.index, pos.offset);
+
+  let elapsed = (Date.now() - RADIO_START) / 1000;
+  const total = durations.reduce((a,b)=>a+b,0);
+  elapsed = ((elapsed % total) + total) % total;
+
+  let sum = 0;
+  for(let i=0;i<durations.length;i++){
+    if(sum + durations[i] > elapsed){
+      index = i;
+      playTrack(i, elapsed - sum);
+      break;
+    }
+    sum += durations[i];
+  }
+
+  animate();
 };
 </script>
 </body>
