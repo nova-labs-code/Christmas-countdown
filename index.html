@@ -19,6 +19,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; font-family:Arial,san
 </style>
 </head>
 <body>
+
 <div id="bg"></div>
 <div id="container">
 <h1 id="title">Christmas</h1>
@@ -99,32 +100,34 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ------------------- AUDIO UTILS ------------------- */
+/* ------------------- AUDIO HELPERS ------------------- */
 function getDuration(src){ return new Promise(resolve=>{ const a=new Audio(); a.preload="metadata"; a.src=src; a.onloadedmetadata=()=>resolve(a.duration); a.onerror=()=>resolve(240); }); }
 async function loadDurations(){ for(const src of PLAYLIST) durations.push(await getDuration(src)); }
 
-/* ------------------- PLAY LIVE ------------------- */
-async function playLive(index, offset){
+/* ------------------- PLAY LOGIC ------------------- */
+async function playNextSong(index, offset){
   audioEl.src = PLAYLIST[index];
   audioEl.currentTime = offset;
   await audioEl.play();
 
-  // calculate songs since RADIO_START
+  // calculate number of songs since RADIO_START
   let elapsed = (Date.now() - RADIO_START)/1000;
   const totalDur = durations.reduce((a,b)=>a+b,0);
-  elapsed = ((elapsed%totalDur)+totalDur)%totalDur;
+  elapsed = ((elapsed % totalDur)+totalDur)%totalDur;
+
   let sum=0, songCount=0;
   for(let i=0;i<durations.length;i++){
     if(sum+durations[i]>elapsed){ songCount=i+1; break; }
     sum+=durations[i];
   }
 
+  // play speech every 3 songs
   if(songCount % 3 === 0){
-    setTimeout(()=>{ speechEl.src=SPEECH_SRC; speechEl.play(); }, (audioEl.duration-offset-0.1)*1000);
+    setTimeout(()=>{ speechEl.src=SPEECH_SRC; speechEl.play(); }, (audioEl.duration - offset - 0.1)*1000);
   }
 
   globalSongIndex = (index+1)%PLAYLIST.length;
-  setTimeout(()=>playLive(globalSongIndex,0),(audioEl.duration-offset)*1000);
+  setTimeout(()=>playNextSong(globalSongIndex,0),(audioEl.duration-offset)*1000);
 }
 
 /* ------------------- START BUTTON ------------------- */
@@ -132,12 +135,13 @@ document.getElementById('playButton').onclick = async ()=>{
   document.getElementById('playButton').style.display='none';
   await loadDurations();
 
+  // determine initial song + offset
   let elapsed = (Date.now()-RADIO_START)/1000;
   const total = durations.reduce((a,b)=>a+b,0);
   elapsed = ((elapsed%total)+total)%total;
   let sum=0;
   for(let i=0;i<durations.length;i++){
-    if(sum+durations[i]>elapsed){ globalSongIndex=i; playLive(i,elapsed-sum); break; }
+    if(sum+durations[i]>elapsed){ globalSongIndex=i; playNextSong(i,elapsed-sum); break; }
     sum+=durations[i];
   }
 
