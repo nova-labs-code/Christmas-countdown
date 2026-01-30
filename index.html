@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Christmas Countdown (Radio)</title>
+<title>Christmas Countdown (Live Radio)</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <style>
 :root { --glow: 0 0 15px red, 0 0 25px green; }
@@ -85,6 +85,9 @@ html, body {
   <button id="playButton">Start Live Radio</button>
 </div>
 
+<!-- Single live audio element -->
+<audio id="liveAudio" controls autoplay playsinline style="display:none"></audio>
+
 <script>
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
@@ -107,10 +110,11 @@ const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const bgEl = document.getElementById("bg");
+const liveAudio = document.getElementById("liveAudio");
 
-let audioElements = [];
-let speechAudio = null;
 let globalSongIndex = 0;
+let speechAudio = new Audio(SPEECH_SRC);
+speechAudio.preload = "auto";
 
 let audioCtx = null;
 let analyser = null;
@@ -145,104 +149,80 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ---------------- AUDIO PLAYBACK ---------------- */
-function setupAnalyser(audioEl) {
+/* ---------------- LIVE AUDIO FUNCTIONS ---------------- */
+function setupAnalyser() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioCtx.createAnalyser();
   analyser.fftSize = 64;
   dataArray = new Uint8Array(analyser.frequencyBinCount);
-  const source = audioCtx.createMediaElementSource(audioEl);
+  const source = audioCtx.createMediaElementSource(liveAudio);
   source.connect(analyser);
   analyser.connect(audioCtx.destination);
 }
 
-function playNextSong() {
-  const currentAudio = audioElements[globalSongIndex];
-  currentAudio.play();
-
-  // Connect analyser only if page is visible
-  if (document.visibilityState === "visible") setupAnalyser(currentAudio);
-
-  // Speech every 3 songs
-  if ((globalSongIndex + 1) % 3 === 0 && speechAudio) {
-    setTimeout(() => { speechAudio.play(); }, 2000);
-  }
-
-  currentAudio.onended = () => {
-    globalSongIndex = (globalSongIndex + 1) % audioElements.length;
-    playNextSong();
-  };
-}
-
-document.getElementById("playButton").onclick = async () => {
-  document.getElementById("playButton").style.display = "none";
-
-  // Load all audio elements
-  for (const src of PLAYLIST) {
-    const audio = new Audio(src);
-    audio.preload = "auto";
-    audioElements.push(audio);
-  }
-
-  // Load speech audio
-  speechAudio = new Audio(SPEECH_SRC);
-  speechAudio.preload = "auto";
-
-  // Calculate elapsed time since RADIO_START
+function updateLiveAudio() {
   const now = Date.now();
-  let elapsed = (now - RADIO_START) / 1000; // seconds
-  const totalDuration = audioElements.reduce((sum, a) => sum + (a.duration || 240), 0);
+  let elapsed = (now - RADIO_START) / 1000;
+
+  // Calculate total duration assuming 240s per track as fallback
+  const totalDuration = PLAYLIST.length * 240;
   elapsed = ((elapsed % totalDuration) + totalDuration) % totalDuration;
 
-  // Find starting song and offset
   let sum = 0;
-  for (let i = 0; i < audioElements.length; i++) {
-    const dur = audioElements[i].duration || 240;
-    if (sum + dur > elapsed) {
-      globalSongIndex = i;
-      audioElements[i].currentTime = elapsed - sum;
+  for (let i=0;i<PLAYLIST.length;i++){
+    if(sum + 240 > elapsed){
+      if(globalSongIndex !== i){
+        globalSongIndex = i;
+        liveAudio.src = PLAYLIST[i];
+        liveAudio.play();
+      }
+      liveAudio.currentTime = elapsed - sum;
+      
+      // Speech every 3 songs
+      if((globalSongIndex + 1) % 3 === 0 && speechAudio){
+        setTimeout(()=>speechAudio.play(),2000);
+      }
       break;
     }
-    sum += dur;
+    sum += 240;
   }
+}
 
-  playNextSong();
+// Update live audio every second
+setInterval(updateLiveAudio, 1000);
+
+/* ---------------- START BUTTON ---------------- */
+document.getElementById("playButton").onclick = () => {
+  document.getElementById("playButton").style.display = "none";
+  liveAudio.play();
+  if(document.visibilityState === "visible") setupAnalyser();
 };
 
 /* ---------------- VISUALIZATION ---------------- */
 function animateEffects() {
   requestAnimationFrame(animateEffects);
-
   let avg = 0;
-  if (analyser && dataArray) {
+  if(analyser && dataArray){
     analyser.getByteFrequencyData(dataArray);
     avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
   }
-
-  // Background bounce
   const bgScale = 1 + avg/8000;
   bgEl.style.transform = `scale(${bgScale})`;
-
-  // Background brightness
-  const brightness = 1 - Math.min(avg/300, 0.5);
+  const brightness = 1 - Math.min(avg/300,0.5);
   bgEl.style.filter = `brightness(${brightness})`;
-
-  // Text bounce
   const textScale = 1 + avg/2000;
-  titleEl.style.transform=`scale(${textScale})`;
-  subtitleEl.style.transform=`scale(${textScale})`;
-  countdownEl.style.transform=`scale(${textScale})`;
+  titleEl.style.transform = `scale(${textScale})`;
+  subtitleEl.style.transform = `scale(${textScale})`;
+  countdownEl.style.transform = `scale(${textScale})`;
 
-  // Optional vibration
-  if(navigator.vibrate && avg > 100){ navigator.vibrate(12); }
+  if(navigator.vibrate && avg>100) navigator.vibrate(12);
 }
 animateEffects();
 
-/* ---------------- PAGE VISIBILITY ---------------- */
+/* ---------------- VISIBILITY HANDLING ---------------- */
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    // reconnect analyser for beat visualization
-    if(audioElements[globalSongIndex]) setupAnalyser(audioElements[globalSongIndex]);
+  if(document.visibilityState === "visible" && liveAudio.src){
+    setupAnalyser();
   }
 });
 </script>
