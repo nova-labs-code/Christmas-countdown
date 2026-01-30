@@ -112,6 +112,10 @@ let audioElements = [];
 let speechAudio = null;
 let globalSongIndex = 0;
 
+let audioCtx = null;
+let analyser = null;
+let dataArray = null;
+
 /* ---------------- COUNTDOWN ---------------- */
 function updateCountdown() {
   const now = new Date();
@@ -141,12 +145,25 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ---------------- AUDIO ---------------- */
+/* ---------------- AUDIO PLAYBACK ---------------- */
+function setupAnalyser(audioEl) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 64;
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+  const source = audioCtx.createMediaElementSource(audioEl);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
 function playNextSong() {
   const currentAudio = audioElements[globalSongIndex];
   currentAudio.play();
-  
-  // Schedule speech every 3 songs
+
+  // Connect analyser only if page is visible
+  if (document.visibilityState === "visible") setupAnalyser(currentAudio);
+
+  // Speech every 3 songs
   if ((globalSongIndex + 1) % 3 === 0 && speechAudio) {
     setTimeout(() => { speechAudio.play(); }, 2000);
   }
@@ -174,13 +191,13 @@ document.getElementById("playButton").onclick = async () => {
   // Calculate elapsed time since RADIO_START
   const now = Date.now();
   let elapsed = (now - RADIO_START) / 1000; // seconds
-  const totalDuration = audioElements.reduce((sum, a) => sum + a.duration || 240, 0);
+  const totalDuration = audioElements.reduce((sum, a) => sum + (a.duration || 240), 0);
   elapsed = ((elapsed % totalDuration) + totalDuration) % totalDuration;
 
   // Find starting song and offset
   let sum = 0;
   for (let i = 0; i < audioElements.length; i++) {
-    const dur = audioElements[i].duration || 240; // fallback if not loaded yet
+    const dur = audioElements[i].duration || 240;
     if (sum + dur > elapsed) {
       globalSongIndex = i;
       audioElements[i].currentTime = elapsed - sum;
@@ -192,20 +209,42 @@ document.getElementById("playButton").onclick = async () => {
   playNextSong();
 };
 
-/* ---------------- BOUNCE & DARKEN (Visualization) ---------------- */
-function animateEffects(){
+/* ---------------- VISUALIZATION ---------------- */
+function animateEffects() {
   requestAnimationFrame(animateEffects);
 
-  // Simple bounce effect without analyser for background audio
-  const scale = 1 + Math.sin(Date.now()/200)/20;
-  bgEl.style.transform = `scale(${scale})`;
+  let avg = 0;
+  if (analyser && dataArray) {
+    analyser.getByteFrequencyData(dataArray);
+    avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+  }
 
-  const textScale = 1 + Math.sin(Date.now()/250)/20;
-  titleEl.style.transform = `scale(${textScale})`;
-  subtitleEl.style.transform = `scale(${textScale})`;
-  countdownEl.style.transform = `scale(${textScale})`;
+  // Background bounce
+  const bgScale = 1 + avg/8000;
+  bgEl.style.transform = `scale(${bgScale})`;
+
+  // Background brightness
+  const brightness = 1 - Math.min(avg/300, 0.5);
+  bgEl.style.filter = `brightness(${brightness})`;
+
+  // Text bounce
+  const textScale = 1 + avg/2000;
+  titleEl.style.transform=`scale(${textScale})`;
+  subtitleEl.style.transform=`scale(${textScale})`;
+  countdownEl.style.transform=`scale(${textScale})`;
+
+  // Optional vibration
+  if(navigator.vibrate && avg > 100){ navigator.vibrate(12); }
 }
 animateEffects();
+
+/* ---------------- PAGE VISIBILITY ---------------- */
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    // reconnect analyser for beat visualization
+    if(audioElements[globalSongIndex]) setupAnalyser(audioElements[globalSongIndex]);
+  }
+});
 </script>
 </body>
 </html>
