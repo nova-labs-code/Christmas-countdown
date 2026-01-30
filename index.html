@@ -32,27 +32,45 @@ html, body { margin:0; padding:0; height:100%; width:100%; font-family:Arial, sa
 <script>
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
-const SONGS = [
-  "All I Want For Christmas Is You","Baby It's Cold Outside","Blue Christmas","Carol Of The Bells",
-  "Christmas (Baby Please Come Home)","Christmas Canon","Deck The Halls","Do You Want To Build A Snowman",
-  "Feliz Navidad","Frosty The Snowman","God Rest Ye Merry Gentlemen","Here Comes Santa Claus",
-  "Holly Jolly Christmas","I Want A Hippopotamus For Christmas","It's Beginning To Look A Lot Like Christmas",
-  "It's The Most Wonderful Time Of The Year","Jingle Bell Rock","Jingle Bells","Last Christmas",
-  "Let It Snow! Let It Snow!","Little Drummer Boy","Mistletoe","O Christmas Tree",
-  "Rockin Around The Christmas Tree","Rudolph The Red-Nosed Reindeer","Santa Baby",
-  "Santa Claus Is Comin' To Town","Silent Night","Sleigh Ride","The Christmas Song",
-  "Up On The Housetop","We Wish You A Merry Christmas","White Christmas","Winter Wonderland",
-  "Wonderful Christmastime","You're A Mean One, Mr. Grinch"
+const SONG_FILES = [
+  "Music Now, Trap Music Now, Dance Music Now - All I Want For Christmas Is You (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Baby It's Cold Outside (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Blue Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Carol Of The Bells (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Christmas (Baby Please Come Home) (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Christmas Canon (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Deck The Halls (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Do You Want To Build A Snowman (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Feliz Navidad (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Frosty The Snowman (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - God Rest Ye Merry Gentlemen (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Here Comes Santa Claus (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Holly Jolly Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - I Want A Hippopotamus For Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - It's Beginning To Look A Lot Like Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - It's The Most Wonderful Time Of The Year (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Jingle Bell Rock (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Jingle Bells (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Last Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Let It Snow! Let It Snow! (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Little Drummer Boy (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Mistletoe (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - O Christmas Tree (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Rockin Around The Christmas Tree (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Rudolph The Red-Nosed Reindeer (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Santa Baby (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Santa Claus Is Comin' To Town (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Silent Night (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Sleigh Ride (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - The Christmas Song (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Up On The Housetop (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - We Wish You A Merry Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - White Christmas (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Winter Wonderland (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - Wonderful Christmastime (SPOTISAVER).mp3",
+  "Music Now, Trap Music Now, Dance Music Now - You're A Mean One, Mr. Grinch (SPOTISAVER).mp3",
+  "speech.mp3"
 ];
-const SPEECH = "speech.mp3";
-
-// approximate durations in seconds for simplicity; replace with real durations if known
-const SONG_DURATION = 180; 
-const SPEECH_DURATION = 10; 
-
-const PLAYLIST = [];
-SONGS.forEach(song=>PLAYLIST.push(song+".mp3"));
-PLAYLIST.push(SPEECH); // add speech after songs
 
 /* ---------------- DOM ---------------- */
 const countdownEl = document.getElementById("countdown");
@@ -88,19 +106,20 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ---------------- LIVE RADIO LOGIC ---------------- */
-let currentIndex = 0;
+/* ---------------- LIVE RADIO ---------------- */
+// approximate durations (replace with real ones if you have them)
+const DURATION = 180; 
+const SPEECH_DURATION = 10; 
 
 function getCurrentTrack() {
-  const now = Date.now();
-  const elapsed = Math.floor((now - RADIO_START)/1000); // seconds since start
-  const totalPlaylistTime = SONG_DURATION*SONGS.length + SPEECH_DURATION;
-  const looped = elapsed % totalPlaylistTime;
+  const elapsed = Math.floor((Date.now() - RADIO_START)/1000);
+  const totalTime = DURATION*(SONG_FILES.length-1) + SPEECH_DURATION;
+  const looped = elapsed % totalTime;
 
   let sum=0;
-  for(let i=0;i<PLAYLIST.length;i++){
-    const dur = (i<SONGS.length)?SONG_DURATION:SPEECH_DURATION;
-    if(looped < sum + dur) return { index:i, offset: looped - sum };
+  for(let i=0;i<SONG_FILES.length;i++){
+    const dur = (i<SONG_FILES.length-1)?DURATION:SPEECH_DURATION;
+    if(looped < sum + dur) return { index:i, offset: looped-sum };
     sum += dur;
   }
   return { index:0, offset:0 };
@@ -108,16 +127,14 @@ function getCurrentTrack() {
 
 async function playLiveRadio() {
   const track = getCurrentTrack();
-  currentIndex = track.index;
-  audioEl.src = "songs/"+PLAYLIST[track.index];
+  audioEl.src = "songs/" + encodeURIComponent(SONG_FILES[track.index]);
   audioEl.currentTime = track.offset;
   audioEl.style.display = "block";
   try { await audioEl.play(); } catch(e){ console.log("Autoplay blocked", e); }
 
-  // When track ends, go to next
   audioEl.onended = () => {
-    currentIndex = (currentIndex+1)%PLAYLIST.length;
-    audioEl.src = "songs/"+PLAYLIST[currentIndex];
+    let nextIndex = (track.index+1)%SONG_FILES.length;
+    audioEl.src = "songs/" + encodeURIComponent(SONG_FILES[nextIndex]);
     audioEl.currentTime = 0;
     audioEl.play();
   };
