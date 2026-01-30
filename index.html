@@ -13,7 +13,6 @@ html, body {
   font-family: Arial, sans-serif; overflow: hidden;
 }
 
-/* Real background div */
 #bg {
   position: fixed; top:0; left:0;
   width:100%; height:100%;
@@ -191,22 +190,22 @@ function animateEffects(){
   analyser.getByteFrequencyData(dataArray);
   const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Background bounce (smaller sensitivity)
-  const bgScale = 1 + avg/12000;
+  // Background bounce (more sensitive)
+  const bgScale = 1 + avg/8000; 
   bgEl.style.transform = `scale(${bgScale})`;
 
-  // Background brightness pulse (darken/undarken)
-  const brightness = 1 - Math.min(avg/400, 0.5);
+  // Background brightness pulse (more sensitive)
+  const brightness = 1 - Math.min(avg/300, 0.5);
   bgEl.style.filter = `brightness(${brightness})`;
 
-  // Text bounce (larger sensitivity)
-  const textScale = 1 + avg/3000;
+  // Text bounce (more sensitive)
+  const textScale = 1 + avg/2000;
   titleEl.style.transform=`scale(${textScale})`;
   subtitleEl.style.transform=`scale(${textScale})`;
   countdownEl.style.transform=`scale(${textScale})`;
 
   // Device vibration (subtle)
-  if(navigator.vibrate && avg > 120){ navigator.vibrate(10); }
+  if(navigator.vibrate && avg > 100){ navigator.vibrate(12); }
 }
 animateEffects();
 </script>
