@@ -6,52 +6,50 @@
 <title>Christmas Live Radio</title>
 <style>
 html, body {
-  margin:0;
-  padding:0;
-  height:100%;
-  width:100%;
-  font-family:Arial,Helvetica,sans-serif;
-  overflow:hidden;
-  background:black;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  background: black;
+  color: white;
 }
 #bg {
-  position:fixed;
-  inset:0;
-  background:url("./christmas-background.jpg") center/cover no-repeat;
-  z-index:-1;
-  transform:scale(1);
-  filter:brightness(1);
+  position: fixed;
+  inset: 0;
+  background: url("./christmas-background.jpg") center/cover no-repeat;
+  z-index: -1;
 }
 #container {
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  height:100%;
-  text-align:center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
 }
 #title {
-  font-size:3rem;
-  text-shadow:0 0 15px red,0 0 25px green;
+  font-size: 3rem;
+  text-shadow: 0 0 15px red, 0 0 25px green;
 }
 #countdown {
-  font-size:2rem;
-  margin-top:1rem;
+  font-size: 2rem;
+  margin-top: 1rem;
 }
 #nowPlaying {
-  margin-top:1.5rem;
-  font-size:1.2rem;
-  opacity:.9;
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
 }
-button {
-  margin-top:2rem;
-  padding:1rem 2rem;
-  font-size:1.2rem;
-  border:none;
-  border-radius:14px;
-  background:red;
-  color:white;
-  cursor:pointer;
+#start {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 14px;
+  background: red;
+  color: white;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -64,8 +62,8 @@ button {
   <button id="start">Start Live Radio</button>
 </div>
 
-<!-- hidden audio element -->
-<audio id="audio" playsinline></audio>
+<!-- Hidden audio element, no controls -->
+<audio id="audio" playsinline style="display:none;"></audio>
 
 <script>
 /* ================= CONFIG ================= */
@@ -115,8 +113,7 @@ const SONG_NAMES = [
 
 /* ================= HELPERS ================= */
 function filePath(name){
-  if(name==="speech") return "songs/speech.mp3";
-  return encodeURI("songs/" + FILE_PREFIX + name + FILE_SUFFIX);
+  return encodeURI(name==="speech"?"songs/speech.mp3":"songs/"+FILE_PREFIX+name+FILE_SUFFIX);
 }
 
 /* ================= COUNTDOWN ================= */
@@ -126,7 +123,7 @@ function updateCountdown(){
   const year = now.getFullYear();
   const target = new Date(`Dec 25, ${year} 00:00:00`);
   const diff = target - now;
-  if(diff <= 0){
+  if(diff<=0){
     countdown.textContent = "Merry Christmas!";
     return;
   }
@@ -139,22 +136,20 @@ function updateCountdown(){
 setInterval(updateCountdown,1000);
 updateCountdown();
 
-/* ================= AUDIO ================= */
+/* ================= AUDIO PLAYBACK ================= */
 const audio = document.getElementById("audio");
 const startBtn = document.getElementById("start");
 const nowPlaying = document.getElementById("nowPlaying");
-const bg = document.getElementById("bg");
+let durations=[], index=0;
 
-let ctx, analyser, data, durations=[], index=0;
-
-/* duration loader */
+/* Load metadata for durations */
 function getDuration(src){
   return new Promise(res=>{
     const a = new Audio();
-    a.src = encodeURI(src);
+    a.src = src;
     a.preload="metadata";
-    a.onloadedmetadata=()=>res(a.duration||240);
-    a.onerror=()=>res(240);
+    a.onloadedmetadata = ()=>res(a.duration||240);
+    a.onerror = ()=>res(240);
   });
 }
 
@@ -164,7 +159,7 @@ async function loadDurations(){
   }
 }
 
-/* ================= PLAYBACK ================= */
+/* Play track at index with optional offset */
 function playTrack(i, offset=0){
   audio.src = filePath(SONG_NAMES[i]);
   audio.currentTime = offset;
@@ -173,38 +168,15 @@ function playTrack(i, offset=0){
   console.log("Playing:", audio.src);
 }
 
+/* Auto-next track */
 audio.onended = ()=>{
-  index = (index + 1) % SONG_NAMES.length;
+  index = (index+1) % SONG_NAMES.length;
   playTrack(index,0);
 };
-
-/* ================= VISUALIZER ================= */
-function animate(){
-  requestAnimationFrame(animate);
-  if(!analyser) return;
-  analyser.getByteFrequencyData(data);
-  const avg = data.reduce((a,b)=>a+b,0)/data.length;
-
-  // only scale, do NOT darken image
-  const scale = 1 + avg/10000; // subtle pulse
-  bg.style.transform = `scale(${scale})`;
-}
-
-animate(); // start visualizer animation loop
 
 /* ================= START ================= */
 startBtn.onclick = async ()=>{
   startBtn.remove();
-
-  ctx = new (window.AudioContext||window.webkitAudioContext)();
-  analyser = ctx.createAnalyser();
-  analyser.fftSize = 64;
-  data = new Uint8Array(analyser.frequencyBinCount);
-
-  const source = ctx.createMediaElementSource(audio);
-  source.connect(analyser);
-  analyser.connect(ctx.destination);
-
   await loadDurations();
 
   let elapsed = (Date.now() - RADIO_START)/1000;
@@ -218,7 +190,7 @@ startBtn.onclick = async ()=>{
       playTrack(i, elapsed - sum);
       break;
     }
-    sum += durations[i];
+    sum+=durations[i];
   }
 };
 </script>
