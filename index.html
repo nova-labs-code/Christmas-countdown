@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Live Radio</title>
-
 <style>
 html,body{
   margin:0;
@@ -15,7 +14,6 @@ html,body{
   font-family:Arial,Helvetica,sans-serif;
   overflow:hidden;
 }
-
 #container{
   display:flex;
   flex-direction:column;
@@ -24,23 +22,19 @@ html,body{
   height:100%;
   text-align:center;
 }
-
 #title{
   font-size:3rem;
   text-shadow:0 0 15px red,0 0 25px green;
 }
-
 #countdown{
   font-size:2rem;
   margin-top:1rem;
 }
-
 #nowPlaying{
   margin-top:1.5rem;
   font-size:1.2rem;
   opacity:.9;
 }
-
 button{
   margin-top:2rem;
   padding:1rem 2rem;
@@ -51,20 +45,17 @@ button{
   color:white;
   cursor:pointer;
 }
-
 #bg{
   position:fixed;
   inset:0;
-  background:url("christmas-background.jpg") center/cover no-repeat;
+  background:url("./christmas-background.jpg") center/cover no-repeat;
   z-index:-1;
   transition:transform .05s, filter .05s;
 }
 </style>
 </head>
-
 <body>
 <div id="bg"></div>
-
 <div id="container">
   <div id="title">Christmas Live Radio</div>
   <div id="countdown">Loading…</div>
@@ -91,17 +82,31 @@ const SONG_NAMES = [
   "Christmas (Baby Please Come Home)",
   "Christmas Canon",
   "Deck The Halls",
+  "Do You Want To Build A Snowman",
   "Feliz Navidad",
   "Frosty The Snowman",
+  "God Rest Ye Merry Gentlemen",
+  "Here Comes Santa Claus",
   "Holly Jolly Christmas",
+  "I Want A Hippopotamus For Christmas",
   "It's Beginning To Look A Lot Like Christmas",
+  "It's The Most Wonderful Time Of The Year",
   "Jingle Bell Rock",
+  "Jingle Bells",
   "Last Christmas",
   "Let It Snow! Let It Snow!",
+  "Little Drummer Boy",
+  "Mistletoe",
+  "O Christmas Tree",
   "Rockin Around The Christmas Tree",
   "Rudolph The Red-Nosed Reindeer",
+  "Santa Baby",
+  "Santa Claus Is Comin' To Town",
   "Silent Night",
+  "Sleigh Ride",
   "The Christmas Song",
+  "Up On The Housetop",
+  "We Wish You A Merry Christmas",
   "White Christmas",
   "Winter Wonderland",
   "Wonderful Christmastime",
@@ -113,27 +118,25 @@ const SONG_NAMES = [
 
 function filePath(name){
   if(name === "speech") return "songs/speech.mp3";
-  return "songs/" + FILE_PREFIX + name + FILE_SUFFIX;
+  return encodeURI("songs/" + FILE_PREFIX + name + FILE_SUFFIX);
 }
 
 /* ================= COUNTDOWN ================= */
 
+const countdown = document.getElementById("countdown");
 function updateCountdown(){
   const now = new Date();
   const year = now.getFullYear();
   const target = new Date(`Dec 25, ${year} 00:00:00`);
   const diff = target - now;
-
   if(diff <= 0){
     countdown.textContent = "Merry Christmas!";
     return;
   }
-
   const d = Math.floor(diff/86400000);
   const h = Math.floor(diff%86400000/3600000);
   const m = Math.floor(diff%3600000/60000);
   const s = Math.floor(diff%60000/1000);
-
   countdown.textContent = `${d}d ${h}h ${m}m ${s}s`;
 }
 setInterval(updateCountdown,1000);
@@ -166,18 +169,16 @@ async function loadDurations(){
   }
 }
 
-/* ================= PLAY ================= */
+/* ================= PLAYBACK ================= */
 
 function playTrack(i, offset=0){
-  const src = encodeURI(filePath(SONG_NAMES[i]));
+  const src = filePath(SONG_NAMES[i]);
   audio.src = src;
   audio.currentTime = offset;
   audio.play();
-
   nowPlaying.textContent =
-    SONG_NAMES[i] === "speech"
-      ? "Speech"
-      : SONG_NAMES[i];
+    SONG_NAMES[i] === "speech" ? "Speech" : SONG_NAMES[i];
+  console.log("Playing:", src);
 }
 
 audio.onended = ()=>{
@@ -190,10 +191,8 @@ audio.onended = ()=>{
 function animate(){
   requestAnimationFrame(animate);
   if(!analyser) return;
-
   analyser.getByteFrequencyData(data);
   const avg = data.reduce((a,b)=>a+b,0)/data.length;
-
   const scale = 1 + avg/7000;
   bg.style.transform = `scale(${scale})`;
   bg.style.filter = `brightness(${1 - Math.min(avg/400,0.5)})`;
