@@ -4,177 +4,189 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Christmas Countdown (Live Radio)</title>
-<link rel="icon" href="favicon.ico" type="image/x-icon">
 <style>
 :root { --glow: 0 0 15px red, 0 0 25px green; }
-html, body { margin:0; padding:0; height:100%; width:100%; font-family:Arial, sans-serif; overflow:hidden; }
-#bg { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('christmas-background.jpg'); background-position:center; background-repeat:no-repeat; background-size:cover; z-index:-1; transform-origin:center; will-change: transform, filter; }
+html,body { margin:0; padding:0; height:100%; width:100%; font-family:Arial,sans-serif; overflow:hidden; }
+#bg { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('christmas-background.jpg'); background-position:center; background-size:cover; z-index:-1; }
 #container { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center; }
-#title,#subtitle { font-size:clamp(2.5rem,8vw,6rem); color:#fff; text-shadow:var(--glow); margin:0; transform-origin:center; }
-#countdown { font-size:clamp(2rem,6vw,5rem); color:#fff; text-shadow:0 0 10px red,0 0 20px green; margin-top:1rem; transform-origin:center; }
+#title,#subtitle { font-size:clamp(2.5rem,8vw,6rem); color:#fff; text-shadow:var(--glow); margin:0; }
+#countdown { font-size:clamp(2rem,6vw,5rem); color:#fff; text-shadow:0 0 10px red,0 0 20px green; margin-top:1rem; }
 #playButton { margin-top:2rem; font-size:clamp(1.2rem,4vw,2rem); padding:1rem 2rem; background-color:red; color:white; border:none; border-radius:16px; cursor:pointer; text-shadow:1px 1px 2px #000; }
 .snowflake { position:absolute; top:-10px; color:white; user-select:none; pointer-events:none; animation:fall linear infinite; }
 @keyframes fall { to { transform: translateY(110vh); } }
-@media (max-width:768px){.snowflake{opacity:0.7;}}
 </style>
 </head>
 <body>
-
 <div id="bg"></div>
 <div id="container">
   <h1 id="title">Christmas</h1>
   <h1 id="subtitle">Countdown</h1>
   <div id="countdown">00d 00h 00m 00s</div>
   <button id="playButton">Start Live Radio</button>
-  <audio id="liveRadio" controls autoplay style="display:none;"></audio>
+  <div id="nowPlaying" style="color:white;margin-top:1rem;font-size:1.5rem;"></div>
 </div>
 
 <script>
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
-const SONG_FILES = [
-  "Music Now, Trap Music Now, Dance Music Now - All I Want For Christmas Is You (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Baby It's Cold Outside (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Blue Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Carol Of The Bells (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Christmas (Baby Please Come Home) (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Christmas Canon (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Deck The Halls (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Do You Want To Build A Snowman (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Feliz Navidad (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Frosty The Snowman (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - God Rest Ye Merry Gentlemen (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Here Comes Santa Claus (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Holly Jolly Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - I Want A Hippopotamus For Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - It's Beginning To Look A Lot Like Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - It's The Most Wonderful Time Of The Year (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Jingle Bell Rock (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Jingle Bells (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Last Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Let It Snow! Let It Snow! (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Little Drummer Boy (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Mistletoe (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - O Christmas Tree (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Rockin Around The Christmas Tree (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Rudolph The Red-Nosed Reindeer (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Santa Baby (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Santa Claus Is Comin' To Town (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Silent Night (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Sleigh Ride (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - The Christmas Song (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Up On The Housetop (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - We Wish You A Merry Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - White Christmas (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Winter Wonderland (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - Wonderful Christmastime (SPOTISAVER).mp3",
-  "Music Now, Trap Music Now, Dance Music Now - You're A Mean One, Mr. Grinch (SPOTISAVER).mp3",
-  "speech.mp3"
+
+// Music tracks and speech
+const SONG_NAMES = [
+  "All I Want For Christmas Is You",
+  "Baby It's Cold Outside",
+  "Blue Christmas",
+  "Carol Of The Bells",
+  "Christmas (Baby Please Come Home)",
+  "Christmas Canon",
+  "Deck The Halls",
+  "Do You Want To Build A Snowman",
+  "Feliz Navidad",
+  "Frosty The Snowman",
+  "God Rest Ye Merry Gentlemen",
+  "Here Comes Santa Claus",
+  "Holly Jolly Christmas",
+  "I Want A Hippopotamus For Christmas",
+  "It's Beginning To Look A Lot Like Christmas",
+  "It's The Most Wonderful Time Of The Year",
+  "Jingle Bell Rock",
+  "Jingle Bells",
+  "Last Christmas",
+  "Let It Snow! Let It Snow!",
+  "Little Drummer Boy",
+  "Mistletoe",
+  "O Christmas Tree",
+  "Rockin Around The Christmas Tree",
+  "Rudolph The Red-Nosed Reindeer",
+  "Santa Baby",
+  "Santa Claus Is Comin' To Town",
+  "Silent Night",
+  "Sleigh Ride",
+  "The Christmas Song",
+  "Up On The Housetop",
+  "We Wish You A Merry Christmas",
+  "White Christmas",
+  "Winter Wonderland",
+  "Wonderful Christmastime",
+  "You're A Mean One, Mr. Grinch",
+  "speech" // speech track, no extra text
 ];
+
+// Map to actual files
+const SONG_FILES = SONG_NAMES.map(name => name === "speech" ? "songs/speech.mp3" : `songs/${name}.mp3`);
 
 /* ---------------- DOM ---------------- */
 const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
+const nowPlayingEl = document.getElementById("nowPlaying");
 const bgEl = document.getElementById("bg");
-const audioEl = document.getElementById("liveRadio");
 const playButton = document.getElementById("playButton");
 
+let audioCtx, analyser, dataArray;
+let globalIndex = 0;
+
 /* ---------------- COUNTDOWN ---------------- */
-function updateCountdown() {
+function updateCountdown(){
   const now = new Date();
   const year = now.getFullYear();
   const christmas = new Date(`Dec 25, ${year} 00:00:00`);
-  const newYear = new Date(`Jan 1, ${year+1} 00:00:00`);
-  if(now>=christmas && now<newYear){countdownEl.textContent=""; titleEl.textContent="Merry"; subtitleEl.textContent="Christmas"; return;}
-  const targetYear = now>=newYear?year+1:year;
-  const target = new Date(`Dec 25, ${targetYear} 00:00:00`).getTime();
-  const d = target-now.getTime();
-  const days=Math.floor(d/86400000), hours=Math.floor((d%86400000)/3600000),
-        minutes=Math.floor((d%3600000)/60000), seconds=Math.floor((d%60000)/1000);
-  countdownEl.textContent=`${days}d ${hours}h ${minutes}m ${seconds}s`;
+  if(now >= christmas){
+    countdownEl.textContent = "";
+    titleEl.textContent = "Merry";
+    subtitleEl.textContent = "Christmas";
+    return;
+  }
+  const target = new Date(`Dec 25, ${year} 00:00:00`).getTime();
+  const diff = target - now.getTime();
+  const days = Math.floor(diff/86400000);
+  const hours = Math.floor((diff%86400000)/3600000);
+  const minutes = Math.floor((diff%3600000)/60000);
+  const seconds = Math.floor((diff%60000)/1000);
+  countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
-setInterval(updateCountdown,1000); updateCountdown();
+setInterval(updateCountdown, 1000);
+updateCountdown();
 
 /* ---------------- SNOW ---------------- */
-const snowCount = window.innerWidth<768?25:50;
+const snowCount = window.innerWidth < 768 ? 25 : 50;
 for(let i=0;i<snowCount;i++){
-  const s=document.createElement("div"); s.className="snowflake"; s.textContent="❄";
-  s.style.left=Math.random()*100+"vw";
-  s.style.fontSize=10+Math.random()*20+"px";
-  s.style.animationDuration=5+Math.random()*6+"s";
+  const s = document.createElement("div");
+  s.className = "snowflake";
+  s.textContent = "❄";
+  s.style.left = Math.random()*100 + "vw";
+  s.style.fontSize = 10 + Math.random()*20 + "px";
+  s.style.animationDuration = 5 + Math.random()*6 + "s";
   document.body.appendChild(s);
 }
 
-/* ---------------- LIVE RADIO ---------------- */
-// approximate durations (replace with real ones if you have them)
-const DURATION = 180; 
-const SPEECH_DURATION = 10; 
-
-function getCurrentTrack() {
-  const elapsed = Math.floor((Date.now() - RADIO_START)/1000);
-  const totalTime = DURATION*(SONG_FILES.length-1) + SPEECH_DURATION;
-  const looped = elapsed % totalTime;
-
-  let sum=0;
-  for(let i=0;i<SONG_FILES.length;i++){
-    const dur = (i<SONG_FILES.length-1)?DURATION:SPEECH_DURATION;
-    if(looped < sum + dur) return { index:i, offset: looped-sum };
-    sum += dur;
-  }
-  return { index:0, offset:0 };
+/* ---------------- AUDIO ---------------- */
+async function loadBuffer(src){
+  const res = await fetch(src);
+  const arrayBuffer = await res.arrayBuffer();
+  return await audioCtx.decodeAudioData(arrayBuffer);
 }
 
-async function playLiveRadio() {
-  const track = getCurrentTrack();
-  audioEl.src = "songs/" + encodeURIComponent(SONG_FILES[track.index]);
-  audioEl.currentTime = track.offset;
-  audioEl.style.display = "block";
-  try { await audioEl.play(); } catch(e){ console.log("Autoplay blocked", e); }
+async function playTrack(index, offset=0){
+  const buffer = await loadBuffer(SONG_FILES[index]);
+  const source = audioCtx.createBufferSource();
+  const gainNode = audioCtx.createGain();
+  source.buffer = buffer;
+  
+  if(!analyser){
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  }
+  
+  source.connect(analyser).connect(audioCtx.destination);
+  source.connect(gainNode).connect(audioCtx.destination);
+  source.start(0, offset);
 
-  audioEl.onended = () => {
-    let nextIndex = (track.index+1)%SONG_FILES.length;
-    audioEl.src = "songs/" + encodeURIComponent(SONG_FILES[nextIndex]);
-    audioEl.currentTime = 0;
-    audioEl.play();
+  // show song name without extra text
+  const displayName = SONG_NAMES[index] === "speech" ? "Speech" : SONG_NAMES[index];
+  nowPlayingEl.textContent = `Now Playing: ${displayName}`;
+  console.log(`Now Playing: ${displayName}`);
+  
+  source.onended = () => {
+    globalIndex = (index + 1) % SONG_FILES.length;
+    playTrack(globalIndex);
   };
 }
 
-/* ---------------- VISUALIZER ---------------- */
-const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-const analyser = audioCtx.createAnalyser();
-analyser.fftSize = 64;
-const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-audioEl.onplay = () => {
-  if(!audioEl._connected){
-    const source = audioCtx.createMediaElementSource(audioEl);
-    source.connect(analyser).connect(audioCtx.destination);
-    audioEl._connected = true;
-  }
-};
-
+/* ---------------- VISUAL EFFECTS ---------------- */
 function animateEffects(){
   requestAnimationFrame(animateEffects);
-  if(analyser && dataArray){
-    analyser.getByteFrequencyData(dataArray);
-    const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-    const bgScale = 1 + avg/8000; bgEl.style.transform=`scale(${bgScale})`;
-    const brightness = 1-Math.min(avg/300,0.5); bgEl.style.filter=`brightness(${brightness})`;
-    const textScale = 1+avg/2000;
-    titleEl.style.transform=`scale(${textScale})`;
-    subtitleEl.style.transform=`scale(${textScale})`;
-    countdownEl.style.transform=`scale(${textScale})`;
-    if(navigator.vibrate && avg>100) navigator.vibrate(12);
-  }
+  if(!analyser) return;
+  analyser.getByteFrequencyData(dataArray);
+  const avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+  bgEl.style.transform = `scale(${1 + avg/8000})`;
+  bgEl.style.filter = `brightness(${1 - Math.min(avg/300,0.5)})`;
+  const textScale = 1 + avg/2000;
+  titleEl.style.transform = `scale(${textScale})`;
+  subtitleEl.style.transform = `scale(${textScale})`;
+  countdownEl.style.transform = `scale(${textScale})`;
+  if(navigator.vibrate && avg>100) navigator.vibrate(12);
 }
 animateEffects();
 
 /* ---------------- START BUTTON ---------------- */
 playButton.onclick = async () => {
   playButton.style.display = "none";
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   await audioCtx.resume();
-  playLiveRadio();
+
+  // calculate offset to simulate "live" radio based on RADIO_START
+  let elapsed = (Date.now() - RADIO_START)/1000;
+  let sum = 0;
+  for(let i=0;i<SONG_FILES.length;i++){
+    const duration = SONG_NAMES[i] === "speech" ? 10 : 180; // speech short
+    if(sum + duration > elapsed){
+      globalIndex = i;
+      playTrack(i, elapsed-sum);
+      break;
+    }
+    sum += duration;
+  }
 };
 </script>
 </body>
