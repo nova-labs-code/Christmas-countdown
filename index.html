@@ -11,15 +11,27 @@
   --glow: 0 0 15px red, 0 0 25px green;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
   font-family: Arial, sans-serif;
   overflow: hidden;
-  height: 100vh;
-  background: url('christmas-background.jpg') no-repeat center center fixed;
-  background-size: cover; /* Fill screen, image can be cropped */
-  background-color: #000;
-  touch-action: manipulation;
+}
+
+/* Fullscreen background */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('christmas-background.jpg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover; /* Always fill screen */
+  z-index: -1; /* Behind all content */
+  will-change: transform;
 }
 
 #container {
@@ -27,14 +39,13 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   text-align: center;
   padding: 1rem;
   transition: transform 0.05s ease;
 }
 
-#title,
-#subtitle {
+#title, #subtitle {
   font-size: clamp(2.5rem, 8vw, 6rem);
   color: #fff;
   text-shadow: var(--glow);
@@ -89,7 +100,6 @@ body {
 }
 </style>
 </head>
-
 <body>
 <div id="container">
   <h1 id="title">Christmas</h1>
@@ -102,49 +112,20 @@ body {
 /* ---------------- CONFIG ---------------- */
 const RADIO_START = new Date("Dec 1, 2025 00:00:00").getTime();
 const SONG_NAMES = [
-  "All I Want For Christmas Is You",
-  "Baby It's Cold Outside",
-  "Blue Christmas",
-  "Carol Of The Bells",
-  "Christmas (Baby Please Come Home)",
-  "Christmas Canon",
-  "Deck The Halls",
-  "Do You Want To Build A Snowman",
-  "Feliz Navidad",
-  "Frosty The Snowman",
-  "God Rest Ye Merry Gentlemen",
-  "Here Comes Santa Claus",
-  "Holly Jolly Christmas",
-  "I Want A Hippopotamus For Christmas",
-  "It's Beginning To Look A Lot Like Christmas",
-  "It's The Most Wonderful Time Of The Year",
-  "Jingle Bell Rock",
-  "Jingle Bells",
-  "Last Christmas",
-  "Let It Snow! Let It Snow!",
-  "Little Drummer Boy",
-  "Mistletoe",
-  "O Christmas Tree",
-  "Rockin Around The Christmas Tree",
-  "Rudolph The Red-Nosed Reindeer",
-  "Santa Baby",
-  "Santa Claus Is Comin' To Town",
-  "Silent Night",
-  "Sleigh Ride",
-  "The Christmas Song",
-  "Up On The Housetop",
-  "We Wish You A Merry Christmas",
-  "White Christmas",
-  "Winter Wonderland",
-  "Wonderful Christmastime",
-  "You're A Mean One, Mr. Grinch"
+  "All I Want For Christmas Is You", "Baby It's Cold Outside", "Blue Christmas", "Carol Of The Bells",
+  "Christmas (Baby Please Come Home)", "Christmas Canon", "Deck The Halls", "Do You Want To Build A Snowman",
+  "Feliz Navidad", "Frosty The Snowman", "God Rest Ye Merry Gentlemen", "Here Comes Santa Claus",
+  "Holly Jolly Christmas", "I Want A Hippopotamus For Christmas", "It's Beginning To Look A Lot Like Christmas",
+  "It's The Most Wonderful Time Of The Year", "Jingle Bell Rock", "Jingle Bells", "Last Christmas",
+  "Let It Snow! Let It Snow!", "Little Drummer Boy", "Mistletoe", "O Christmas Tree",
+  "Rockin Around The Christmas Tree", "Rudolph The Red-Nosed Reindeer", "Santa Baby",
+  "Santa Claus Is Comin' To Town", "Silent Night", "Sleigh Ride", "The Christmas Song",
+  "Up On The Housetop", "We Wish You A Merry Christmas", "White Christmas", "Winter Wonderland",
+  "Wonderful Christmastime", "You're A Mean One, Mr. Grinch"
 ];
-const PLAYLIST = SONG_NAMES.map(
-  n => `songs/Music Now, Trap Music Now, Dance Music Now - ${n} (SPOTISAVER).mp3`
-);
+const PLAYLIST = SONG_NAMES.map(n => `songs/Music Now, Trap Music Now, Dance Music Now - ${n} (SPOTISAVER).mp3`);
 const SPEECH_SRC = "songs/speech.mp3";
 
-/* ---------------- STATE ---------------- */
 const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
@@ -197,7 +178,7 @@ for (let i = 0; i < snowCount; i++) {
   document.body.appendChild(s);
 }
 
-/* ---------------- AUDIO UTILS ---------------- */
+/* ---------------- AUDIO ---------------- */
 function getDuration(src) {
   return new Promise(r => {
     const a = new Audio();
@@ -207,11 +188,9 @@ function getDuration(src) {
     a.onerror = () => r(240);
   });
 }
-
 async function loadDurations() {
   for (const s of PLAYLIST) durations.push(await getDuration(s));
 }
-
 async function loadBuffer(src) {
   const res = await fetch(src);
   const buf = await res.arrayBuffer();
@@ -229,7 +208,7 @@ async function playLive(index, offset) {
 
   if (!analyser) {
     analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 128; // higher resolution for more beat detail
+    analyser.fftSize = 64;
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     source.connect(analyser).connect(audioCtx.destination);
   } else {
@@ -280,7 +259,7 @@ document.getElementById("playButton").onclick = async () => {
   }
 };
 
-/* ---------------- DANCE TO MUSIC ---------------- */
+/* ---------------- SUBTLE DANCE ---------------- */
 function animateEffects() {
   requestAnimationFrame(animateEffects);
   if (!analyser) return;
@@ -288,11 +267,11 @@ function animateEffects() {
   analyser.getByteFrequencyData(dataArray);
   const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
 
-  // Map audio volume to scale, x/y movement, and rotation
-  const scale = 1 + avg / 500; // bigger scale
-  const x = (Math.random() - 0.5) * avg / 10; 
-  const y = (Math.random() - 0.5) * avg / 10;
-  const rot = (Math.random() - 0.5) * avg / 100;
+  // subtle, readable effects
+  const scale = 1 + avg / 2000;
+  const x = (avg / 4000 - 0.05) * 6;
+  const y = (avg / 4000 - 0.05) * 6;
+  const rot = (avg / 8000 - 0.05) * 0.03;
 
   container.style.transform = `translate(${x}px, ${y}px) scale(${scale}) rotate(${rot}rad)`;
 }
