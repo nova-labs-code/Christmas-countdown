@@ -125,6 +125,7 @@ const bgEl = document.getElementById("bg");
 
 let audioCtx;
 let durations = [];
+let buffers = []; // store loaded AudioBuffers
 let speechBuffer = null;
 let globalSongIndex = 0;
 let analyser;
@@ -159,46 +160,95 @@ for(let i=0;i<snowCount;i++){
   document.body.appendChild(s);
 }
 
-/* ---------------- AUDIO ---------------- */
-function getDuration(src){return new Promise(r=>{const a=new Audio(); a.preload="metadata"; a.src=src; a.onloadedmetadata=()=>r(a.duration); a.onerror=()=>r(240);});}
-async function loadDurations(){for(const s of PLAYLIST) durations.push(await getDuration(s));}
-async function loadBuffer(src){const res=await fetch(src); const buf=await res.arrayBuffer(); return await audioCtx.decodeAudioData(buf);}
+/* ---------------- AUDIO UTILS ---------------- */
+async function loadBuffer(src){
+  try {
+    const res = await fetch(src);
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const buf = await res.arrayBuffer();
+    return await audioCtx.decodeAudioData(buf);
+  } catch(e) {
+    console.error("Failed to load audio:", src, e);
+    return null;
+  }
+}
 
 /* ---------------- LIVE RADIO ---------------- */
-async function playLive(index, offset){
-  const buffer=await loadBuffer(PLAYLIST[index]);
-  if(offset>=buffer.duration) return playLive((index+1)%PLAYLIST.length, offset-buffer.duration);
-  const source=audioCtx.createBufferSource();
-  const gain=audioCtx.createGain();
-  source.buffer=buffer;
-
-  // Update song name
-  songNameEl.textContent = "🎵 " + SONG_NAMES[index];
-
-  if(!analyser){analyser=audioCtx.createAnalyser(); analyser.fftSize=64; dataArray=new Uint8Array(analyser.frequencyBinCount); source.connect(analyser).connect(audioCtx.destination);}
-  else source.connect(analyser).connect(audioCtx.destination);
-  source.connect(gain).connect(audioCtx.destination); source.start(0,offset);
-
-  if((globalSongIndex+1)%3===0){
-    if(!speechBuffer) speechBuffer=await loadBuffer(SPEECH_SRC);
-    const delay=Math.max(0, buffer.duration-offset-5);
-    setTimeout(()=>{gain.gain.value=0.6; const s=audioCtx.createBufferSource(); s.buffer=speechBuffer; s.connect(audioCtx.destination); s.start(); s.onended=()=>gain.gain.value=1;},delay*1000);
+async function playLive(index, offset=0){
+  let buffer = buffers[index];
+  if(!buffer) {
+    buffer = await loadBuffer(PLAYLIST[index]);
+    if(!buffer) return;
+    buffers[index] = buffer;
+    durations[index] = buffer.duration;
   }
 
-  setTimeout(()=>{globalSongIndex=(globalSongIndex+1)%PLAYLIST.length; playLive(globalSongIndex,0);},(buffer.duration-offset)*1000);
+  // Show song name
+  songNameEl.textContent = "🎵 " + SONG_NAMES[index];
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  const gain = audioCtx.createGain();
+  source.connect(gain).connect(audioCtx.destination);
+
+  if(!analyser){
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    source.connect(analyser).connect(audioCtx.destination);
+  } else {
+    source.connect(analyser).connect(audioCtx.destination);
+  }
+
+  source.start(0, offset);
+
+  // Play speech every 3 songs
+  if((globalSongIndex+1)%3===0){
+    if(!speechBuffer) speechBuffer = await loadBuffer(SPEECH_SRC);
+    const delay = Math.max(0, buffer.duration-offset-5);
+    setTimeout(()=>{
+      gain.gain.value = 0.6;
+      const s = audioCtx.createBufferSource();
+      s.buffer = speechBuffer;
+      s.connect(audioCtx.destination);
+      s.start();
+      s.onended = ()=>gain.gain.value = 1;
+    }, delay*1000);
+  }
+
+  // Preload next song in background
+  const nextIndex = (index+1)%PLAYLIST.length;
+  if(!buffers[nextIndex]) loadBuffer(PLAYLIST[nextIndex]).then(b=>{if(b){buffers[nextIndex]=b; durations[nextIndex]=b.duration;}});
+
+  // Schedule next song
+  setTimeout(()=>{
+    globalSongIndex = nextIndex;
+    playLive(nextIndex, 0);
+  }, (buffer.duration - offset)*1000);
 }
 
 /* ---------------- START ---------------- */
-document.getElementById("playButton").onclick=async()=>{
-  document.getElementById("playButton").style.display="none";
-  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+document.getElementById("playButton").onclick = async ()=>{
+  document.getElementById("playButton").style.display = "none";
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   await audioCtx.resume();
-  await loadDurations();
-  let elapsed=(Date.now()-RADIO_START)/1000;
-  const total=durations.reduce((a,b)=>a+b,0); elapsed=((elapsed%total)+total)%total;
-  let sum=0;
-  for(let i=0;i<durations.length;i++){
-    if(sum+durations[i]>elapsed){globalSongIndex=i; playLive(i,elapsed-sum); break;} sum+=durations[i];
+
+  // Preload first song
+  const firstBuffer = await loadBuffer(PLAYLIST[0]);
+  if(!firstBuffer){ alert("Failed to load first song."); return; }
+  buffers[0] = firstBuffer;
+  durations[0] = firstBuffer.duration;
+
+  // Preload speech
+  speechBuffer = await loadBuffer(SPEECH_SRC);
+
+  // Start playback immediately
+  globalSongIndex = 0;
+  playLive(0,0);
+
+  // Preload remaining songs in background
+  for(let i=1;i<PLAYLIST.length;i++){
+    loadBuffer(PLAYLIST[i]).then(buf=>{if(buf){buffers[i]=buf; durations[i]=buf.duration;}});
   }
 };
 
@@ -223,8 +273,8 @@ function animateEffects(){
   subtitleEl.style.transform=`scale(${textScale})`;
   countdownEl.style.transform=`scale(${textScale})`;
 
-  // Device vibration (subtle)
-  if(navigator.vibrate && avg > 100){ navigator.vibrate(12); }
+  // Device vibration
+  if(navigator.vibrate && avg > 100) navigator.vibrate(12);
 }
 animateEffects();
 </script>
