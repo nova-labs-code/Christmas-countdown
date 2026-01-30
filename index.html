@@ -29,22 +29,10 @@ body::before {
   background-image: url('christmas-background.jpg');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: cover; /* fills screen */
-  z-index: -2; /* behind everything */
-  will-change: transform;
+  background-size: cover; 
+  z-index: -1;
+  will-change: transform, filter;
   transform-origin: center center;
-}
-
-/* Flash overlay */
-#flash {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: white;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 0; /* above background, below content */
-  transition: opacity 0.05s linear;
 }
 
 #container {
@@ -99,7 +87,6 @@ body::before {
 </style>
 </head>
 <body>
-<div id="flash"></div>
 <div id="container">
   <h1 id="title">Christmas</h1>
   <h1 id="subtitle">Countdown</h1>
@@ -129,7 +116,6 @@ const countdownEl = document.getElementById("countdown");
 const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const container = document.getElementById("container");
-const flashEl = document.getElementById("flash");
 
 let audioCtx;
 let durations = [];
@@ -206,17 +192,16 @@ document.getElementById("playButton").onclick=async()=>{
   }
 };
 
-/* ---------------- BOUNCE, FLASH & BG PULSE ---------------- */
+/* ---------------- BOUNCE & DARKEN ---------------- */
 function animateEffects(){
   requestAnimationFrame(animateEffects);
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArray);
   const avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Background pulse
-  const bgScale = 1 + avg/8000;
-  document.body.style.setProperty("--bg-scale", bgScale);
-  document.body.querySelector("body::before")?.style?.setProperty("transform", `scale(${bgScale})`);
+  // Background darkening based on beat (max 0.5 darkness)
+  const darkness = Math.min(avg/300,0.5);
+  document.body.querySelector("body::before")?.style?.setProperty("filter", `brightness(${1-darkness})`);
 
   // Text bounce/pulse
   const textScale = 1 + avg/3000;
@@ -224,9 +209,10 @@ function animateEffects(){
   subtitleEl.style.transform=`scale(${textScale})`;
   countdownEl.style.transform=`scale(${textScale})`;
 
-  // Flash/strobe effect, max opacity 0.4
-  const flashIntensity = Math.min(avg/200, 0.4);
-  flashEl.style.opacity = flashIntensity;
+  // Device vibration (subtle, only if supported)
+  if (navigator.vibrate && avg > 120) { 
+    navigator.vibrate(10); // short vibration
+  }
 }
 animateEffects();
 </script>
