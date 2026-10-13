@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +21,6 @@
     <title>Christmas Countdown • Live Radio</title>
 
     <style>
-
     :root {
         --red: #d71920;
         --red-dark: #8d0710;
@@ -40,9 +40,7 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
-
         -webkit-tap-highlight-color: transparent;
-
         user-select: none;
         -webkit-user-select: none;
     }
@@ -51,14 +49,10 @@
     body {
         width: 100%;
         height: 100%;
-
         overflow: hidden;
-
         touch-action: none;
-
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
-
         overscroll-behavior: none;
     }
 
@@ -93,32 +87,16 @@
             #12030a;
     }
 
-    /*
-     * =====================================================
-     * MAIN PAGE
-     * =====================================================
-     */
-
     #phonePortraitViewport {
         width: 100%;
         height: 100%;
-
         position: relative;
-
         overflow: hidden;
     }
 
-    /*
-     * =====================================================
-     * BACKGROUND
-     * =====================================================
-     */
-
     #bg {
         position: absolute;
-
         inset: -4%;
-
         width: 108%;
         height: 108%;
 
@@ -133,28 +111,15 @@
         background-position: center;
         background-repeat: no-repeat;
 
-        filter:
-            saturate(1.2)
-            contrast(1.02);
-
+        filter: saturate(1.2) contrast(1.02);
         z-index: -5;
-
         transform: translateZ(0);
     }
 
-    /*
-     * =====================================================
-     * SNOW
-     * =====================================================
-     */
-
     .snow-layer {
         position: absolute;
-
         inset: 0;
-
         pointer-events: none;
-
         overflow: hidden;
     }
 
@@ -170,13 +135,9 @@
 
     .snowflake {
         position: absolute;
-
         top: -30px;
-
         color: rgba(255, 255, 255, 0.9);
-
         font-size: var(--size);
-
         opacity: var(--opacity);
 
         animation:
@@ -186,149 +147,75 @@
             infinite;
 
         animation-delay: var(--delay);
-
         will-change: transform;
     }
 
     .circle-snow {
         color: #ffffff;
-
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: 400;
-
         line-height: 1;
-
-        text-shadow:
-            0 0 5px
-            rgba(255, 255, 255, 0.35);
-
-        will-change:
-            transform,
-            opacity;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.35);
+        will-change: transform, opacity;
     }
 
     .circle-snow.far {
-        filter:
-            blur(0.25px);
+        filter: blur(0.25px);
     }
 
     .circle-snow.mid {
-        filter:
-            blur(0.1px);
-
-        text-shadow:
-            0 0 7px
-            rgba(255, 255, 255, 0.45);
+        filter: blur(0.1px);
+        text-shadow: 0 0 7px rgba(255, 255, 255, 0.45);
     }
 
     .circle-snow.near {
         text-shadow:
-            0 0 9px
-            rgba(255, 255, 255, 0.65),
-            0 0 18px
-            rgba(255, 255, 255, 0.25);
+            0 0 9px rgba(255, 255, 255, 0.65),
+            0 0 18px rgba(255, 255, 255, 0.25);
     }
 
     @keyframes smoothSnowFall {
-
         0% {
-            transform:
-                translate3d(
-                    var(--drift-start),
-                    -50px,
-                    0
-                );
+            transform: translate3d(var(--drift-start), -50px, 0);
         }
 
         12% {
-            transform:
-                translate3d(
-                    var(--drift-one),
-                    12vh,
-                    0
-                );
+            transform: translate3d(var(--drift-one), 12vh, 0);
         }
 
         25% {
-            transform:
-                translate3d(
-                    var(--drift-two),
-                    25vh,
-                    0
-                );
+            transform: translate3d(var(--drift-two), 25vh, 0);
         }
 
         37% {
-            transform:
-                translate3d(
-                    var(--drift-three),
-                    37vh,
-                    0
-                );
+            transform: translate3d(var(--drift-three), 37vh, 0);
         }
 
         50% {
-            transform:
-                translate3d(
-                    var(--drift-four),
-                    50vh,
-                    0
-                );
+            transform: translate3d(var(--drift-four), 50vh, 0);
         }
 
         62% {
-            transform:
-                translate3d(
-                    var(--drift-five),
-                    62vh,
-                    0
-                );
+            transform: translate3d(var(--drift-five), 62vh, 0);
         }
 
         75% {
-            transform:
-                translate3d(
-                    var(--drift-six),
-                    75vh,
-                    0
-                );
+            transform: translate3d(var(--drift-six), 75vh, 0);
         }
 
         87% {
-            transform:
-                translate3d(
-                    var(--drift-seven),
-                    87vh,
-                    0
-                );
+            transform: translate3d(var(--drift-seven), 87vh, 0);
         }
 
         100% {
-            transform:
-                translate3d(
-                    var(--drift-end),
-                    110vh,
-                    0
-                );
+            transform: translate3d(var(--drift-end), 110vh, 0);
         }
     }
-
-    /*
-     * =====================================================
-     * MAIN CONTAINER
-     * =====================================================
-     */
 
     #container {
         width: 100%;
         height: 100%;
-
         display: flex;
-
         align-items: center;
         justify-content: center;
 
@@ -339,28 +226,15 @@
             max(20px, env(safe-area-inset-left));
 
         position: absolute;
-
         inset: 0;
-
         z-index: 5;
-
         overflow: hidden;
     }
 
-    /*
-     * =====================================================
-     * LIQUID GLASS CARD
-     * =====================================================
-     */
-
     .card {
         width: min(92vw, 900px);
-
-        padding:
-            clamp(30px, 5vw, 60px);
-
+        padding: clamp(30px, 5vw, 60px);
         text-align: center;
-
         position: relative;
 
         background:
@@ -371,20 +245,11 @@
                 rgba(255, 255, 255, 0.035)
             );
 
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 32px;
 
-        border-radius:
-            32px;
-
-        backdrop-filter:
-            blur(14px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(14px)
-            saturate(180%);
+        backdrop-filter: blur(14px) saturate(180%);
+        -webkit-backdrop-filter: blur(14px) saturate(180%);
 
         box-shadow:
             0 35px 100px rgba(0, 0, 0, 0.42),
@@ -396,13 +261,9 @@
 
     .card::before {
         content: "";
-
         position: absolute;
-
         inset: 1px;
-
         border-radius: 31px;
-
         pointer-events: none;
 
         background:
@@ -415,53 +276,29 @@
 
     .card::after {
         content: "";
-
         position: absolute;
-
         left: 10%;
         right: 10%;
-
         bottom: -18px;
-
         height: 35px;
-
         border-radius: 50%;
-
-        background:
-            rgba(255, 255, 255, 0.08);
-
-        filter:
-            blur(11px);
-
+        background: rgba(255, 255, 255, 0.08);
+        filter: blur(11px);
         pointer-events: none;
-
         z-index: -1;
     }
 
     .card > * {
         position: relative;
-
         z-index: 2;
     }
 
-    /*
-     * =====================================================
-     * LIVE LABEL
-     * =====================================================
-     */
-
     .live-label {
         display: inline-flex;
-
         align-items: center;
-
         gap: 9px;
-
-        padding:
-            9px 17px;
-
-        border-radius:
-            999px;
+        padding: 9px 17px;
+        border-radius: 999px;
 
         background:
             linear-gradient(
@@ -470,97 +307,52 @@
                 rgba(255, 255, 255, 0.055)
             );
 
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.22);
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            0 5px 20px rgba(0, 0, 0, 0.12);
 
-            0 5px 20px
-                rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
 
-        backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        -webkit-backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.12em;
-
-        text-transform:
-            uppercase;
-
-        margin-bottom:
-            20px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
     }
 
     .live-dot {
         width: 9px;
         height: 9px;
-
         border-radius: 50%;
-
-        background:
-            #ff3038;
+        background: #ff3038;
 
         box-shadow:
             0 0 8px #ff3038,
-            0 0 16px
-            rgba(255, 48, 56, 0.65);
+            0 0 16px rgba(255, 48, 56, 0.65);
 
-        animation:
-            livePulse
-            1.4s
-            infinite;
+        animation: livePulse 1.4s infinite;
     }
 
     @keyframes livePulse {
-
-        0%,
-        100% {
+        0%, 100% {
             opacity: 1;
-
-            transform:
-                scale(1);
+            transform: scale(1);
         }
 
         50% {
             opacity: 0.45;
-
-            transform:
-                scale(0.75);
+            transform: scale(0.75);
         }
     }
 
-    /*
-     * =====================================================
-     * CHRISTMAS TITLE
-     * =====================================================
-     */
-
     #title {
-        font-size:
-            clamp(3rem, 9vw, 7rem);
-
-        font-weight:
-            900;
-
-        line-height:
-            0.95;
-
-        margin:
-            0 0 10px;
+        font-size: clamp(3rem, 9vw, 7rem);
+        font-weight: 900;
+        line-height: 0.95;
+        margin: 0 0 10px;
 
         background:
             linear-gradient(
@@ -572,71 +364,28 @@
                 #16a864 100%
             );
 
-        -webkit-background-clip:
-            text;
-
-        -webkit-text-fill-color:
-            transparent;
-
-        background-clip:
-            text;
-
-        text-shadow:
-            0 8px 30px
-            rgba(0, 0, 0, 0.25);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
     }
-
-    /*
-     * =====================================================
-     * COUNTDOWN TITLE
-     * =====================================================
-     */
 
     #subtitle {
-        font-size:
-            clamp(2rem, 5vw, 4rem);
-
-        line-height:
-            1;
-
-        font-weight:
-            800;
-
-        color:
-            #ffffff;
-
-        text-shadow:
-            0 5px 25px
-            rgba(0, 0, 0, 0.4);
-
-        margin-bottom:
-            28px;
+        font-size: clamp(2rem, 5vw, 4rem);
+        line-height: 1;
+        font-weight: 800;
+        color: #ffffff;
+        text-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+        margin-bottom: 28px;
     }
 
-    /*
-     * =====================================================
-     * COUNTDOWN GLASS
-     * =====================================================
-     */
-
     #countdown {
-        display:
-            inline-flex;
-
-        align-items:
-            center;
-
-        justify-content:
-            center;
-
-        min-width:
-            min(90%, 500px);
-
-        padding:
-            15px 25px;
-
-        border-radius:
-            999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: min(90%, 500px);
+        padding: 15px 25px;
+        border-radius: 999px;
 
         background:
             linear-gradient(
@@ -645,161 +394,71 @@
                 rgba(255, 255, 255, 0.045)
             );
 
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.24);
-
-        backdrop-filter:
-            blur(11px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(11px)
-            saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(11px) saturate(180%);
+        -webkit-backdrop-filter: blur(11px) saturate(180%);
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.07),
+            0 12px 35px rgba(0, 0, 0, 0.20);
 
-            inset 0 -1px 0
-                rgba(255, 255, 255, 0.07),
-
-            0 12px 35px
-                rgba(0, 0, 0, 0.20);
-
-        font-size:
-            clamp(1.1rem, 3vw, 1.7rem);
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.03em;
-
-        margin-bottom:
-            30px;
+        font-size: clamp(1.1rem, 3vw, 1.7rem);
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        margin-bottom: 30px;
     }
 
-    /*
-     * =====================================================
-     * NOW PLAYING
-     * =====================================================
-     */
-
     .song-wrapper {
-        margin-bottom:
-            28px;
+        margin-bottom: 28px;
     }
 
     .now-playing {
-        font-size:
-            0.72rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.18em;
-
-        opacity:
-            0.72;
-
-        margin-bottom:
-            9px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        opacity: 0.72;
+        margin-bottom: 9px;
     }
 
     #songName {
-        min-height:
-            1.5em;
-
-        font-size:
-            clamp(1rem, 3vw, 1.45rem);
-
-        font-weight:
-            700;
-
-        color:
-            #ffffff;
-
-        text-shadow:
-            0 2px 12px
-            rgba(0, 0, 0, 0.45);
+        min-height: 1.5em;
+        font-size: clamp(1rem, 3vw, 1.45rem);
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
     }
 
     .up-next-wrapper {
-        margin-top:
-            14px;
-
-        margin-bottom:
-            4px;
+        margin-top: 14px;
+        margin-bottom: 4px;
     }
 
     .up-next-label {
-        font-size:
-            0.62rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.16em;
-
-        opacity:
-            0.52;
-
-        margin-bottom:
-            5px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        opacity: 0.52;
+        margin-bottom: 5px;
     }
 
     #upNext {
-        min-height:
-            1.3em;
-
-        font-size:
-            clamp(0.85rem, 2.5vw, 1rem);
-
-        font-weight:
-            700;
-
-        color:
-            rgba(255, 255, 255, 0.78);
-
-        text-shadow:
-            0 2px 10px
-            rgba(0, 0, 0, 0.35);
+        min-height: 1.3em;
+        font-size: clamp(0.85rem, 2.5vw, 1rem);
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.78);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     }
 
-    /*
-     * =====================================================
-     * PLAY BUTTON
-     * =====================================================
-     */
-
     #playButton {
-        position:
-            relative;
-
-        overflow:
-            hidden;
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.25);
-
-        outline:
-            none;
-
-        padding:
-            15px 28px;
-
-        border-radius:
-            999px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        outline: none;
+        padding: 15px 28px;
+        border-radius: 999px;
 
         background:
             linear-gradient(
@@ -809,38 +468,19 @@
                 rgba(141, 7, 16, 0.55)
             );
 
-        color:
-            white;
+        color: white;
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        touch-action: manipulation;
 
-        font-size:
-            1rem;
-
-        font-weight:
-            800;
-
-        cursor:
-            pointer;
-
-        touch-action:
-            manipulation;
-
-        backdrop-filter:
-            blur(20px)
-            saturate(170%);
-
-        -webkit-backdrop-filter:
-            blur(20px)
-            saturate(170%);
+        backdrop-filter: blur(20px) saturate(170%);
+        -webkit-backdrop-filter: blur(20px) saturate(170%);
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            inset 0 -1px 0
-                rgba(0, 0, 0, 0.15),
-
-            0 12px 35px
-                rgba(120, 0, 0, 0.28);
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+            0 12px 35px rgba(120, 0, 0, 0.28);
 
         transition:
             transform 0.18s ease,
@@ -848,23 +488,12 @@
     }
 
     #playButton::before {
-        content:
-            "";
-
-        position:
-            absolute;
-
-        top:
-            0;
-
-        left:
-            -40%;
-
-        width:
-            35%;
-
-        height:
-            100%;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -40%;
+        width: 35%;
+        height: 100%;
 
         background:
             linear-gradient(
@@ -874,40 +503,28 @@
                 transparent
             );
 
-        transform:
-            skewX(-20deg);
-
-        transition:
-            left 0.65s ease;
+        transform: skewX(-20deg);
+        transition: left 0.65s ease;
     }
 
     #playButton:hover::before {
-        left:
-            110%;
+        left: 110%;
     }
 
     #playButton:active {
-        transform:
-            scale(0.96);
+        transform: scale(0.96);
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.3),
-
-            0 5px 18px
-                rgba(0, 0, 0, 0.25);
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 5px 18px rgba(0, 0, 0, 0.25);
     }
 
     #playButton:hover {
-        transform:
-            translateY(-2px);
+        transform: translateY(-2px);
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.45),
-
-            0 16px 40px
-                rgba(120, 0, 0, 0.34);
+            inset 0 1px 0 rgba(255, 255, 255, 0.45),
+            0 16px 40px rgba(120, 0, 0, 0.34);
     }
 
     #playButton.paused {
@@ -920,49 +537,23 @@
             );
 
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            0 12px 35px
-                rgba(0, 80, 40, 0.25);
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 12px 35px rgba(0, 80, 40, 0.25);
     }
 
-    /*
-     * =====================================================
-     * FOOTER
-     * =====================================================
-     */
-
     footer {
-        margin-top:
-            28px;
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            700;
-
-        opacity:
-            0.65;
-
-        letter-spacing:
-            0.08em;
+        margin-top: 28px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        opacity: 0.65;
+        letter-spacing: 0.08em;
     }
 
     audio {
-        display:
-            none !important;
+        display: none !important;
     }
 
-    /*
-     * =====================================================
-     * MOBILE PORTRAIT
-     * =====================================================
-     */
-
     @media (max-width: 768px) {
-
         #container {
             padding:
                 max(15px, env(safe-area-inset-top))
@@ -972,84 +563,38 @@
         }
 
         .card {
-            width:
-                94vw;
-
-            padding:
-                30px 20px;
-
-            border-radius:
-                28px;
-
-            backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
+            width: 94vw;
+            padding: 30px 20px;
+            border-radius: 28px;
+            backdrop-filter: blur(12.5px) saturate(180%);
+            -webkit-backdrop-filter: blur(12.5px) saturate(180%);
         }
 
         .card::before {
-            border-radius:
-                27px;
+            border-radius: 27px;
         }
 
         #countdown {
-            min-width:
-                0;
-
-            width:
-                100%;
-
-            padding:
-                13px 15px;
-
-            margin-bottom:
-                24px;
+            min-width: 0;
+            width: 100%;
+            padding: 13px 15px;
+            margin-bottom: 24px;
         }
 
         #songName {
-            padding:
-                0 8px;
+            padding: 0 8px;
         }
 
         #playButton {
-            width:
-                min(100%, 330px);
+            width: min(100%, 330px);
         }
 
         footer {
-            margin-top:
-                22px;
+            margin-top: 22px;
         }
     }
 
-    /*
-     * =====================================================
-     * PHONE LANDSCAPE
-     *
-     * Completely responsive landscape layout.
-     *
-     * The card becomes a two-column composition:
-     *
-     * LEFT:
-     * Christmas
-     * Countdown
-     * Countdown timer
-     *
-     * RIGHT:
-     * Now Playing
-     * Up Next
-     * Radio button
-     *
-     * This uses the horizontal space instead of simply
-     * shrinking the portrait design.
-     * =====================================================
-     */
-
     @media (max-width: 900px) and (orientation: landscape) {
-
         #container {
             padding:
                 max(8px, env(safe-area-inset-top))
@@ -1059,43 +604,23 @@
         }
 
         .card {
-            width:
-                min(
-                    94vw,
-                    850px
-                );
-
-            height:
-                min(
-                    92dvh,
-                    440px
-                );
-
-            min-height:
-                0;
+            width: min(94vw, 850px);
+            height: min(92dvh, 440px);
+            min-height: 0;
 
             padding:
                 clamp(12px, 3vh, 22px)
                 clamp(18px, 4vw, 38px);
 
-            border-radius:
-                25px;
-
-            overflow:
-                hidden;
-
-            display:
-                grid;
+            border-radius: 25px;
+            overflow: hidden;
+            display: grid;
 
             grid-template-columns:
                 minmax(0, 1.15fr)
                 minmax(0, 0.95fr);
 
-            grid-template-rows:
-                auto
-                auto
-                auto
-                auto;
+            grid-template-rows: auto auto auto auto;
 
             grid-template-areas:
                 "live live"
@@ -1103,339 +628,138 @@
                 "subtitle info"
                 "countdown button";
 
-            column-gap:
-                clamp(18px, 5vw, 48px);
+            column-gap: clamp(18px, 5vw, 48px);
+            row-gap: clamp(2px, 0.8vh, 7px);
+            align-items: center;
+            justify-content: center;
 
-            row-gap:
-                clamp(2px, 0.8vh, 7px);
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            backdrop-filter:
-                blur(14px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(14px)
-                saturate(180%);
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
         }
 
         .card::before {
-            border-radius:
-                24px;
+            border-radius: 24px;
         }
 
-        /*
-         * LIVE LABEL
-         */
-
         .live-label {
-            grid-area:
-                live;
-
-            justify-self:
-                center;
-
-            padding:
-                5px 12px;
-
-            gap:
-                7px;
-
-            font-size:
-                0.58rem;
-
-            margin-bottom:
-                2px;
+            grid-area: live;
+            justify-self: center;
+            padding: 5px 12px;
+            gap: 7px;
+            font-size: 0.58rem;
+            margin-bottom: 2px;
         }
 
         .live-dot {
-            width:
-                7px;
-
-            height:
-                7px;
+            width: 7px;
+            height: 7px;
         }
 
-        /*
-         * LEFT SIDE
-         */
-
         #title {
-            grid-area:
-                title;
-
-            font-size:
-                clamp(
-                    2.25rem,
-                    9.5vh,
-                    4.4rem
-                );
-
-            line-height:
-                0.86;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
+            grid-area: title;
+            font-size: clamp(2.25rem, 9.5vh, 4.4rem);
+            line-height: 0.86;
+            margin: 0;
+            white-space: nowrap;
         }
 
         #subtitle {
-            grid-area:
-                subtitle;
-
-            font-size:
-                clamp(
-                    1.45rem,
-                    5.5vh,
-                    2.5rem
-                );
-
-            line-height:
-                0.9;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
+            grid-area: subtitle;
+            font-size: clamp(1.45rem, 5.5vh, 2.5rem);
+            line-height: 0.9;
+            margin: 0;
+            white-space: nowrap;
         }
 
         #countdown {
-            grid-area:
-                countdown;
-
-            justify-self:
-                center;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            max-width:
-                100%;
-
-            padding:
-                8px 12px;
-
-            margin:
-                2px 0 0;
-
-            font-size:
-                clamp(
-                    0.72rem,
-                    3.2vh,
-                    1.05rem
-                );
-
-            white-space:
-                nowrap;
+            grid-area: countdown;
+            justify-self: center;
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 8px 12px;
+            margin: 2px 0 0;
+            font-size: clamp(0.72rem, 3.2vh, 1.05rem);
+            white-space: nowrap;
         }
 
-        /*
-         * RIGHT SIDE
-         */
-
         .song-wrapper {
-            grid-area:
-                info;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            margin:
-                0;
-
-            padding:
-                0 2px;
-
-            text-align:
-                center;
+            grid-area: info;
+            width: 100%;
+            min-width: 0;
+            margin: 0;
+            padding: 0 2px;
+            text-align: center;
         }
 
         .now-playing {
-            font-size:
-                0.55rem;
-
-            letter-spacing:
-                0.16em;
-
-            margin-bottom:
-                4px;
-
-            opacity:
-                0.68;
+            font-size: 0.55rem;
+            letter-spacing: 0.16em;
+            margin-bottom: 4px;
+            opacity: 0.68;
         }
 
         #songName {
-            min-height:
-                1.2em;
-
-            padding:
-                0;
-
-            font-size:
-                clamp(
-                    0.82rem,
-                    3.2vh,
-                    1.1rem
-                );
-
-            line-height:
-                1.15;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
+            min-height: 1.2em;
+            padding: 0;
+            font-size: clamp(0.82rem, 3.2vh, 1.1rem);
+            line-height: 1.15;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .up-next-wrapper {
-            margin:
-                7px 0 0;
+            margin: 7px 0 0;
         }
 
         .up-next-label {
-            font-size:
-                0.47rem;
-
-            letter-spacing:
-                0.14em;
-
-            margin-bottom:
-                2px;
+            font-size: 0.47rem;
+            letter-spacing: 0.14em;
+            margin-bottom: 2px;
         }
 
         #upNext {
-            min-height:
-                1.1em;
-
-            font-size:
-                clamp(
-                    0.64rem,
-                    2.5vh,
-                    0.86rem
-                );
-
-            line-height:
-                1.1;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
+            min-height: 1.1em;
+            font-size: clamp(0.64rem, 2.5vh, 0.86rem);
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        /*
-         * BUTTON
-         */
 
         #playButton {
-            grid-area:
-                button;
-
-            justify-self:
-                center;
-
-            width:
-                min(
-                    100%,
-                    250px
-                );
-
-            min-width:
-                0;
-
-            padding:
-                8px 16px;
-
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.7vh,
-                    0.88rem
-                );
-
-            white-space:
-                nowrap;
+            grid-area: button;
+            justify-self: center;
+            width: min(100%, 250px);
+            min-width: 0;
+            padding: 8px 16px;
+            font-size: clamp(0.68rem, 2.7vh, 0.88rem);
+            white-space: nowrap;
         }
-
-        /*
-         * FOOTER IS MOVED TO A SMALL FLOATING POSITION
-         * SO IT DOESN'T TAKE UP A GRID ROW.
-         */
 
         footer {
-            position:
-                absolute;
-
-            left:
-                50%;
-
-            bottom:
-                7px;
-
-            transform:
-                translateX(-50%);
-
-            margin:
-                0;
-
-            font-size:
-                clamp(
-                    0.45rem,
-                    1.8vh,
-                    0.6rem
-                );
-
-            white-space:
-                nowrap;
-
-            opacity:
-                0.55;
+            position: absolute;
+            left: 50%;
+            bottom: 7px;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: clamp(0.45rem, 1.8vh, 0.6rem);
+            white-space: nowrap;
+            opacity: 0.55;
         }
     }
-
-    /*
-     * =====================================================
-     * VERY SHORT LANDSCAPE PHONES
-     * =====================================================
-     */
 
     @media (max-width: 900px)
         and (orientation: landscape)
         and (max-height: 430px) {
 
         #container {
-            padding:
-                5px 10px;
+            padding: 5px 10px;
         }
 
         .card {
-            width:
-                min(
-                    95vw,
-                    850px
-                );
+            width: min(95vw, 850px);
 
             height:
                 calc(
@@ -1445,317 +769,170 @@
                     10px
                 );
 
-            padding:
-                8px 16px;
-
-            border-radius:
-                21px;
+            padding: 8px 16px;
+            border-radius: 21px;
 
             grid-template-columns:
                 minmax(0, 1.15fr)
                 minmax(0, 0.95fr);
 
-            column-gap:
-                20px;
-
-            row-gap:
-                1px;
+            column-gap: 20px;
+            row-gap: 1px;
         }
 
         .card::before {
-            border-radius:
-                20px;
+            border-radius: 20px;
         }
 
         .live-label {
-            padding:
-                3px 9px;
-
-            gap:
-                5px;
-
-            font-size:
-                0.48rem;
+            padding: 3px 9px;
+            gap: 5px;
+            font-size: 0.48rem;
         }
 
         .live-dot {
-            width:
-                6px;
-
-            height:
-                6px;
+            width: 6px;
+            height: 6px;
         }
 
         #title {
-            font-size:
-                clamp(
-                    1.85rem,
-                    9vh,
-                    3.2rem
-                );
+            font-size: clamp(1.85rem, 9vh, 3.2rem);
         }
 
         #subtitle {
-            font-size:
-                clamp(
-                    1.15rem,
-                    5vh,
-                    1.9rem
-                );
+            font-size: clamp(1.15rem, 5vh, 1.9rem);
         }
 
         #countdown {
-            padding:
-                6px 9px;
-
-            font-size:
-                clamp(
-                    0.62rem,
-                    3vh,
-                    0.88rem
-                );
+            padding: 6px 9px;
+            font-size: clamp(0.62rem, 3vh, 0.88rem);
         }
 
         .now-playing {
-            font-size:
-                0.46rem;
-
-            margin-bottom:
-                2px;
+            font-size: 0.46rem;
+            margin-bottom: 2px;
         }
 
         #songName {
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.8vh,
-                    0.88rem
-                );
+            font-size: clamp(0.68rem, 2.8vh, 0.88rem);
         }
 
         .up-next-wrapper {
-            margin-top:
-                4px;
+            margin-top: 4px;
         }
 
         .up-next-label {
-            font-size:
-                0.4rem;
-
-            margin-bottom:
-                1px;
+            font-size: 0.4rem;
+            margin-bottom: 1px;
         }
 
         #upNext {
-            font-size:
-                clamp(
-                    0.55rem,
-                    2.3vh,
-                    0.73rem
-                );
+            font-size: clamp(0.55rem, 2.3vh, 0.73rem);
         }
 
         #playButton {
-            width:
-                min(
-                    100%,
-                    220px
-                );
-
-            padding:
-                6px 13px;
-
-            font-size:
-                clamp(
-                    0.59rem,
-                    2.4vh,
-                    0.76rem
-                );
+            width: min(100%, 220px);
+            padding: 6px 13px;
+            font-size: clamp(0.59rem, 2.4vh, 0.76rem);
         }
 
         footer {
-            bottom:
-                4px;
-
-            font-size:
-                0.42rem;
+            bottom: 4px;
+            font-size: 0.42rem;
         }
     }
 
-    /*
-     * =====================================================
-     * SMALL PORTRAIT PHONES
-     * =====================================================
-     */
-
-    @media (max-width: 380px)
-        and (orientation: portrait) {
-
+    @media (max-width: 380px) and (orientation: portrait) {
         .card {
-            padding:
-                25px 15px;
-
-            border-radius:
-                25px;
+            padding: 25px 15px;
+            border-radius: 25px;
         }
 
         #countdown {
-            font-size:
-                0.95rem;
+            font-size: 0.95rem;
         }
 
         #songName {
-            font-size:
-                0.95rem;
+            font-size: 0.95rem;
         }
 
         #upNext {
-            font-size:
-                0.8rem;
+            font-size: 0.8rem;
         }
 
         #playButton {
-            font-size:
-                0.9rem;
-
-            padding:
-                13px 20px;
+            font-size: 0.9rem;
+            padding: 13px 20px;
         }
     }
-
-    /*
-     * =====================================================
-     * TABLET LANDSCAPE
-     * =====================================================
-     */
 
     @media (min-width: 769px)
         and (max-width: 1100px)
         and (orientation: landscape) {
 
         #container {
-            padding:
-                15px;
+            padding: 15px;
         }
 
         .card {
-            max-height:
-                94dvh;
-
-            overflow:
-                hidden;
+            max-height: 94dvh;
+            overflow: hidden;
         }
     }
 
-    /*
-     * =====================================================
-     * REDUCED MOTION
-     * =====================================================
-     */
-
     @media (prefers-reduced-motion: reduce) {
-
         *,
         *::before,
         *::after {
-            animation-duration:
-                0.001ms !important;
-
-            animation-iteration-count:
-                1 !important;
-
-            transition-duration:
-                0.001ms !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
         }
     }
-
     </style>
 </head>
 
 <body>
-
     <div id="phonePortraitViewport">
 
         <div id="bg"></div>
 
-        <div
-            id="snowFar"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowMid"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowNear"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowAbove"
-            class="snow-layer">
-        </div>
+        <div id="snowFar" class="snow-layer"></div>
+        <div id="snowMid" class="snow-layer"></div>
+        <div id="snowNear" class="snow-layer"></div>
+        <div id="snowAbove" class="snow-layer"></div>
 
         <main id="container">
-
             <section class="card">
 
                 <div class="live-label">
-
                     <span class="live-dot"></span>
-
                     Christmas Radio
-
                 </div>
 
-                <h1 id="title">
-                    Christmas
-                </h1>
+                <h1 id="title">Christmas</h1>
+                <h1 id="subtitle">Countdown</h1>
 
-                <h1 id="subtitle">
-                    Countdown
-                </h1>
-
-                <div id="countdown">
-                    Loading...
-                </div>
+                <div id="countdown">Loading...</div>
 
                 <div class="song-wrapper">
+                    <div class="now-playing">Now Playing</div>
 
-                    <div class="now-playing">
-                        Now Playing
-                    </div>
-
-                    <div id="songName">
-                        Loading radio...
-                    </div>
+                    <div id="songName">Loading radio...</div>
 
                     <div class="up-next-wrapper">
-
-                        <div class="up-next-label">
-                            Up Next
-                        </div>
-
-                        <div id="upNext">
-                            Loading...
-                        </div>
-
+                        <div class="up-next-label">Up Next</div>
+                        <div id="upNext">Loading...</div>
                     </div>
-
                 </div>
 
                 <button id="playButton">
                     🎄 Start Live Radio
                 </button>
 
-                <footer>
-                    ❄️ Merry Christmas ❄️
-                </footer>
+                <footer>❄️ Merry Christmas ❄️</footer>
 
             </section>
-
         </main>
 
         <audio
@@ -1774,29 +951,618 @@
 
     </div>
 
-
     <script>
+    "use strict";
 
-/*
- * CACHE ALL RADIO AUDIO FOR OFFLINE PLAYBACK
- */
+    /*
+     * =====================================================
+     * SERVICE WORKER REGISTRATION
+     * =====================================================
+     */
 
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.ready
-        .then(registration => {
-            const worker = registration.active;
+    let serviceWorkerRegistrationPromise = Promise.resolve(null);
+
+    if ("serviceWorker" in navigator) {
+        serviceWorkerRegistrationPromise = navigator.serviceWorker
+            .register("./service-worker.js")
+            .then(registration => {
+                console.log(
+                    "Service worker registered:",
+                    registration.scope
+                );
+
+                return registration;
+            })
+            .catch(error => {
+                console.error(
+                    "Service worker registration failed:",
+                    error
+                );
+
+                return null;
+            });
+    }
+
+    /*
+     * =====================================================
+     * OFFLINE CACHE STATUS
+     * =====================================================
+     */
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.addEventListener("message", event => {
+            const data = event.data;
+
+            if (data?.type === "RADIO_AUDIO_CACHE_PROGRESS") {
+                console.log(
+                    `Offline audio: ${data.completed}/${data.total} files processed.`
+                );
+            }
+
+            if (data?.type === "RADIO_AUDIO_CACHE_FINISHED") {
+                console.log(
+                    `Offline audio caching finished: ${data.completed}/${data.total} files processed; ${data.failed} failed.`
+                );
+            }
+        });
+    }
+
+    /*
+     * =====================================================
+     * FULL MOBILE GESTURE PREVENTION
+     * =====================================================
+     */
+
+    let lastTouchEnd = 0;
+
+    document.addEventListener("touchend", event => {
+        const now = Date.now();
+
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+
+        lastTouchEnd = now;
+    }, { passive: false });
+
+    document.addEventListener("gesturestart", event => {
+        event.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener("gesturechange", event => {
+        event.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener("gestureend", event => {
+        event.preventDefault();
+    }, { passive: false });
+
+    /*
+     * =====================================================
+     * ELEMENTS
+     * =====================================================
+     */
+
+    const musicAudio = document.getElementById("musicAudio");
+    const speechAudio = document.getElementById("speechAudio");
+    const playButton = document.getElementById("playButton");
+    const songNameElement = document.getElementById("songName");
+    const upNextElement = document.getElementById("upNext");
+    const countdownElement = document.getElementById("countdown");
+
+    /*
+     * =====================================================
+     * RADIO CONFIGURATION
+     * =====================================================
+     */
+
+    const RADIO_START =
+        new Date("Dec 1, 2025 00:00:00").getTime();
+
+    const SONG_FOLDER = "./songs/";
+    const SPEECH_SRC = "./songs/speech.mp3";
+    const DURATION_MANIFEST = "./songs/durations.json";
+    const SONGS_PER_SPEECH = 4;
+
+    /*
+     * =====================================================
+     * STATE
+     * =====================================================
+     */
+
+    let songs = [];
+    let speechDuration = 0;
+    let totalPlaylistDuration = 0;
+    let metadataLoaded = false;
+    let metadataLoadingPromise = null;
+    let radioPlaying = false;
+    let currentSongIndex = 0;
+    let currentSegmentType = "song";
+    let isChangingTrack = false;
+
+    /*
+     * =====================================================
+     * FORMAT TIME
+     * =====================================================
+     */
+
+    function formatTime(seconds) {
+        if (!Number.isFinite(seconds)) {
+            return "0:00";
+        }
+
+        seconds = Math.max(0, Math.floor(seconds));
+
+        const minutes = Math.floor(seconds / 60);
+        const secs = String(seconds % 60).padStart(2, "0");
+
+        return `${minutes}:${secs}`;
+    }
+
+    /*
+     * =====================================================
+     * CHRISTMAS COUNTDOWN
+     * =====================================================
+     */
+
+    function updateCountdown() {
+        const now = new Date();
+
+        let christmas = new Date(
+            now.getFullYear(),
+            11,
+            25,
+            0,
+            0,
+            0,
+            0
+        );
+
+        if (now >= christmas) {
+            christmas = new Date(
+                now.getFullYear() + 1,
+                11,
+                25,
+                0,
+                0,
+                0,
+                0
+            );
+        }
+
+        const seconds = Math.floor((christmas - now) / 1000);
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        countdownElement.textContent =
+            `${days}d ${hours}h ${minutes}m ${secs}s`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    /*
+     * =====================================================
+     * SNOW
+     * =====================================================
+     */
+
+    function setSnowDrift(snowflake, driftAmount) {
+        const center =
+            (Math.random() - 0.5) * driftAmount;
+
+        const swing =
+            8 + Math.random() * (driftAmount * 0.55);
+
+        const direction = Math.random() > 0.5 ? 1 : -1;
+
+        snowflake.style.setProperty(
+            "--drift-start",
+            `${center - swing * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-one",
+            `${center + swing * 0.25 * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-two",
+            `${center + swing * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-three",
+            `${center + swing * 0.35 * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-four",
+            `${center - swing * 0.45 * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-five",
+            `${center - swing * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-six",
+            `${center - swing * 0.30 * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-seven",
+            `${center + swing * 0.55 * direction}px`
+        );
+
+        snowflake.style.setProperty(
+            "--drift-end",
+            `${center + swing * 0.15 * direction}px`
+        );
+    }
+
+    function createSnowflakes(container, amount) {
+        for (let i = 0; i < amount; i++) {
+            const snowflake = document.createElement("div");
+
+            snowflake.className = "snowflake";
+            snowflake.textContent = Math.random() > 0.5 ? "❄" : "•";
+            snowflake.style.left = `${Math.random() * 100}%`;
+
+            snowflake.style.setProperty(
+                "--size",
+                `${8 + Math.random() * 14}px`
+            );
+
+            snowflake.style.setProperty(
+                "--opacity",
+                `${0.25 + Math.random() * 0.65}`
+            );
+
+            snowflake.style.setProperty(
+                "--duration",
+                `${7 + Math.random() * 12}s`
+            );
+
+            snowflake.style.setProperty(
+                "--delay",
+                `${-Math.random() * 15}s`
+            );
+
+            setSnowDrift(snowflake, 50);
+            container.appendChild(snowflake);
+        }
+    }
+
+    function createCircleSnow(container, amount, depth) {
+        for (let i = 0; i < amount; i++) {
+            const snowflake = document.createElement("div");
+
+            snowflake.className = `snowflake circle-snow ${depth}`;
+            snowflake.textContent = "•";
+
+            let minSize;
+            let maxSize;
+            let minOpacity;
+            let maxOpacity;
+            let minDuration;
+            let maxDuration;
+            let driftAmount;
+
+            if (depth === "far") {
+                minSize = 3;
+                maxSize = 7;
+                minOpacity = 0.18;
+                maxOpacity = 0.42;
+                minDuration = 10;
+                maxDuration = 20;
+                driftAmount = 35;
+            } else if (depth === "mid") {
+                minSize = 5;
+                maxSize = 11;
+                minOpacity = 0.35;
+                maxOpacity = 0.68;
+                minDuration = 8;
+                maxDuration = 16;
+                driftAmount = 50;
+            } else {
+                minSize = 8;
+                maxSize = 17;
+                minOpacity = 0.55;
+                maxOpacity = 0.95;
+                minDuration = 6;
+                maxDuration = 13;
+                driftAmount = 65;
+            }
+
+            const size =
+                minSize + Math.random() * (maxSize - minSize);
+
+            const opacity =
+                minOpacity + Math.random() * (maxOpacity - minOpacity);
+
+            const duration =
+                minDuration + Math.random() * (maxDuration - minDuration);
+
+            snowflake.style.left = `${Math.random() * 100}%`;
+
+            snowflake.style.setProperty("--size", `${size}px`);
+            snowflake.style.setProperty("--opacity", opacity);
+            snowflake.style.setProperty("--duration", `${duration}s`);
+
+            snowflake.style.setProperty(
+                "--delay",
+                `${-Math.random() * duration}s`
+            );
+
+            snowflake.style.top =
+                `${-20 - Math.random() * 100}px`;
+
+            setSnowDrift(snowflake, driftAmount);
+
+            let aboveChance;
+
+            if (depth === "far") {
+                aboveChance = 0.08;
+            } else if (depth === "mid") {
+                aboveChance = 0.40;
+            } else {
+                aboveChance = 0.70;
+            }
+
+            if (Math.random() < aboveChance) {
+                document.getElementById("snowAbove")
+                    .appendChild(snowflake);
+            } else {
+                container.appendChild(snowflake);
+            }
+        }
+    }
+
+    createSnowflakes(document.getElementById("snowFar"), 20);
+    createSnowflakes(document.getElementById("snowMid"), 15);
+    createSnowflakes(document.getElementById("snowNear"), 10);
+
+    createCircleSnow(document.getElementById("snowFar"), 45, "far");
+    createCircleSnow(document.getElementById("snowMid"), 38, "mid");
+    createCircleSnow(document.getElementById("snowNear"), 28, "near");
+
+    /*
+     * =====================================================
+     * LOAD durations.json
+     * =====================================================
+     */
+
+    async function loadDurations() {
+        if (metadataLoaded) {
+            return;
+        }
+
+        if (metadataLoadingPromise) {
+            return metadataLoadingPromise;
+        }
+
+        metadataLoadingPromise = (async () => {
+            const response = await fetch(DURATION_MANIFEST, {
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `Could not load durations.json (${response.status})`
+                );
+            }
+
+            const data = await response.json();
+
+            if (!data || !Array.isArray(data.songs)) {
+                throw new Error(
+                    "durations.json must contain a 'songs' array."
+                );
+            }
+
+            songs = data.songs.map((entry, index) => {
+                if (!entry || typeof entry !== "object") {
+                    throw new Error(
+                        `Invalid song entry at index ${index}.`
+                    );
+                }
+
+                const name = String(entry.name ?? "").trim();
+                const file = String(entry.file ?? "").trim();
+                const duration = Number(entry.duration);
+
+                if (!name) {
+                    throw new Error(
+                        `Song ${index + 1} is missing its name.`
+                    );
+                }
+
+                if (!file) {
+                    throw new Error(
+                        `"${name}" is missing its file in durations.json.`
+                    );
+                }
+
+                if (!Number.isFinite(duration) || duration <= 0) {
+                    throw new Error(
+                        `"${name}" has an invalid duration in durations.json.`
+                    );
+                }
+
+                return { name, file, duration };
+            });
+
+            if (songs.length === 0) {
+                throw new Error(
+                    "durations.json contains no songs."
+                );
+            }
+
+            try {
+                const speechMetadata =
+                    document.createElement("audio");
+
+                speechMetadata.preload = "metadata";
+                speechMetadata.src = SPEECH_SRC;
+
+                speechDuration = await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        cleanup();
+
+                        reject(
+                            new Error("Timed out loading speech.mp3")
+                        );
+                    }, 15000);
+
+                    const cleanup = () => {
+                        clearTimeout(timeout);
+
+                        speechMetadata.removeEventListener(
+                            "loadedmetadata",
+                            onMetadata
+                        );
+
+                        speechMetadata.removeEventListener(
+                            "error",
+                            onError
+                        );
+                    };
+
+                    const onMetadata = () => {
+                        const duration = speechMetadata.duration;
+                        cleanup();
+
+                        if (
+                            Number.isFinite(duration) &&
+                            duration > 0
+                        ) {
+                            resolve(duration);
+                        } else {
+                            reject(
+                                new Error("Invalid speech duration")
+                            );
+                        }
+                    };
+
+                    const onError = () => {
+                        cleanup();
+
+                        reject(
+                            new Error("Could not load speech.mp3")
+                        );
+                    };
+
+                    speechMetadata.addEventListener(
+                        "loadedmetadata",
+                        onMetadata,
+                        { once: true }
+                    );
+
+                    speechMetadata.addEventListener(
+                        "error",
+                        onError,
+                        { once: true }
+                    );
+
+                    speechMetadata.load();
+                });
+            } catch (error) {
+                console.error(
+                    "Could not read speech duration:",
+                    error
+                );
+
+                speechDuration = 0;
+            }
+
+            totalPlaylistDuration = 0;
+
+            for (let i = 0; i < songs.length; i++) {
+                totalPlaylistDuration += songs[i].duration;
+
+                if (
+                    (i + 1) % SONGS_PER_SPEECH === 0 &&
+                    speechDuration > 0
+                ) {
+                    totalPlaylistDuration += speechDuration;
+                }
+            }
+
+            if (totalPlaylistDuration <= 0) {
+                throw new Error(
+                    "No valid playlist duration was found."
+                );
+            }
+
+            metadataLoaded = true;
+
+            console.log("Loaded songs:", songs.length);
+            console.log(
+                "Speech duration:",
+                formatTime(speechDuration)
+            );
+
+            console.log(
+                "Total radio timeline:",
+                formatTime(totalPlaylistDuration)
+            );
+        })().catch(error => {
+            metadataLoadingPromise = null;
+            throw error;
+        });
+
+        return metadataLoadingPromise;
+    }
+
+    /*
+     * =====================================================
+     * BACKGROUND AUDIO CACHING
+     * =====================================================
+     */
+
+    async function cacheRadioAudio() {
+        if (!("serviceWorker" in navigator)) {
+            console.warn(
+                "This browser does not support service workers."
+            );
+
+            return;
+        }
+
+        try {
+            const registration =
+                await serviceWorkerRegistrationPromise;
+
+            if (!registration) {
+                console.warn(
+                    "Audio caching skipped because service-worker registration failed."
+                );
+
+                return;
+            }
+
+            await navigator.serviceWorker.ready;
+
+            const worker =
+                registration.active ||
+                navigator.serviceWorker.controller;
 
             if (!worker) {
                 console.warn(
-                    "No active service worker is available yet."
+                    "No active service worker is available for audio caching."
                 );
+
                 return;
             }
 
             const files = [
-                "./songs/speech.mp3",
+                SPEECH_SRC,
                 ...songs.map(song =>
-                    "./songs/" + encodeURIComponent(song.file)
+                    SONG_FOLDER + encodeURIComponent(song.file)
                 )
             ];
 
@@ -1806,2272 +1572,655 @@ if ("serviceWorker" in navigator) {
             });
 
             console.log(
-                "Offline audio caching started:",
-                files.length,
-                "files"
+                `Started offline caching for ${files.length} audio files.`
             );
-        })
-        .catch(error => {
+        } catch (error) {
             console.error(
-                "Could not prepare offline audio:",
+                "Could not start offline audio caching:",
                 error
             );
-        });
-}
-
-        /*
-         * =====================================================
-         * FULL MOBILE GESTURE PREVENTION
-         * =====================================================
-         */
-
-        let lastTouchEnd = 0;
-
-        document.addEventListener(
-            "touchend",
-            event => {
-
-                const now =
-                    Date.now();
-
-                if (
-                    now - lastTouchEnd <= 300
-                ) {
-
-                    event.preventDefault();
-                }
-
-                lastTouchEnd =
-                    now;
-
-            },
-            {
-                passive: false
-            }
-        );
-
-
-        document.addEventListener(
-            "gesturestart",
-            event => {
-
-                event.preventDefault();
-
-            },
-            {
-                passive: false
-            }
-        );
-
-
-        document.addEventListener(
-            "gesturechange",
-            event => {
-
-                event.preventDefault();
-
-            },
-            {
-                passive: false
-            }
-        );
-
-
-        document.addEventListener(
-            "gestureend",
-            event => {
-
-                event.preventDefault();
-
-            },
-            {
-                passive: false
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * ELEMENTS
-         * =====================================================
-         */
-
-        const musicAudio =
-            document.getElementById(
-                "musicAudio"
-            );
-
-        const speechAudio =
-            document.getElementById(
-                "speechAudio"
-            );
-
-        const playButton =
-            document.getElementById(
-                "playButton"
-            );
-
-        const songNameElement =
-            document.getElementById(
-                "songName"
-            );
-
-        const upNextElement =
-            document.getElementById(
-                "upNext"
-            );
-
-        const countdownElement =
-            document.getElementById(
-                "countdown"
-            );
-
-
-        /*
-         * =====================================================
-         * RADIO CONFIGURATION
-         * =====================================================
-         */
-
-        const RADIO_START =
-            new Date(
-                "Dec 1, 2025 00:00:00"
-            ).getTime();
-
-        const SONG_FOLDER =
-            "./songs/";
-
-        const SPEECH_SRC =
-            "./songs/speech.mp3";
-
-        const DURATION_MANIFEST =
-            "./songs/durations.json";
-
-        const SONGS_PER_SPEECH =
-            4;
-
-
-        /*
-         * =====================================================
-         * STATE
-         * =====================================================
-         */
-
-        let songs = [];
-
-        let speechDuration = 0;
-
-        let totalPlaylistDuration = 0;
-
-        let metadataLoaded = false;
-
-        let metadataLoadingPromise = null;
-
-        let radioPlaying = false;
-
-        let currentSongIndex = 0;
-
-        let currentSegmentType = "song";
-
-        let isChangingTrack = false;
-
-
-        /*
-         * =====================================================
-         * FORMAT TIME
-         * =====================================================
-         */
-
-        function formatTime(seconds) {
-
-            if (
-                !Number.isFinite(
-                    seconds
-                )
-            ) {
-
-                return "0:00";
-            }
-
-            seconds =
-                Math.max(
-                    0,
-                    Math.floor(
-                        seconds
-                    )
-                );
-
-            const minutes =
-                Math.floor(
-                    seconds / 60
-                );
-
-            const secs =
-                String(
-                    seconds % 60
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            return `${minutes}:${secs}`;
         }
-
-
-        /*
-         * =====================================================
-         * CHRISTMAS COUNTDOWN
-         * =====================================================
-         */
-
-        function updateCountdown() {
-
-            const now =
-                new Date();
-
-            let christmas =
-                new Date(
-                    now.getFullYear(),
-                    11,
-                    25,
-                    0,
-                    0,
-                    0,
-                    0
-                );
-
-
-            if (
-                now >= christmas
-            ) {
-
-                christmas =
-                    new Date(
-                        now.getFullYear() + 1,
-                        11,
-                        25,
-                        0,
-                        0,
-                        0,
-                        0
-                    );
-            }
-
-
-            const seconds =
-                Math.floor(
-                    (
-                        christmas - now
-                    ) / 1000
-                );
-
-
-            const days =
-                Math.floor(
-                    seconds / 86400
-                );
-
-
-            const hours =
-                Math.floor(
-                    (
-                        seconds % 86400
-                    ) / 3600
-                );
-
-
-            const minutes =
-                Math.floor(
-                    (
-                        seconds % 3600
-                    ) / 60
-                );
-
-
-            const secs =
-                seconds % 60;
-
-
-            countdownElement.textContent =
-                `${days}d ${hours}h ${minutes}m ${secs}s`;
-        }
-
-
-        updateCountdown();
-
-
-        setInterval(
-            updateCountdown,
-            1000
-        );
-
-
-        /*
-         * =====================================================
-         * SNOW
-         * =====================================================
-         */
-
-        function setSnowDrift(
-            snowflake,
-            driftAmount
-        ) {
-
-            const center =
-                (
-                    Math.random() - 0.5
-                ) *
-                driftAmount;
-
-            const swing =
-                8 +
-                Math.random() *
-                (
-                    driftAmount *
-                    0.55
-                );
-
-            const direction =
-                Math.random() > 0.5
-                    ? 1
-                    : -1;
-
-
-            snowflake.style.setProperty(
-                "--drift-start",
-                `${center - swing * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-one",
-                `${center + swing * 0.25 * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-two",
-                `${center + swing * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-three",
-                `${center + swing * 0.35 * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-four",
-                `${center - swing * 0.45 * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-five",
-                `${center - swing * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-six",
-                `${center - swing * 0.30 * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-seven",
-                `${center + swing * 0.55 * direction}px`
-            );
-
-
-            snowflake.style.setProperty(
-                "--drift-end",
-                `${center + swing * 0.15 * direction}px`
-            );
-        }
-
-
-        function createSnowflakes(
-            container,
-            amount
-        ) {
-
-            for (
-                let i = 0;
-                i < amount;
-                i++
-            ) {
-
-                const snowflake =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                snowflake.className =
-                    "snowflake";
-
-
-                snowflake.textContent =
-                    Math.random() > 0.5
-                        ? "❄"
-                        : "•";
-
-
-                snowflake.style.left =
-                    `${Math.random() * 100}%`;
-
-
-                snowflake.style.setProperty(
-                    "--size",
-                    `${8 + Math.random() * 14}px`
-                );
-
-
-                snowflake.style.setProperty(
-                    "--opacity",
-                    `${0.25 + Math.random() * 0.65}`
-                );
-
-
-                snowflake.style.setProperty(
-                    "--duration",
-                    `${7 + Math.random() * 12}s`
-                );
-
-
-                snowflake.style.setProperty(
-                    "--delay",
-                    `${-Math.random() * 15}s`
-                );
-
-
-                setSnowDrift(
-                    snowflake,
-                    50
-                );
-
-
-                container.appendChild(
-                    snowflake
-                );
-            }
-        }
-
-
-        function createCircleSnow(
-            container,
-            amount,
-            depth
-        ) {
-
-            for (
-                let i = 0;
-                i < amount;
-                i++
-            ) {
-
-                const snowflake =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                snowflake.className =
-                    `snowflake circle-snow ${depth}`;
-
-
-                snowflake.textContent =
-                    "•";
-
-
-                let minSize;
-                let maxSize;
-
-                let minOpacity;
-                let maxOpacity;
-
-                let minDuration;
-                let maxDuration;
-
-                let driftAmount;
-
-
-                if (
-                    depth === "far"
-                ) {
-
-                    minSize = 3;
-                    maxSize = 7;
-
-                    minOpacity = 0.18;
-                    maxOpacity = 0.42;
-
-                    minDuration = 10;
-                    maxDuration = 20;
-
-                    driftAmount = 35;
-
-                } else if (
-                    depth === "mid"
-                ) {
-
-                    minSize = 5;
-                    maxSize = 11;
-
-                    minOpacity = 0.35;
-                    maxOpacity = 0.68;
-
-                    minDuration = 8;
-                    maxDuration = 16;
-
-                    driftAmount = 50;
-
-                } else {
-
-                    minSize = 8;
-                    maxSize = 17;
-
-                    minOpacity = 0.55;
-                    maxOpacity = 0.95;
-
-                    minDuration = 6;
-                    maxDuration = 13;
-
-                    driftAmount = 65;
-                }
-
-
-                const size =
-                    minSize +
-                    Math.random() *
-                    (
-                        maxSize -
-                        minSize
-                    );
-
-
-                const opacity =
-                    minOpacity +
-                    Math.random() *
-                    (
-                        maxOpacity -
-                        minOpacity
-                    );
-
-
-                const duration =
-                    minDuration +
-                    Math.random() *
-                    (
-                        maxDuration -
-                        minDuration
-                    );
-
-
-                snowflake.style.left =
-                    `${Math.random() * 100}%`;
-
-
-                snowflake.style.setProperty(
-                    "--size",
-                    `${size}px`
-                );
-
-
-                snowflake.style.setProperty(
-                    "--opacity",
-                    opacity
-                );
-
-
-                snowflake.style.setProperty(
-                    "--duration",
-                    `${duration}s`
-                );
-
-
-                snowflake.style.setProperty(
-                    "--delay",
-                    `${-Math.random() * duration}s`
-                );
-
-
-                snowflake.style.top =
-                    `${-20 - Math.random() * 100}px`;
-
-
-                setSnowDrift(
-                    snowflake,
-                    driftAmount
-                );
-
-
-                let aboveChance;
-
-
-                if (
-                    depth === "far"
-                ) {
-
-                    aboveChance =
-                        0.08;
-
-                } else if (
-                    depth === "mid"
-                ) {
-
-                    aboveChance =
-                        0.40;
-
-                } else {
-
-                    aboveChance =
-                        0.70;
-                }
-
-
-                const shouldGoAbove =
-                    Math.random() <
-                    aboveChance;
-
-
-                if (
-                    shouldGoAbove
-                ) {
-
-                    document
-                        .getElementById(
-                            "snowAbove"
-                        )
-                        .appendChild(
-                            snowflake
-                        );
-
-                } else {
-
-                    container.appendChild(
-                        snowflake
-                    );
-                }
-            }
-        }
-
-
-        createSnowflakes(
-            document.getElementById(
-                "snowFar"
-            ),
-            20
-        );
-
-
-        createSnowflakes(
-            document.getElementById(
-                "snowMid"
-            ),
-            15
-        );
-
-
-        createSnowflakes(
-            document.getElementById(
-                "snowNear"
-            ),
-            10
-        );
-
-
-        createCircleSnow(
-            document.getElementById(
-                "snowFar"
-            ),
-            45,
-            "far"
-        );
-
-
-        createCircleSnow(
-            document.getElementById(
-                "snowMid"
-            ),
-            38,
-            "mid"
-        );
-
-
-        createCircleSnow(
-            document.getElementById(
-                "snowNear"
-            ),
-            28,
-            "near"
-        );
-
-
-        /*
-         * =====================================================
-         * LOAD durations.json
-         * =====================================================
-         */
-
-        async function loadDurations() {
-
-            if (
-                metadataLoaded
-            ) {
-                return;
-            }
-
-
-            if (
-                metadataLoadingPromise
-            ) {
-                return metadataLoadingPromise;
-            }
-
-
-            metadataLoadingPromise =
-                (async () => {
-
-                    const response =
-                        await fetch(
-                            DURATION_MANIFEST,
-                            {
-                                cache:
-                                    "no-store"
-                            }
-                        );
-
-
-                    if (
-                        !response.ok
-                    ) {
-
-                        throw new Error(
-                            `Could not load durations.json (${response.status})`
-                        );
-                    }
-
-
-                    const data =
-                        await response.json();
-
-
-                    if (
-                        !data ||
-                        !Array.isArray(
-                            data.songs
-                        )
-                    ) {
-
-                        throw new Error(
-                            "durations.json must contain a 'songs' array."
-                        );
-                    }
-
-
-                    songs =
-                        data.songs.map(
-                            (
-                                entry,
-                                index
-                            ) => {
-
-                                if (
-                                    !entry ||
-                                    typeof entry !==
-                                        "object"
-                                ) {
-
-                                    throw new Error(
-                                        `Invalid song entry at index ${index}.`
-                                    );
-                                }
-
-
-                                const name =
-                                    String(
-                                        entry.name ??
-                                        ""
-                                    ).trim();
-
-
-                                const file =
-                                    String(
-                                        entry.file ??
-                                        ""
-                                    ).trim();
-
-
-                                const duration =
-                                    Number(
-                                        entry.duration
-                                    );
-
-
-                                if (
-                                    !name
-                                ) {
-
-                                    throw new Error(
-                                        `Song ${index + 1} is missing its name.`
-                                    );
-                                }
-
-
-                                if (
-                                    !file
-                                ) {
-
-                                    throw new Error(
-                                        `"${name}" is missing its file in durations.json.`
-                                    );
-                                }
-
-
-                                if (
-                                    !Number.isFinite(
-                                        duration
-                                    ) ||
-                                    duration <= 0
-                                ) {
-
-                                    throw new Error(
-                                        `"${name}" has an invalid duration in durations.json.`
-                                    );
-                                }
-
-
-                                return {
-                                    name,
-                                    file,
-                                    duration
-                                };
-                            }
-                        );
-
-
-                    if (
-                        songs.length === 0
-                    ) {
-
-                        throw new Error(
-                            "durations.json contains no songs."
-                        );
-                    }
-
-
-                    try {
-
-                        const speechMetadata =
-                            document.createElement(
-                                "audio"
-                            );
-
-
-                        speechMetadata.preload =
-                            "metadata";
-
-
-                        speechMetadata.src =
-                            SPEECH_SRC;
-
-
-                        speechDuration =
-                            await new Promise(
-                                (
-                                    resolve,
-                                    reject
-                                ) => {
-
-                                    const timeout =
-                                        setTimeout(
-                                            () => {
-
-                                                reject(
-                                                    new Error(
-                                                        "Timed out loading speech.mp3"
-                                                    )
-                                                );
-
-                                            },
-                                            15000
-                                        );
-
-
-                                    speechMetadata.addEventListener(
-                                        "loadedmetadata",
-                                        () => {
-
-                                            clearTimeout(
-                                                timeout
-                                            );
-
-
-                                            const duration =
-                                                speechMetadata.duration;
-
-
-                                            if (
-                                                Number.isFinite(
-                                                    duration
-                                                ) &&
-                                                duration > 0
-                                            ) {
-
-                                                resolve(
-                                                    duration
-                                                );
-
-                                            } else {
-
-                                                reject(
-                                                    new Error(
-                                                        "Invalid speech duration"
-                                                    )
-                                                );
-                                            }
-
-                                        },
-                                        {
-                                            once:
-                                                true
-                                        }
-                                    );
-
-
-                                    speechMetadata.addEventListener(
-                                        "error",
-                                        () => {
-
-                                            clearTimeout(
-                                                timeout
-                                            );
-
-
-                                            reject(
-                                                new Error(
-                                                    "Could not load speech.mp3"
-                                                )
-                                            );
-
-                                        },
-                                        {
-                                            once:
-                                                true
-                                        }
-                                    );
-
-
-                                    speechMetadata.load();
-
-                                }
-                            );
-
-                    } catch (
-                        error
-                    ) {
-
-                        console.error(
-                            "Could not read speech duration:",
-                            error
-                        );
-
-
-                        speechDuration =
-                            0;
-                    }
-
-
-                    totalPlaylistDuration =
-                        0;
-
-
-                    for (
-                        let i = 0;
-                        i < songs.length;
-                        i++
-                    ) {
-
-                        totalPlaylistDuration +=
-                            songs[i].duration;
-
-
-                        if (
-                            (i + 1) %
-                                SONGS_PER_SPEECH ===
-                                0 &&
-                            speechDuration > 0
-                        ) {
-
-                            totalPlaylistDuration +=
-                                speechDuration;
-                        }
-                    }
-
-
-                    if (
-                        totalPlaylistDuration <= 0
-                    ) {
-
-                        throw new Error(
-                            "No valid playlist duration was found."
-                        );
-                    }
-
-
-                    metadataLoaded =
-                        true;
-
-
-                    console.log(
-                        "Loaded songs:",
-                        songs.length
-                    );
-
-
-                    console.log(
-                        "Speech duration:",
-                        formatTime(
-                            speechDuration
-                        )
-                    );
-
-
-                    console.log(
-                        "Total radio timeline:",
-                        formatTime(
-                            totalPlaylistDuration
-                        )
-                    );
-
-                })()
-                    .catch(
-                        error => {
-
-                            metadataLoadingPromise =
-                                null;
-
-                            throw error;
-                        }
-                    );
-
-
-            return metadataLoadingPromise;
-        }
-
-
-        /*
-         * =====================================================
-         * FIND LIVE SEGMENT
-         * =====================================================
-         */
-
-        function findLiveSegment() {
-
-            if (
-                !metadataLoaded ||
-                totalPlaylistDuration <= 0
-            ) {
-
-                return {
-                    type:
-                        "song",
-
-                    index:
-                        0,
-
-                    offset:
-                        0
-                };
-            }
-
-
-            const elapsed =
-                (
-                    Date.now() -
-                    RADIO_START
-                ) / 1000;
-
-
-            const position =
-                (
-                    (
-                        elapsed %
-                        totalPlaylistDuration
-                    ) +
-                    totalPlaylistDuration
-                ) %
-                totalPlaylistDuration;
-
-
-            let accumulated =
-                0;
-
-
-            for (
-                let i = 0;
-                i < songs.length;
-                i++
-            ) {
-
-                const duration =
-                    songs[i].duration;
-
-
-                if (
-                    position <
-                    accumulated +
-                    duration
-                ) {
-
-                    return {
-                        type:
-                            "song",
-
-                        index:
-                            i,
-
-                        offset:
-                            position -
-                            accumulated
-                    };
-                }
-
-
-                accumulated +=
-                    duration;
-
-
-                if (
-                    (i + 1) %
-                        SONGS_PER_SPEECH ===
-                        0 &&
-                    speechDuration > 0
-                ) {
-
-                    if (
-                        position <
-                        accumulated +
-                        speechDuration
-                    ) {
-
-                        return {
-                            type:
-                                "speech",
-
-                            index:
-                                i,
-
-                            offset:
-                                position -
-                                accumulated
-                        };
-                    }
-
-
-                    accumulated +=
-                        speechDuration;
-                }
-            }
-
-
+    }
+
+    /*
+     * =====================================================
+     * FIND LIVE SEGMENT
+     * =====================================================
+     */
+
+    function findLiveSegment() {
+        if (!metadataLoaded || totalPlaylistDuration <= 0) {
             return {
-                type:
-                    "song",
-
-                index:
-                    0,
-
-                offset:
-                    0
+                type: "song",
+                index: 0,
+                offset: 0
             };
         }
 
+        const elapsed =
+            (Date.now() - RADIO_START) / 1000;
 
-        /*
-         * =====================================================
-         * DISPLAY SONG INDEX
-         * =====================================================
-         */
-
-        function getDisplaySongIndex(
-            segment
-        ) {
-
-            if (
-                segment.type ===
-                "speech"
-            ) {
-
-                return (
-                    (
-                        segment.index +
-                        1
-                    ) %
-                    songs.length
-                );
-            }
-
-
-            return segment.index;
-        }
-
-
-        function getDisplayNextSongIndex(
-            segment
-        ) {
-
-            const current =
-                getDisplaySongIndex(
-                    segment
-                );
-
-
-            return (
+        const position =
+            (
                 (
-                    current + 1
-                ) %
-                songs.length
-            );
-        }
+                    elapsed % totalPlaylistDuration
+                ) + totalPlaylistDuration
+            ) % totalPlaylistDuration;
 
+        let accumulated = 0;
 
-        /*
-         * =====================================================
-         * UPDATE RADIO UI
-         * =====================================================
-         */
+        for (let i = 0; i < songs.length; i++) {
+            const duration = songs[i].duration;
 
-        function updateRadioUI(
-            segment
-        ) {
-
-            if (
-                !songs.length
-            ) {
-                return;
+            if (position < accumulated + duration) {
+                return {
+                    type: "song",
+                    index: i,
+                    offset: position - accumulated
+                };
             }
 
-
-            const current =
-                getDisplaySongIndex(
-                    segment
-                );
-
-
-            const next =
-                getDisplayNextSongIndex(
-                    segment
-                );
-
-
-            songNameElement.textContent =
-                songs[current].name;
-
-
-            upNextElement.textContent =
-                songs[next].name;
-        }
-
-
-        /*
-         * =====================================================
-         * MEDIA SESSION
-         * =====================================================
-         */
-
-        function updateLiveMediaSession() {
+            accumulated += duration;
 
             if (
-                !("mediaSession" in navigator)
+                (i + 1) % SONGS_PER_SPEECH === 0 &&
+                speechDuration > 0
             ) {
-                return;
-            }
-
-
-            if (
-                !metadataLoaded ||
-                !songs.length
-            ) {
-                return;
-            }
-
-
-            const segment =
-                findLiveSegment();
-
-
-            const title =
-                segment.type ===
-                    "speech"
-                    ? "Christmas Radio"
-                    : songs[
-                        segment.index
-                    ].name;
-
-
-            try {
-
-                navigator.mediaSession.metadata =
-                    new MediaMetadata({
-
-                        title:
-                            title,
-
-                        artist:
-                            "Christmas Countdown Radio",
-
-                        album:
-                            "Christmas Countdown",
-
-                        artwork: [
-                            {
-                                src:
-                                    "./favicon.ico",
-
-                                sizes:
-                                    "512x512",
-
-                                type:
-                                    "image/x-icon"
-                            }
-                        ]
-                    });
-
-            } catch {}
-
-
-            try {
-
-                const audio =
-                    segment.type ===
-                        "speech"
-                        ? speechAudio
-                        : musicAudio;
-
-
-                const duration =
-                    audio.duration;
-
-
-                const position =
-                    audio.currentTime;
-
-
-                if (
-                    Number.isFinite(
-                        duration
-                    ) &&
-                    duration > 0 &&
-                    Number.isFinite(
-                        position
-                    ) &&
-                    position >= 0 &&
-                    position <= duration
-                ) {
-
-                    navigator.mediaSession
-                        .setPositionState({
-
-                            duration,
-
-                            playbackRate:
-                                audio.playbackRate ||
-                                1,
-
-                            position
-                        });
+                if (position < accumulated + speechDuration) {
+                    return {
+                        type: "speech",
+                        index: i,
+                        offset: position - accumulated
+                    };
                 }
 
-            } catch {}
+                accumulated += speechDuration;
+            }
         }
 
+        return {
+            type: "song",
+            index: 0,
+            offset: 0
+        };
+    }
 
-        /*
-         * =====================================================
-         * MEDIA SESSION SETUP
-         * =====================================================
-         */
+    /*
+     * =====================================================
+     * DISPLAY SONG INDEX
+     * =====================================================
+     */
 
-        function setupMediaSession() {
+    function getDisplaySongIndex(segment) {
+        if (segment.type === "speech") {
+            return (segment.index + 1) % songs.length;
+        }
+
+        return segment.index;
+    }
+
+    function getDisplayNextSongIndex(segment) {
+        const current = getDisplaySongIndex(segment);
+
+        return (current + 1) % songs.length;
+    }
+
+    /*
+     * =====================================================
+     * UPDATE RADIO UI
+     * =====================================================
+     */
+
+    function updateRadioUI(segment) {
+        if (!songs.length) {
+            return;
+        }
+
+        const current = getDisplaySongIndex(segment);
+        const next = getDisplayNextSongIndex(segment);
+
+        songNameElement.textContent = songs[current].name;
+        upNextElement.textContent = songs[next].name;
+    }
+
+    /*
+     * =====================================================
+     * MEDIA SESSION
+     * =====================================================
+     */
+
+    function updateLiveMediaSession() {
+        if (!("mediaSession" in navigator)) {
+            return;
+        }
+
+        if (!metadataLoaded || !songs.length) {
+            return;
+        }
+
+        const segment = findLiveSegment();
+
+        const title =
+            segment.type === "speech"
+                ? "Christmas Radio"
+                : songs[segment.index].name;
+
+        try {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title,
+                artist: "Christmas Countdown Radio",
+                album: "Christmas Countdown",
+                artwork: [{
+                    src: "./favicon.ico",
+                    sizes: "512x512",
+                    type: "image/x-icon"
+                }]
+            });
+        } catch {}
+
+        try {
+            const audio =
+                segment.type === "speech"
+                    ? speechAudio
+                    : musicAudio;
+
+            const duration = audio.duration;
+            const position = audio.currentTime;
 
             if (
-                !("mediaSession" in navigator)
+                Number.isFinite(duration) &&
+                duration > 0 &&
+                Number.isFinite(position) &&
+                position >= 0 &&
+                position <= duration
             ) {
-                return;
+                navigator.mediaSession.setPositionState({
+                    duration,
+                    playbackRate: audio.playbackRate || 1,
+                    position
+                });
             }
+        } catch {}
+    }
 
+    /*
+     * =====================================================
+     * MEDIA SESSION SETUP
+     * =====================================================
+     */
 
-            try {
+    function setupMediaSession() {
+        if (!("mediaSession" in navigator)) {
+            return;
+        }
 
-                navigator.mediaSession
-                    .setActionHandler(
-                        "play",
-                        () =>
-                            resumeLive()
-                    );
-
-            } catch {}
-
-
-            try {
-
-                navigator.mediaSession
-                    .setActionHandler(
-                        "pause",
-                        pauseRadio
-                    );
-
-            } catch {}
-
-
-            [
-                "previoustrack",
-                "nexttrack",
-                "seekbackward",
-                "seekforward"
-            ].forEach(
-                action => {
-
-                    try {
-
-                        navigator.mediaSession
-                            .setActionHandler(
-                                action,
-                                () => {}
-                            );
-
-                    } catch {}
-                }
+        try {
+            navigator.mediaSession.setActionHandler(
+                "play",
+                () => resumeLive()
             );
+        } catch {}
 
+        try {
+            navigator.mediaSession.setActionHandler(
+                "pause",
+                pauseRadio
+            );
+        } catch {}
 
+        [
+            "previoustrack",
+            "nexttrack",
+            "seekbackward",
+            "seekforward",
+            "seekto"
+        ].forEach(action => {
             try {
+                navigator.mediaSession.setActionHandler(
+                    action,
+                    () => {}
+                );
+            } catch {}
+        });
+    }
 
-                navigator.mediaSession
-                    .setActionHandler(
-                        "seekto",
-                        () => {}
+    setupMediaSession();
+
+    /*
+     * =====================================================
+     * LOAD AUDIO
+     * =====================================================
+     */
+
+    async function loadAudio(audio, src, offset) {
+        const absoluteURL = new URL(src, location.href).href;
+
+        if (audio.src !== absoluteURL) {
+            audio.src = src;
+            audio.load();
+
+            await new Promise((resolve, reject) => {
+                const cleanup = () => {
+                    audio.removeEventListener(
+                        "loadedmetadata",
+                        onMetadata
                     );
 
-            } catch {}
+                    audio.removeEventListener(
+                        "error",
+                        onError
+                    );
+                };
+
+                const onMetadata = () => {
+                    cleanup();
+                    resolve();
+                };
+
+                const onError = () => {
+                    cleanup();
+
+                    reject(
+                        new Error("Could not load audio")
+                    );
+                };
+
+                audio.addEventListener(
+                    "loadedmetadata",
+                    onMetadata,
+                    { once: true }
+                );
+
+                audio.addEventListener(
+                    "error",
+                    onError,
+                    { once: true }
+                );
+            });
         }
 
-
-        setupMediaSession();
-
-
-        /*
-         * =====================================================
-         * LOAD AUDIO
-         * =====================================================
-         */
-
-        async function loadAudio(
-            audio,
-            src,
-            offset
+        if (
+            Number.isFinite(offset) &&
+            offset >= 0 &&
+            Number.isFinite(audio.duration) &&
+            offset < audio.duration
         ) {
-
-            const absoluteURL =
-                new URL(
-                    src,
-                    location.href
-                ).href;
-
-
-            if (
-                audio.src !==
-                absoluteURL
-            ) {
-
-                audio.src =
-                    src;
-
-                audio.load();
-
-
-                await new Promise(
-                    (
-                        resolve,
-                        reject
-                    ) => {
-
-                        const onMetadata =
-                            () => {
-
-                                cleanup();
-
-                                resolve();
-                            };
-
-
-                        const onError =
-                            () => {
-
-                                cleanup();
-
-                                reject(
-                                    new Error(
-                                        "Could not load audio"
-                                    )
-                                );
-                            };
-
-
-                        const cleanup =
-                            () => {
-
-                                audio.removeEventListener(
-                                    "loadedmetadata",
-                                    onMetadata
-                                );
-
-
-                                audio.removeEventListener(
-                                    "error",
-                                    onError
-                                );
-                            };
-
-
-                        audio.addEventListener(
-                            "loadedmetadata",
-                            onMetadata,
-                            {
-                                once:
-                                    true
-                            }
-                        );
-
-
-                        audio.addEventListener(
-                            "error",
-                            onError,
-                            {
-                                once:
-                                    true
-                            }
-                        );
-
-                    }
-                );
-            }
-
-
-            if (
-                Number.isFinite(
-                    offset
-                ) &&
-                offset >= 0 &&
-                Number.isFinite(
-                    audio.duration
-                ) &&
-                offset <
-                    audio.duration
-            ) {
-
-                audio.currentTime =
-                    offset;
-            }
+            audio.currentTime = offset;
         }
+    }
 
+    /*
+     * =====================================================
+     * LOAD SONG
+     * =====================================================
+     */
 
-        /*
-         * =====================================================
-         * LOAD SONG
-         * =====================================================
-         */
+    async function loadSong(index, offset) {
+        const song = songs[index];
 
-        async function loadSong(
-            index,
-            offset
-        ) {
-
-            const song =
-                songs[index];
-
-
-            if (
-                !song ||
-                !song.file
-            ) {
-
-                throw new Error(
-                    `Song ${index + 1} has no file in durations.json.`
-                );
-            }
-
-
-            const songURL =
-                SONG_FOLDER +
-                encodeURIComponent(
-                    song.file
-                );
-
-
-            await loadAudio(
-                musicAudio,
-                songURL,
-                offset
+        if (!song || !song.file) {
+            throw new Error(
+                `Song ${index + 1} has no file in durations.json.`
             );
         }
 
+        const songURL =
+            SONG_FOLDER + encodeURIComponent(song.file);
 
-        /*
-         * =====================================================
-         * LOAD SPEECH
-         * =====================================================
-         */
+        await loadAudio(musicAudio, songURL, offset);
+    }
 
-        async function loadSpeech(
-            offset
-        ) {
+    /*
+     * =====================================================
+     * LOAD SPEECH
+     * =====================================================
+     */
 
-            await loadAudio(
-                speechAudio,
-                SPEECH_SRC,
-                offset
-            );
+    async function loadSpeech(offset) {
+        await loadAudio(speechAudio, SPEECH_SRC, offset);
+    }
+
+    /*
+     * =====================================================
+     * START LIVE RADIO
+     * =====================================================
+     */
+
+    async function playLive() {
+        if (isChangingTrack) {
+            return;
         }
 
+        isChangingTrack = true;
 
-        /*
-         * =====================================================
-         * START LIVE RADIO
-         * =====================================================
-         */
+        try {
+            await loadDurations();
 
-        async function playLive() {
+            const segment = findLiveSegment();
 
-            if (
-                isChangingTrack
-            ) {
-                return;
+            currentSongIndex = getDisplaySongIndex(segment);
+            currentSegmentType = segment.type;
+
+            updateRadioUI(segment);
+
+            if (segment.type === "speech") {
+                musicAudio.pause();
+
+                await loadSpeech(segment.offset);
+                await speechAudio.play();
+            } else {
+                speechAudio.pause();
+
+                await loadSong(segment.index, segment.offset);
+                await musicAudio.play();
             }
 
-
-            isChangingTrack =
-                true;
-
-
-            try {
-
-                await loadDurations();
-
-
-                const segment =
-                    findLiveSegment();
-
-
-                currentSongIndex =
-                    getDisplaySongIndex(
-                        segment
-                    );
-
-
-                currentSegmentType =
-                    segment.type;
-
-
-                updateRadioUI(
-                    segment
-                );
-
-
-                if (
-                    segment.type ===
-                    "speech"
-                ) {
-
-                    musicAudio.pause();
-
-
-                    await loadSpeech(
-                        segment.offset
-                    );
-
-
-                    await speechAudio.play();
-
-                } else {
-
-                    speechAudio.pause();
-
-
-                    await loadSong(
-                        segment.index,
-                        segment.offset
-                    );
-
-
-                    await musicAudio.play();
-                }
-
-
-                radioPlaying =
-                    true;
-
-
-                updatePlayButton();
-
-
-                updateLiveMediaSession();
-
-
-                try {
-
-                    navigator.mediaSession
-                        .playbackState =
-                        "playing";
-
-                } catch {}
-
-            } catch (
-                error
-            ) {
-
-                console.error(
-                    "Could not start live radio:",
-                    error
-                );
-
-
-                radioPlaying =
-                    false;
-
-
-                updatePlayButton();
-
-
-                songNameElement.textContent =
-                    "Could not start radio";
-
-
-                upNextElement.textContent =
-                    "Please try again";
-
-            } finally {
-
-                isChangingTrack =
-                    false;
-            }
-        }
-
-
-        /*
-         * =====================================================
-         * PAUSE
-         * =====================================================
-         */
-
-        function pauseRadio() {
-
-            musicAudio.pause();
-
-            speechAudio.pause();
-
-            radioPlaying =
-                false;
-
+            radioPlaying = true;
 
             updatePlayButton();
-
+            updateLiveMediaSession();
 
             try {
-
-                navigator.mediaSession
-                    .playbackState =
-                    "paused";
-
+                navigator.mediaSession.playbackState = "playing";
             } catch {}
+        } catch (error) {
+            console.error("Could not start live radio:", error);
+
+            radioPlaying = false;
+            updatePlayButton();
+
+            songNameElement.textContent = "Could not start radio";
+            upNextElement.textContent = "Please try again";
+        } finally {
+            isChangingTrack = false;
         }
-
-
-        /*
-         * =====================================================
-         * RESUME
-         * =====================================================
-         */
-
-        async function resumeLive() {
-
-            musicAudio.pause();
-
-            speechAudio.pause();
-
-            await playLive();
-        }
-
-
-        /*
-         * =====================================================
-         * BUTTON
-         * =====================================================
-         */
-
-        function updatePlayButton() {
-
-            if (
-                radioPlaying
-            ) {
-
-                playButton.textContent =
-                    "⏸ Pause";
-
-
-                playButton.classList.remove(
-                    "paused"
-                );
-
-            } else {
-
-                playButton.textContent =
-                    "▶️ Play";
-
-
-                playButton.classList.add(
-                    "paused"
-                );
-            }
-        }
-
-
-        playButton.addEventListener(
-            "click",
-            async () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    pauseRadio();
-
-                } else {
-
-                    await resumeLive();
-                }
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * TRACK END
-         * =====================================================
-         */
-
-        musicAudio.addEventListener(
-            "ended",
-            async () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    await playLive();
-                }
-            }
-        );
-
-
-        speechAudio.addEventListener(
-            "ended",
-            async () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    await playLive();
-                }
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * ERROR RECOVERY
-         * =====================================================
-         */
-
-        function retryLive() {
-
-            if (
-                !radioPlaying
-            ) {
-                return;
-            }
-
-
-            setTimeout(
-                () => {
-
-                    if (
-                        radioPlaying
-                    ) {
-
-                        playLive();
-                    }
-
-                },
-                1000
-            );
-        }
-
-
-        musicAudio.addEventListener(
-            "error",
-            retryLive
-        );
-
-
-        speechAudio.addEventListener(
-            "error",
-            () => {
-
-                console.error(
-                    "Speech audio error."
-                );
-
-                retryLive();
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * PERIODIC LIVE SYNCHRONIZATION
-         * =====================================================
-         */
-
-        async function syncRadio() {
-
-            if (
-                !radioPlaying
-            ) {
-                return;
-            }
-
-
-            try {
-
-                const live =
-                    findLiveSegment();
-
-
-                const displayIndex =
-                    getDisplaySongIndex(
-                        live
-                    );
-
-
-                if (
-                    live.type !==
-                        currentSegmentType ||
-                    displayIndex !==
-                        currentSongIndex
-                ) {
-
-                    await playLive();
-
-                    return;
-                }
-
-
-                const audio =
-                    live.type ===
-                        "speech"
-                        ? speechAudio
-                        : musicAudio;
-
-
-                const drift =
-                    Math.abs(
-                        audio.currentTime -
-                        live.offset
-                    );
-
-
-                if (
-                    drift > 3
-                ) {
-
-                    audio.currentTime =
-                        live.offset;
-                }
-
-
-                updateRadioUI(
-                    live
-                );
-
-
-                updateLiveMediaSession();
-
-            } catch (
-                error
-            ) {
-
-                console.warn(
-                    "Periodic sync failed:",
-                    error
-                );
-            }
-        }
-
-
-        setInterval(
-            syncRadio,
-            5000
-        );
-
-
-        /*
-         * =====================================================
-         * MEDIA SESSION POSITION
-         * =====================================================
-         */
-
-        setInterval(
-            () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    updateLiveMediaSession();
-                }
-
-            },
-            3000
-        );
-
-
-        /*
-         * =====================================================
-         * VISIBILITY SYNCHRONIZATION
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "visibilitychange",
-            async () => {
-
-                if (
-                    document.visibilityState !==
-                        "visible" ||
-                    !radioPlaying
-                ) {
-
-                    return;
-                }
-
-
-                try {
-
-                    const live =
-                        findLiveSegment();
-
-
-                    const displayIndex =
-                        getDisplaySongIndex(
-                            live
-                        );
-
-
-                    if (
-                        live.type !==
-                            currentSegmentType ||
-                        displayIndex !==
-                            currentSongIndex
-                    ) {
-
-                        await playLive();
-
-                        return;
-                    }
-
-
-                    const audio =
-                        live.type ===
-                            "speech"
-                            ? speechAudio
-                            : musicAudio;
-
-
-                    const drift =
-                        Math.abs(
-                            audio.currentTime -
-                            live.offset
-                        );
-
-
-                    if (
-                        drift > 3
-                    ) {
-
-                        await playLive();
-
-                    } else {
-
-                        updateRadioUI(
-                            live
-                        );
-
-                        updateLiveMediaSession();
-                    }
-
-                } catch (
-                    error
-                ) {
-
-                    console.warn(
-                        "Visibility sync failed:",
-                        error
-                    );
-                }
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * BLOCK TRACK-SKIPPING KEYS
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "keydown",
-            event => {
-
-                const blocked = [
-                    "ArrowLeft",
-                    "ArrowRight",
-                    "Home",
-                    "End",
-                    "MediaTrackNext",
-                    "MediaTrackPrevious",
-                    "MediaFastForward",
-                    "MediaRewind"
-                ];
-
-
-                if (
-                    blocked.includes(
-                        event.key
-                    )
-                ) {
-
-                    event.preventDefault();
-                }
-            }
-        );
-
-
-        /*
-         * =====================================================
-         * BLOCK CONTEXT MENU
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "contextmenu",
-            event =>
-                event.preventDefault()
-        );
-
-
-        /*
-         * =====================================================
-         * INITIAL UI
-         * =====================================================
-         */
+    }
+
+    /*
+     * =====================================================
+     * PAUSE
+     * =====================================================
+     */
+
+    function pauseRadio() {
+        musicAudio.pause();
+        speechAudio.pause();
+
+        radioPlaying = false;
 
         updatePlayButton();
 
+        try {
+            navigator.mediaSession.playbackState = "paused";
+        } catch {}
+    }
 
-        songNameElement.textContent =
-            "Christmas Radio Ready";
+    /*
+     * =====================================================
+     * RESUME
+     * =====================================================
+     */
 
+    async function resumeLive() {
+        musicAudio.pause();
+        speechAudio.pause();
 
-        upNextElement.textContent =
-            "Loading...";
+        await playLive();
+    }
 
+    /*
+     * =====================================================
+     * BUTTON
+     * =====================================================
+     */
 
-        /*
-         * =====================================================
-         * LOAD MANIFEST ON PAGE LOAD
-         * =====================================================
-         */
+    function updatePlayButton() {
+        if (radioPlaying) {
+            playButton.textContent = "⏸ Pause";
+            playButton.classList.remove("paused");
+        } else {
+            playButton.textContent = "▶️ Play";
+            playButton.classList.add("paused");
+        }
+    }
 
-        loadDurations()
-            .then(
-                () => {
+    playButton.addEventListener("click", async () => {
+        if (radioPlaying) {
+            pauseRadio();
+        } else {
+            await resumeLive();
+        }
+    });
 
-                    const live =
-                        findLiveSegment();
+    /*
+     * =====================================================
+     * TRACK END
+     * =====================================================
+     */
 
+    musicAudio.addEventListener("ended", async () => {
+        if (radioPlaying) {
+            await playLive();
+        }
+    });
 
-                    currentSongIndex =
-                        getDisplaySongIndex(
-                            live
-                        );
+    speechAudio.addEventListener("ended", async () => {
+        if (radioPlaying) {
+            await playLive();
+        }
+    });
 
+    /*
+     * =====================================================
+     * ERROR RECOVERY
+     * =====================================================
+     */
 
-                    currentSegmentType =
-                        live.type;
+    function retryLive() {
+        if (!radioPlaying) {
+            return;
+        }
 
+        setTimeout(() => {
+            if (radioPlaying) {
+                playLive();
+            }
+        }, 1000);
+    }
 
-                    updateRadioUI(
-                        live
-                    );
+    musicAudio.addEventListener("error", retryLive);
 
+    speechAudio.addEventListener("error", () => {
+        console.error("Speech audio error.");
+        retryLive();
+    });
 
-                    updateLiveMediaSession();
+    /*
+     * =====================================================
+     * PERIODIC LIVE SYNCHRONIZATION
+     * =====================================================
+     */
 
-                }
-            )
-            .catch(
-                error => {
+    async function syncRadio() {
+        if (!radioPlaying) {
+            return;
+        }
 
-                    console.error(
-                        "Radio metadata initialization failed:",
-                        error
-                    );
+        try {
+            const live = findLiveSegment();
+            const displayIndex = getDisplaySongIndex(live);
 
+            if (
+                live.type !== currentSegmentType ||
+                displayIndex !== currentSongIndex
+            ) {
+                await playLive();
+                return;
+            }
 
-                    songNameElement.textContent =
-                        "Radio unavailable";
+            const audio =
+                live.type === "speech"
+                    ? speechAudio
+                    : musicAudio;
 
+            const drift = Math.abs(audio.currentTime - live.offset);
 
-                    upNextElement.textContent =
-                        error.message;
-                }
+            if (drift > 3) {
+                audio.currentTime = live.offset;
+            }
+
+            updateRadioUI(live);
+            updateLiveMediaSession();
+        } catch (error) {
+            console.warn("Periodic sync failed:", error);
+        }
+    }
+
+    setInterval(syncRadio, 5000);
+
+    /*
+     * =====================================================
+     * MEDIA SESSION POSITION
+     * =====================================================
+     */
+
+    setInterval(() => {
+        if (radioPlaying) {
+            updateLiveMediaSession();
+        }
+    }, 3000);
+
+    /*
+     * =====================================================
+     * VISIBILITY SYNCHRONIZATION
+     * =====================================================
+     */
+
+    document.addEventListener("visibilitychange", async () => {
+        if (
+            document.visibilityState !== "visible" ||
+            !radioPlaying
+        ) {
+            return;
+        }
+
+        try {
+            const live = findLiveSegment();
+            const displayIndex = getDisplaySongIndex(live);
+
+            if (
+                live.type !== currentSegmentType ||
+                displayIndex !== currentSongIndex
+            ) {
+                await playLive();
+                return;
+            }
+
+            const audio =
+                live.type === "speech"
+                    ? speechAudio
+                    : musicAudio;
+
+            const drift = Math.abs(audio.currentTime - live.offset);
+
+            if (drift > 3) {
+                await playLive();
+            } else {
+                updateRadioUI(live);
+                updateLiveMediaSession();
+            }
+        } catch (error) {
+            console.warn("Visibility sync failed:", error);
+        }
+    });
+
+    /*
+     * =====================================================
+     * BLOCK TRACK-SKIPPING KEYS
+     * =====================================================
+     */
+
+    document.addEventListener("keydown", event => {
+        const blocked = [
+            "ArrowLeft",
+            "ArrowRight",
+            "Home",
+            "End",
+            "MediaTrackNext",
+            "MediaTrackPrevious",
+            "MediaFastForward",
+            "MediaRewind"
+        ];
+
+        if (blocked.includes(event.key)) {
+            event.preventDefault();
+        }
+    });
+
+    /*
+     * =====================================================
+     * BLOCK CONTEXT MENU
+     * =====================================================
+     */
+
+    document.addEventListener("contextmenu", event => {
+        event.preventDefault();
+    });
+
+    /*
+     * =====================================================
+     * INITIAL UI AND RADIO METADATA
+     * =====================================================
+     */
+
+    updatePlayButton();
+
+    songNameElement.textContent = "Christmas Radio Ready";
+    upNextElement.textContent = "Loading...";
+
+    /*
+     * =====================================================
+     * INITIALIZE RADIO, THEN CACHE AUDIO
+     * =====================================================
+     */
+
+    loadDurations()
+        .then(async () => {
+            const live = findLiveSegment();
+
+            currentSongIndex = getDisplaySongIndex(live);
+            currentSegmentType = live.type;
+
+            updateRadioUI(live);
+            updateLiveMediaSession();
+
+            /*
+             * Cache the playlist only after the manifest has loaded.
+             * This downloads audio without playing it.
+             */
+            await cacheRadioAudio();
+        })
+        .catch(error => {
+            console.error(
+                "Radio metadata initialization failed:",
+                error
             );
 
+            songNameElement.textContent = "Radio unavailable";
+            upNextElement.textContent = error.message;
+        });
 
-        /*
-         * =====================================================
-         * CLEANUP
-         * =====================================================
-         */
+    /*
+     * =====================================================
+     * CLEANUP
+     * =====================================================
+     */
 
-        window.addEventListener(
-            "beforeunload",
-            () => {
-
-                musicAudio.pause();
-
-                speechAudio.pause();
-            }
-        );
-
+    window.addEventListener("beforeunload", () => {
+        musicAudio.pause();
+        speechAudio.pause();
+    });
     </script>
-
 </body>
 
 </html>
