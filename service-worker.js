@@ -4,7 +4,6 @@
 const CACHE_NAME = "christmas-radio-v2";
 const AUDIO_CACHE = "christmas-radio-audio-v2";
 
-const BASE_URL = self.registration.scope;
 const CORE_FILES = [
     "./",
     "./index.html",
@@ -14,42 +13,24 @@ const CORE_FILES = [
     "./songs/speech.mp3"
 ];
 
-function absoluteURL(path) {
-    return new URL(path, BASE_URL).href;
-}
-
-async function cacheFile(cache, path) {
-    const url = absoluteURL(path);
-
-    try {
-        const response = await fetch(url, {
-            cache: "reload"
-        });
-
-        if (!response.ok || response.type === "opaque") {
-            return false;
-        }
-
-        await cache.put(url, response);
-        return true;
-    } catch (error) {
-        console.warn("Could not cache:", url, error);
-        return false;
-    }
-}
-
 self.addEventListener("install", event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
 
-        // Cache the essential page and resources.
         for (const file of CORE_FILES) {
-            const success = await cacheFile(cache, file);
-
-            if (!success && file === "./index.html") {
-                throw new Error(
-                    "Could not cache index.html. Check the GitHub Pages path."
+            try {
+                const request = new Request(
+                    new URL(file, self.registration.scope).href,
+                    { cache: "reload" }
                 );
+
+                const response = await fetch(request);
+
+                if (response.ok && response.type === "basic") {
+                    await cache.put(request, response);
+                }
+            } catch (error) {
+                console.error("Could not cache website file:", file, error);
             }
         }
 
@@ -75,7 +56,6 @@ self.addEventListener("activate", event => {
     })());
 });
 
-// Download all requested audio without playing it.
 self.addEventListener("message", event => {
     if (event.data?.type !== "CACHE_RADIO_AUDIO") {
         return;
@@ -90,55 +70,52 @@ self.addEventListener("message", event => {
     event.waitUntil((async () => {
         const cache = await caches.open(AUDIO_CACHE);
         let completed = 0;
-        const failed = [];
+        let failed = 0;
 
-        // Limit concurrency to avoid overwhelming the server.
-        for (let i = 0; i < files.length; i += 4) {
-            const batch = files.slice(i, i + 4);
+        for (const file of files) {
+            try {
+                const url = new URL(file, self.registration.scope);
 
-            const results = await Promise.all(
-                batch.map(async file => {
-                    const url = new URL(file, BASE_URL);
-
-                    if (url.origin !== self.location.origin) {
-                        return { file, success: false };
-                    }
-
-                    try {
-                        // Reuse files already cached.
-                        const existing = await cache.match(url.href);
-
-                        if (existing) {
-                            return { file, success: true };
-                        }
-
-                        const response = await fetch(url.href);
-
-                        if (!response.ok || response.type === "opaque") {
-                            return { file, success: false };
-                        }
-
-                        // Store the complete response, not a range response.
-                        await cache.put(url.href, response.clone());
-
-                        return { file, success: true };
-                    } catch (error) {
-                        console.warn("Audio caching failed:", file, error);
-                        return { file, success: false };
-                    }
-                })
-            );
-
-            for (const result of results) {
-                if (result.success) {
-                    completed++;
-                } else {
-                    failed.push(result.file);
+                if (url.origin !== self.location.origin) {
+                    failed++;
+                    continue;
                 }
+
+                const cached = await cache.match(url.href);
+
+                if (cached) {
+                    completed++;
+                    continue;
+                }
+
+                const response = await fetch(url.href);
+
+                if (!response.ok || response.type !== "basic") {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                await cache.put(url.href, response);
+                completed++;
+
+                const clients = await self.clients.matchAll({
+                    type: "window",
+                    includeUncontrolled: true
+                });
+
+                for (const client of clients) {
+                    client.postMessage({
+                        type: "RADIO_AUDIO_CACHE_PROGRESS",
+                        completed,
+                        total: files.length,
+                        failed
+                    });
+                }
+            } catch (error) {
+                failed++;
+                console.error("Could not cache audio:", file, error);
             }
         }
 
-        // Report the actual result to the open page.
         const clients = await self.clients.matchAll({
             type: "window",
             includeUncontrolled: true
@@ -148,74 +125,12 @@ self.addEventListener("message", event => {
             client.postMessage({
                 type: "RADIO_AUDIO_CACHE_FINISHED",
                 completed,
-                failed,
-                total: files.length
+                total: files.length,
+                failed
             });
         }
     })());
 });
-
-// Convert a cached full response into a valid partial audio response.
-async function serveRange(response, rangeHeader) {
-    const buffer = await response.arrayBuffer();
-    const size = buffer.byteLength;
-
-    const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
-
-    if (!match || (!match[1] && !match[2]) || size === 0) {
-        return new Response(null, {
-            status: 416,
-            headers: {
-                "Content-Range": `bytes */${size}`
-            }
-        });
-    }
-
-    let start;
-    let end;
-
-    if (!match[1]) {
-        const suffixLength = Number(match[2]);
-
-        if (suffixLength <= 0) {
-            return new Response(null, {
-                status: 416,
-                headers: { "Content-Range": `bytes */${size}` }
-            });
-        }
-
-        start = Math.max(0, size - suffixLength);
-        end = size - 1;
-    } else {
-        start = Number(match[1]);
-        end = match[2] ? Number(match[2]) : size - 1;
-        end = Math.min(end, size - 1);
-    }
-
-    if (start >= size || start > end) {
-        return new Response(null, {
-            status: 416,
-            headers: {
-                "Content-Range": `bytes */${size}`
-            }
-        });
-    }
-
-    const headers = new Headers(response.headers);
-
-    headers.set("Accept-Ranges", "bytes");
-    headers.set("Content-Range", `bytes ${start}-${end}/${size}`);
-    headers.set("Content-Length", String(end - start + 1));
-
-    return new Response(
-        buffer.slice(start, end + 1),
-        {
-            status: 206,
-            statusText: "Partial Content",
-            headers
-        }
-    );
-}
 
 self.addEventListener("fetch", event => {
     const request = event.request;
@@ -230,53 +145,93 @@ self.addEventListener("fetch", event => {
         return;
     }
 
-    const isNavigation = request.mode === "navigate";
-    const isAudio = url.pathname.includes("/songs/");
-    const isAsset =
-        url.pathname.endsWith("/christmas-background.jpg") ||
-        url.pathname.endsWith("/favicon.ico");
+    const isSong = url.pathname.includes("/songs/");
+    const isBackground =
+        url.pathname.endsWith("/christmas-background.jpg");
+    const isFavicon = url.pathname.endsWith("/favicon.ico");
 
-    // Serve cached audio, including byte-range requests from iPhones.
-    if (isAudio) {
+    if (isSong || isBackground || isFavicon) {
         event.respondWith((async () => {
-            const cache = await caches.open(AUDIO_CACHE);
-            const cached = await cache.match(url.href);
+            const audioCache = await caches.open(AUDIO_CACHE);
+            const coreCache = await caches.open(CACHE_NAME);
+
+            const cached =
+                await audioCache.match(url.href) ||
+                await coreCache.match(url.href);
 
             if (cached) {
                 const range = request.headers.get("Range");
 
-                if (range) {
-                    return serveRange(cached, range);
+                if (range && isSong) {
+                    const match = range.match(/bytes=(\d*)-(\d*)/);
+
+                    if (match) {
+                        const buffer = await cached.arrayBuffer();
+                        const size = buffer.byteLength;
+
+                        let start = match[1] ? Number(match[1]) : 0;
+                        let end = match[2] ? Number(match[2]) : size - 1;
+
+                        if (!match[1] && match[2]) {
+                            const suffixLength = Number(match[2]);
+                            start = Math.max(0, size - suffixLength);
+                            end = size - 1;
+                        }
+
+                        if (start >= size || start > end) {
+                            return new Response(null, {
+                                status: 416,
+                                headers: {
+                                    "Content-Range": `bytes */${size}`
+                                }
+                            });
+                        }
+
+                        end = Math.min(end, size - 1);
+
+                        return new Response(
+                            buffer.slice(start, end + 1),
+                            {
+                                status: 206,
+                                headers: {
+                                    "Content-Type":
+                                        cached.headers.get("Content-Type") ||
+                                        "audio/mpeg",
+                                    "Accept-Ranges": "bytes",
+                                    "Content-Range":
+                                        `bytes ${start}-${end}/${size}`,
+                                    "Content-Length": String(end - start + 1)
+                                }
+                            }
+                        );
+                    }
                 }
 
                 return cached;
             }
 
-            // Not cached yet: try the network.
             try {
                 const response = await fetch(request);
 
-                if (response.ok && !request.headers.has("Range")) {
-                    await cache.put(url.href, response.clone());
+                if (response.ok && response.type === "basic") {
+                    const destinationCache =
+                        isSong ? audioCache : coreCache;
+
+                    await destinationCache.put(url.href, response.clone());
                 }
 
                 return response;
             } catch {
-                return new Response(
-                    "This audio file has not been cached for offline use.",
-                    { status: 503 }
-                );
+                return new Response("This file is not available offline.", {
+                    status: 503
+                });
             }
         })());
 
         return;
     }
 
-    // Cache-first for the manifest and static images.
-    if (
-        url.pathname.endsWith("/durations.json") ||
-        isAsset
-    ) {
+    if (url.pathname.endsWith("/durations.json")) {
         event.respondWith((async () => {
             const cache = await caches.open(CACHE_NAME);
             const cached = await cache.match(url.href);
@@ -294,8 +249,11 @@ self.addEventListener("fetch", event => {
 
                 return response;
             } catch {
-                return new Response("File unavailable offline.", {
-                    status: 503
+                return new Response('{"songs":[]}', {
+                    status: 503,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
                 });
             }
         })());
@@ -303,28 +261,27 @@ self.addEventListener("fetch", event => {
         return;
     }
 
-    // Load the latest page online, with a cached fallback offline.
     event.respondWith((async () => {
-        const cache = await caches.open(CACHE_NAME);
-
         try {
             const response = await fetch(request);
 
-            if (response.ok) {
+            if (response.ok && response.type === "basic") {
+                const cache = await caches.open(CACHE_NAME);
                 await cache.put(url.href, response.clone());
             }
 
             return response;
         } catch {
+            const cache = await caches.open(CACHE_NAME);
             const cached = await cache.match(url.href);
 
             if (cached) {
                 return cached;
             }
 
-            if (isNavigation) {
+            if (request.mode === "navigate") {
                 const index = await cache.match(
-                    absoluteURL("./index.html")
+                    new URL("./index.html", self.registration.scope).href
                 );
 
                 if (index) {
