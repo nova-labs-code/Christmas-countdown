@@ -1777,6 +1777,48 @@
 
     <script>
 
+/*
+ * CACHE ALL RADIO AUDIO FOR OFFLINE PLAYBACK
+ */
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready
+        .then(registration => {
+            const worker = registration.active;
+
+            if (!worker) {
+                console.warn(
+                    "No active service worker is available yet."
+                );
+                return;
+            }
+
+            const files = [
+                "./songs/speech.mp3",
+                ...songs.map(song =>
+                    "./songs/" + encodeURIComponent(song.file)
+                )
+            ];
+
+            worker.postMessage({
+                type: "CACHE_RADIO_AUDIO",
+                files
+            });
+
+            console.log(
+                "Offline audio caching started:",
+                files.length,
+                "files"
+            );
+        })
+        .catch(error => {
+            console.error(
+                "Could not prepare offline audio:",
+                error
+            );
+        });
+}
+
         /*
          * =====================================================
          * FULL MOBILE GESTURE PREVENTION
