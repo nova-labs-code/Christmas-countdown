@@ -951,9 +951,23 @@ const DURATION_TIMEOUT = 30000;
 
 const SIGNATURE_STORAGE_KEY = "christmasRadioContentSignature";
 
-const RADIO_START = new Date(
-    "December 1, 2026 00:00:00"
-).getTime();
+// Fixed instant: midnight Eastern Standard Time (UTC-5), the same
+// moment on every device worldwide
+const RADIO_START = Date.parse("2026-12-01T00:00:00-05:00");
+
+const EASTERN_ZONE = "America/New_York";
+
+const easternDateFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: EASTERN_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+});
+
+// "2026-12-01" for the current day in Eastern time
+function getEasternDateKey() {
+    return easternDateFormatter.format(new Date());
+}
 
 
 /* =========================================
@@ -977,6 +991,9 @@ let retryCount = 0;
 let retryTimeout = null;
 
 let contentSignature = "";
+
+let baseSongs = [];
+let shuffleDay = "";
 
 let segmentTimer = null;
 let driftStrikes = 0;
@@ -1010,7 +1027,7 @@ function formatTime(seconds) {
 ========================================= */
 
 function createDailyRandom() {
-    const date = new Date().toISOString().slice(0, 10);
+    const date = getEasternDateKey();
 
     let seed = 2166136261;
 
@@ -1400,7 +1417,9 @@ async function loadDurations() {
             durationMap
         );
 
-        songs = shuffleSongs(loadedSongs);
+        baseSongs = loadedSongs;
+        shuffleDay = getEasternDateKey();
+        songs = shuffleSongs(baseSongs);
 
         speechDuration = loadSpeechDuration(durationMap);
 
@@ -1452,36 +1471,26 @@ async function loadDurations() {
    CHRISTMAS COUNTDOWN
 ========================================= */
 
-function updateCountdown() {
-    const now = new Date();
+const easternYearFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: EASTERN_ZONE,
+    year: "numeric"
+});
 
-    let christmas = new Date(
-        now.getFullYear(),
-        11,
-        25,
-        0,
-        0,
-        0,
-        0
-    );
+function updateCountdown() {
+    const now = Date.now();
+
+    const year = Number(easternYearFormatter.format(new Date(now)));
+
+    // Midnight on December 25 Eastern Standard Time (UTC-5)
+    let christmas = Date.parse(`${year}-12-25T00:00:00-05:00`);
 
     if (now >= christmas) {
-        christmas = new Date(
-            now.getFullYear() + 1,
-            11,
-            25,
-            0,
-            0,
-            0,
-            0
-        );
+        christmas = Date.parse(`${year + 1}-12-25T00:00:00-05:00`);
     }
 
     const seconds = Math.max(
         0,
-        Math.floor(
-            (christmas.getTime() - now.getTime()) / 1000
-        )
+        Math.floor((christmas - now) / 1000)
     );
 
     const days = Math.floor(seconds / 86400);
@@ -1745,9 +1754,10 @@ async function cacheRadioAudio() {
             return SONG_FOLDER + encodeURIComponent(song.file);
         });
 
+        // Only cache the speech file if durations.json lists it
         const files = [
             songURLs[0],
-            SPEECH_SRC,
+            ...(speechDuration > 0 ? [SPEECH_SRC] : []),
             ...songURLs.slice(1)
         ];
 
@@ -1805,6 +1815,35 @@ if ("serviceWorker" in navigator) {
             }
         }
     });
+}
+
+
+/* =========================================
+   RESHUFFLE AT MIDNIGHT EASTERN
+
+   Every device switches to the new daily order
+   at the same moment. Returns true if it
+   reshuffled.
+========================================= */
+
+function ensureShuffle() {
+    if (!metadataLoaded || !baseSongs.length) {
+        return false;
+    }
+
+    const today = getEasternDateKey();
+
+    if (today === shuffleDay) {
+        return false;
+    }
+
+    shuffleDay = today;
+    songs = shuffleSongs(baseSongs);
+    totalPlaylistDuration = calculatePlaylistDuration();
+
+    console.log("New daily order for", today);
+
+    return true;
 }
 
 
@@ -2253,6 +2292,8 @@ async function playLive() {
     try {
         await loadDurations();
 
+        ensureShuffle();
+
         let segment = findLiveSegment();
         let audio = null;
 
@@ -2468,6 +2509,12 @@ async function syncRadio(force = false) {
     if (!radioPlaying || isChangingTrack) return;
 
     try {
+        if (ensureShuffle()) {
+            driftStrikes = 0;
+            await playLive();
+            return;
+        }
+
         const live = findLiveSegment();
 
         const liveKey =
