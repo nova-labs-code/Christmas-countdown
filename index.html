@@ -940,10 +940,8 @@ const countdownElement = document.getElementById("countdown");
 ========================================= */
 
 const SONG_FOLDER = "./songs/";
-const SPEECH_FILE = "speech.mp3";
-const SPEECH_SRC = SONG_FOLDER + encodeURIComponent(SPEECH_FILE);
+const SPEECH_SRC = "./songs/speech.mp3";
 
-const SONG_MANIFEST = "./songs.json";
 const DURATION_MANIFEST = "./songs/durations.json";
 
 const SONGS_PER_SPEECH = 4;
@@ -953,21 +951,11 @@ const SIGNATURE_STORAGE_KEY = "christmasRadioContentSignature";
 
 // Fixed instant: midnight Eastern Standard Time (UTC-5), the same
 // moment on every device worldwide
-const RADIO_START = Date.parse("2026-12-01T00:00:00-05:00");
+const RADIO_START = Date.parse("2025-12-01T00:00:00-05:00");
 
 const EASTERN_ZONE = "America/New_York";
 
-const easternDateFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: EASTERN_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-});
 
-// "2026-12-01" for the current day in Eastern time
-function getEasternDateKey() {
-    return easternDateFormatter.format(new Date());
-}
 
 
 /* =========================================
@@ -991,9 +979,6 @@ let retryCount = 0;
 let retryTimeout = null;
 
 let contentSignature = "";
-
-let baseSongs = [];
-let shuffleDay = "";
 
 let segmentTimer = null;
 let driftStrikes = 0;
@@ -1023,52 +1008,18 @@ function formatTime(seconds) {
 
 
 /* =========================================
-   DAILY DETERMINISTIC RANDOM
-========================================= */
+   LOAD durations.json
 
-function createDailyRandom() {
-    const date = getEasternDateKey();
+   Format:
+   {
+     "songs": [
+       { "file": "song.mp3", "name": "Song (Artist)", "duration": 164.013 }
+     ]
+   }
 
-    let seed = 2166136261;
-
-    for (const char of date) {
-        seed ^= char.charCodeAt(0);
-        seed = Math.imul(seed, 16777619);
-    }
-
-    return function () {
-        seed += 0x6D2B79F5;
-
-        let value = seed;
-
-        value = Math.imul(value ^ (value >>> 15), value | 1);
-        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-
-        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-    };
-}
-
-
-/* =========================================
-   DAILY SHUFFLE
-========================================= */
-
-function shuffleSongs(list) {
-    const shuffled = [...list];
-    const random = createDailyRandom();
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(random() * (i + 1));
-
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    return shuffled;
-}
-
-
-/* =========================================
-   LOAD JSON FILES
+   Optional, recommended: add the speech length
+   so every device uses the same value:
+     "speech": 40.5
 ========================================= */
 
 async function fetchJSON(path) {
@@ -1085,246 +1036,93 @@ async function fetchJSON(path) {
     return response.json();
 }
 
-
-/* =========================================
-   SONG MANIFEST
-========================================= */
-
-async function loadPlaylistManifest() {
-    const data = await fetchJSON(SONG_MANIFEST);
-
+function parseSongs(data) {
     if (!data || !Array.isArray(data.songs)) {
-        throw new Error("songs.json must contain a songs array.");
-    }
-
-    const originalSongs = data.songs.map((entry, index) => {
-        if (!entry || typeof entry !== "object") {
-            throw new Error(`Invalid song at position ${index + 1}.`);
-        }
-
-        const name = String(entry.name || "").trim();
-        const file = String(entry.file || "").trim();
-
-        if (!name || !file) {
-            throw new Error(
-                `Song ${index + 1} is missing its name or file.`
-            );
-        }
-
-        return {
-            name,
-            file
-        };
-    });
-
-    if (originalSongs.length === 0) {
-        throw new Error("Your playlist is empty.");
-    }
-
-    return originalSongs;
-}
-
-
-/* =========================================
-   DURATION MANIFEST
-
-   Durations are loaded from:
-   ./songs/durations.json
-
-   No audio metadata duration detection.
-========================================= */
-
-function parseDuration(value) {
-    if (typeof value === "number") {
-        return Number.isFinite(value) && value > 0
-            ? value
-            : 0;
-    }
-
-    if (typeof value !== "string") {
-        return 0;
-    }
-
-    const trimmed = value.trim();
-
-    if (!trimmed) {
-        return 0;
-    }
-
-    if (/^\d+(\.\d+)?$/.test(trimmed)) {
-        const number = Number(trimmed);
-
-        return number > 0 ? number : 0;
-    }
-
-    const parts = trimmed.split(":").map(Number);
-
-    if (
-        parts.length < 2 ||
-        parts.length > 3 ||
-        parts.some(part => !Number.isFinite(part) || part < 0)
-    ) {
-        return 0;
-    }
-
-    const seconds = parts.reduce(
-        (total, part) => total * 60 + part,
-        0
-    );
-
-    return seconds > 0 ? seconds : 0;
-}
-
-
-/* =========================================
-   NORMALIZE DURATION DATA
-========================================= */
-
-function getDurationMap(data) {
-    const map = new Map();
-
-    if (!data || typeof data !== "object") {
-        throw new Error("durations.json must contain an object.");
-    }
-
-    /*
-     * Format:
-     * {
-     *   "songs": [
-     *     {
-     *       "file": "song.mp3",
-     *       "duration": 200
-     *     }
-     *   ]
-     * }
-     */
-
-    if (Array.isArray(data.songs)) {
-        for (const entry of data.songs) {
-            if (!entry || !entry.file) continue;
-
-            const duration = parseDuration(
-                entry.duration ?? entry.seconds
-            );
-
-            if (duration > 0) {
-                map.set(entry.file, duration);
-            }
-        }
-    }
-
-    /*
-     * Format:
-     * {
-     *   "durations": {
-     *     "song.mp3": 200
-     *   }
-     * }
-     */
-
-    if (
-        data.durations &&
-        typeof data.durations === "object" &&
-        !Array.isArray(data.durations)
-    ) {
-        for (const [file, value] of Object.entries(data.durations)) {
-            const duration = parseDuration(
-                typeof value === "object"
-                    ? value.duration ?? value.seconds
-                    : value
-            );
-
-            if (duration > 0) {
-                map.set(file, duration);
-            }
-        }
-    }
-
-    /*
-     * Direct format:
-     * {
-     *   "song.mp3": 200,
-     *   "speech.mp3": 40
-     * }
-     */
-
-    for (const [key, value] of Object.entries(data)) {
-        if (
-            key === "songs" ||
-            key === "durations"
-        ) {
-            continue;
-        }
-
-        const duration = parseDuration(
-            typeof value === "object" && value !== null
-                ? value.duration ?? value.seconds
-                : value
-        );
-
-        if (duration > 0) {
-            map.set(key, duration);
-        }
-    }
-
-    return map;
-}
-
-
-/* =========================================
-   LOAD DURATION MANIFEST
-========================================= */
-
-async function loadDurationManifest() {
-    const data = await fetchJSON(DURATION_MANIFEST);
-
-    const durationMap = getDurationMap(data);
-
-    if (durationMap.size === 0) {
         throw new Error(
-            "durations.json did not contain any valid durations."
+            "durations.json must contain a 'songs' array."
         );
     }
 
-    return durationMap;
-}
+    const parsed = data.songs.map((entry, index) => {
+        if (!entry || typeof entry !== "object") {
+            throw new Error(`Invalid song entry at index ${index}.`);
+        }
 
+        const name = String(entry.name ?? "").trim();
+        const file = String(entry.file ?? "").trim();
+        const duration = Number(entry.duration);
 
-/* =========================================
-   LOAD SONG DURATIONS
-========================================= */
+        if (!name) {
+            throw new Error(`Song ${index + 1} is missing its name.`);
+        }
 
-function loadSongDurations(originalSongs, durationMap) {
-    return originalSongs.map(song => {
-        const duration = durationMap.get(song.file);
+        if (!file) {
+            throw new Error(
+                `"${name}" is missing its file in durations.json.`
+            );
+        }
 
         if (!Number.isFinite(duration) || duration <= 0) {
             throw new Error(
-                `Missing duration for "${song.file}" in durations.json.`
+                `"${name}" has an invalid duration in durations.json.`
             );
         }
 
-        return {
-            ...song,
-            duration
-        };
+        return { name, file, duration };
     });
+
+    if (parsed.length === 0) {
+        throw new Error("durations.json contains no songs.");
+    }
+
+    return parsed;
 }
 
 
 /* =========================================
    SPEECH DURATION
+
+   Uses the value in durations.json when it is
+   there ("speech": 40.5). Otherwise reads it
+   from speech.mp3. A listed value is better:
+   if a device could not read the file, its
+   timeline would drift from everyone else's.
 ========================================= */
 
-function loadSpeechDuration(durationMap) {
-    const duration =
-        durationMap.get(SPEECH_FILE) ??
-        durationMap.get("speech") ??
-        0;
+async function loadSpeechDuration(data) {
+    const listed = Number(
+        data.speech ??
+        data["speech.mp3"] ??
+        data.speechDuration
+    );
 
-    return Number.isFinite(duration) && duration > 0
-        ? duration
-        : 0;
+    if (Number.isFinite(listed) && listed > 0) {
+        return listed;
+    }
+
+    try {
+        const probe = new Audio();
+
+        probe.preload = "metadata";
+        probe.src = SPEECH_SRC;
+        probe.load();
+
+        await waitForAudioMetadata(probe);
+
+        if (
+            Number.isFinite(probe.duration) &&
+            probe.duration > 0
+        ) {
+            return probe.duration;
+        }
+    } catch (error) {
+        console.warn(
+            "Could not read speech duration. Add \"speech\" to durations.json:",
+            error
+        );
+    }
+
+    return 0;
 }
 
 
@@ -1404,27 +1202,14 @@ async function loadDurations() {
     }
 
     metadataLoadingPromise = (async () => {
-        const [
-            originalSongs,
-            durationMap
-        ] = await Promise.all([
-            loadPlaylistManifest(),
-            loadDurationManifest()
-        ]);
+        const data = await fetchJSON(DURATION_MANIFEST);
 
-        const loadedSongs = loadSongDurations(
-            originalSongs,
-            durationMap
-        );
+        songs = parseSongs(data);
 
-        baseSongs = loadedSongs;
-        shuffleDay = getEasternDateKey();
-        songs = shuffleSongs(baseSongs);
-
-        speechDuration = loadSpeechDuration(durationMap);
+        speechDuration = await loadSpeechDuration(data);
 
         contentSignature = computeContentSignature(
-            loadedSongs,
+            songs,
             speechDuration
         );
 
@@ -1434,22 +1219,16 @@ async function loadDurations() {
             !Number.isFinite(totalPlaylistDuration) ||
             totalPlaylistDuration <= 0
         ) {
-            throw new Error("Could not calculate playlist duration.");
+            throw new Error("No valid playlist duration was found.");
         }
 
         metadataLoaded = true;
 
-        console.log("Playlist loaded successfully.");
-        console.log("Total songs:", songs.length);
+        console.log("Loaded songs:", songs.length);
         console.log("Speech duration:", formatTime(speechDuration));
         console.log(
-            "Total playlist duration:",
+            "Total radio timeline:",
             formatTime(totalPlaylistDuration)
-        );
-
-        console.log(
-            "Daily randomized playlist:",
-            songs.map(song => song.name)
         );
 
         return songs;
@@ -1818,33 +1597,7 @@ if ("serviceWorker" in navigator) {
 }
 
 
-/* =========================================
-   RESHUFFLE AT MIDNIGHT EASTERN
 
-   Every device switches to the new daily order
-   at the same moment. Returns true if it
-   reshuffled.
-========================================= */
-
-function ensureShuffle() {
-    if (!metadataLoaded || !baseSongs.length) {
-        return false;
-    }
-
-    const today = getEasternDateKey();
-
-    if (today === shuffleDay) {
-        return false;
-    }
-
-    shuffleDay = today;
-    songs = shuffleSongs(baseSongs);
-    totalPlaylistDuration = calculatePlaylistDuration();
-
-    console.log("New daily order for", today);
-
-    return true;
-}
 
 
 /* =========================================
@@ -1942,13 +1695,8 @@ function updateRadioUI(segment) {
     const current = getDisplaySongIndex(segment);
     const next = getDisplayNextSongIndex(segment);
 
-    if (segment.type === "speech") {
-        songNameElement.textContent =
-            `Christmas Message • ${songs[current].name}`;
-    } else {
-        songNameElement.textContent =
-            songs[current].name;
-    }
+    songNameElement.textContent =
+        songs[current].name;
 
     upNextElement.textContent =
         songs[next].name;
@@ -1971,7 +1719,7 @@ function updateLiveMediaSession() {
     const segment = findLiveSegment();
 
     const title = segment.type === "speech"
-        ? "Christmas Radio Message"
+        ? "Christmas Radio"
         : songs[segment.index].name;
 
     try {
@@ -2292,8 +2040,6 @@ async function playLive() {
     try {
         await loadDurations();
 
-        ensureShuffle();
-
         let segment = findLiveSegment();
         let audio = null;
 
@@ -2509,12 +2255,6 @@ async function syncRadio(force = false) {
     if (!radioPlaying || isChangingTrack) return;
 
     try {
-        if (ensureShuffle()) {
-            driftStrikes = 0;
-            await playLive();
-            return;
-        }
-
         const live = findLiveSegment();
 
         const liveKey =
