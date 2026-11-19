@@ -1738,2168 +1738,1576 @@
 
     <script>
 
-/*
- * =====================================================
- * REGISTER SERVICE WORKER
- *
- * This must happen before the page attempts to cache
- * audio files for offline playback.
- * =====================================================
- */
 
-if ("serviceWorker" in navigator) {
+"use strict";
 
-    navigator.serviceWorker
-        .register("./service-worker.js")
+/* =========================================
+   SERVICE WORKER
+========================================= */
+
+let serviceWorkerRegistration = null;
+
+const serviceWorkerPromise = ("serviceWorker" in navigator)
+    ? navigator.serviceWorker.register("./service-worker.js")
         .then(registration => {
-
-            console.log(
-                "Service worker registered:",
-                registration.scope
-            );
-
+            serviceWorkerRegistration = registration;
+            console.log("Service worker registered:", registration.scope);
+            return registration;
         })
         .catch(error => {
+            console.error("Service worker registration failed:", error);
+            return null;
+        })
+    : Promise.resolve(null);
 
-            console.error(
-                "Service worker registration failed:",
-                error
-            );
 
-        });
+/* =========================================
+   MOBILE GESTURE PREVENTION
+========================================= */
+
+let lastTouchEnd = 0;
+
+document.addEventListener("touchend", event => {
+    const now = Date.now();
+
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+
+    lastTouchEnd = now;
+}, { passive: false });
+
+["gesturestart", "gesturechange", "gestureend"].forEach(eventName => {
+    document.addEventListener(eventName, event => {
+        event.preventDefault();
+    }, { passive: false });
+});
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const musicAudio = document.getElementById("musicAudio");
+const speechAudio = document.getElementById("speechAudio");
+const playButton = document.getElementById("playButton");
+const songNameElement = document.getElementById("songName");
+const upNextElement = document.getElementById("upNext");
+const countdownElement = document.getElementById("countdown");
+
+
+/* =========================================
+   RADIO CONFIGURATION
+========================================= */
+
+const SONG_FOLDER = "./songs/";
+const SPEECH_FILE = "speech.mp3";
+const SPEECH_SRC = SONG_FOLDER + encodeURIComponent(SPEECH_FILE);
+
+const SONG_MANIFEST = "./songs.json";
+const DURATION_MANIFEST = "./songs/durations.json";
+
+const SONGS_PER_SPEECH = 4;
+const DURATION_TIMEOUT = 30000;
+
+const RADIO_START = new Date(
+    "December 1, 2026 00:00:00"
+).getTime();
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let songs = [];
+let speechDuration = 0;
+let totalPlaylistDuration = 0;
+
+let metadataLoaded = false;
+let metadataLoadingPromise = null;
+
+let radioPlaying = false;
+let currentSongIndex = 0;
+let currentSegmentType = "song";
+let currentSegmentKey = "";
+
+let isChangingTrack = false;
+let retryCount = 0;
+let retryTimeout = null;
+
+
+/* =========================================
+   TIME FORMAT
+========================================= */
+
+function formatTime(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+        return "0:00";
+    }
+
+    seconds = Math.floor(seconds);
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    }
+
+    return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 
-        /*
-         * =====================================================
-         * FULL MOBILE GESTURE PREVENTION
-         * =====================================================
-         */
 
-        let lastTouchEnd = 0;
+/* =========================================
+   DAILY DETERMINISTIC RANDOM
+========================================= */
 
-        document.addEventListener(
-            "touchend",
-            event => {
+function createDailyRandom() {
+    const date = new Date().toISOString().slice(0, 10);
 
-                const now =
-                    Date.now();
+    let seed = 2166136261;
 
-                if (
-                    now - lastTouchEnd <= 300
-                ) {
+    for (const char of date) {
+        seed ^= char.charCodeAt(0);
+        seed = Math.imul(seed, 16777619);
+    }
 
-                    event.preventDefault();
-                }
+    return function () {
+        seed += 0x6D2B79F5;
 
-                lastTouchEnd =
-                    now;
+        let value = seed;
 
-            },
-            {
-                passive: false
-            }
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+
+/* =========================================
+   DAILY SHUFFLE
+========================================= */
+
+function shuffleSongs(list) {
+    const shuffled = [...list];
+    const random = createDailyRandom();
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+}
+
+
+/* =========================================
+   LOAD JSON FILES
+========================================= */
+
+async function fetchJSON(path) {
+    const response = await fetch(path, {
+        cache: "no-store"
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Could not load ${path} (${response.status}).`
         );
+    }
 
-        document.addEventListener(
-            "gesturestart",
-            event => {
+    return response.json();
+}
 
-                event.preventDefault();
 
-            },
-            {
-                passive: false
-            }
-        );
+/* =========================================
+   SONG MANIFEST
+========================================= */
 
-        document.addEventListener(
-            "gesturechange",
-            event => {
+async function loadPlaylistManifest() {
+    const data = await fetchJSON(SONG_MANIFEST);
 
-                event.preventDefault();
+    if (!data || !Array.isArray(data.songs)) {
+        throw new Error("songs.json must contain a songs array.");
+    }
 
-            },
-            {
-                passive: false
-            }
-        );
-
-        document.addEventListener(
-            "gestureend",
-            event => {
-
-                event.preventDefault();
-
-            },
-            {
-                passive: false
-            }
-        );
-
-        /*
-         * =====================================================
-         * ELEMENTS
-         * =====================================================
-         */
-
-        const musicAudio =
-            document.getElementById(
-                "musicAudio"
-            );
-
-        const speechAudio =
-            document.getElementById(
-                "speechAudio"
-            );
-
-        const playButton =
-            document.getElementById(
-                "playButton"
-            );
-
-        const songNameElement =
-            document.getElementById(
-                "songName"
-            );
-
-        const upNextElement =
-            document.getElementById(
-                "upNext"
-            );
-
-        const countdownElement =
-            document.getElementById(
-                "countdown"
-            );
-
-        /*
-         * =====================================================
-         * RADIO CONFIGURATION
-         * =====================================================
-         */
-
-        const RADIO_START =
-            new Date(
-                "Dec 1, 2025 00:00:00"
-            ).getTime();
-
-        const SONG_FOLDER =
-            "./songs/";
-
-        const SPEECH_SRC =
-            "./songs/speech.mp3";
-
-        const DURATION_MANIFEST =
-            "./songs/durations.json";
-
-        const SONGS_PER_SPEECH =
-            4;
-
-        /*
-         * =====================================================
-         * STATE
-         * =====================================================
-         */
-
-        let songs = [];
-
-        let speechDuration = 0;
-
-        let totalPlaylistDuration = 0;
-
-        let metadataLoaded = false;
-
-        let metadataLoadingPromise = null;
-
-        let radioPlaying = false;
-
-        let currentSongIndex = 0;
-
-        let currentSegmentType = "song";
-
-        let isChangingTrack = false;
-
-        /*
-         * =====================================================
-         * FORMAT TIME
-         * =====================================================
-         */
-
-        function formatTime(seconds) {
-
-            if (
-                !Number.isFinite(
-                    seconds
-                )
-            ) {
-
-                return "0:00";
-            }
-
-            seconds =
-                Math.max(
-                    0,
-                    Math.floor(
-                        seconds
-                    )
-                );
-
-            const minutes =
-                Math.floor(
-                    seconds / 60
-                );
-
-            const secs =
-                String(
-                    seconds % 60
-                ).padStart(
-                    2,
-                    "0"
-                );
-
-            return `${minutes}:${secs}`;
+    const originalSongs = data.songs.map((entry, index) => {
+        if (!entry || typeof entry !== "object") {
+            throw new Error(`Invalid song at position ${index + 1}.`);
         }
 
-        /*
-         * =====================================================
-         * CHRISTMAS COUNTDOWN
-         * =====================================================
-         */
+        const name = String(entry.name || "").trim();
+        const file = String(entry.file || "").trim();
 
-        function updateCountdown() {
-
-            const now =
-                new Date();
-
-            let christmas =
-                new Date(
-                    now.getFullYear(),
-                    11,
-                    25,
-                    0,
-                    0,
-                    0,
-                    0
-                );
-
-            if (
-                now >= christmas
-            ) {
-
-                christmas =
-                    new Date(
-                        now.getFullYear() + 1,
-                        11,
-                        25,
-                        0,
-                        0,
-                        0,
-                        0
-                    );
-            }
-
-            const seconds =
-                Math.floor(
-                    (
-                        christmas - now
-                    ) / 1000
-                );
-
-            const days =
-                Math.floor(
-                    seconds / 86400
-                );
-
-            const hours =
-                Math.floor(
-                    (
-                        seconds % 86400
-                    ) / 3600
-                );
-
-            const minutes =
-                Math.floor(
-                    (
-                        seconds % 3600
-                    ) / 60
-                );
-
-            const secs =
-                seconds % 60;
-
-            countdownElement.textContent =
-                `${days}d ${hours}h ${minutes}m ${secs}s`;
+        if (!name || !file) {
+            throw new Error(
+                `Song ${index + 1} is missing its name or file.`
+            );
         }
 
-        updateCountdown();
+        return {
+            name,
+            file
+        };
+    });
 
-        setInterval(
-            updateCountdown,
-            1000
-        );
+    if (originalSongs.length === 0) {
+        throw new Error("Your playlist is empty.");
+    }
 
-        /*
-         * =====================================================
-         * SNOW
-         * =====================================================
-         */
+    return originalSongs;
+}
 
-        function setSnowDrift(
-            snowflake,
-            driftAmount
+
+/* =========================================
+   DURATION MANIFEST
+
+   Durations are loaded from:
+   ./songs/durations.json
+
+   No audio metadata duration detection.
+========================================= */
+
+function parseDuration(value) {
+    if (typeof value === "number") {
+        return Number.isFinite(value) && value > 0
+            ? value
+            : 0;
+    }
+
+    if (typeof value !== "string") {
+        return 0;
+    }
+
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+        return 0;
+    }
+
+    if (/^\d+(\.\d+)?$/.test(trimmed)) {
+        const number = Number(trimmed);
+
+        return number > 0 ? number : 0;
+    }
+
+    const parts = trimmed.split(":").map(Number);
+
+    if (
+        parts.length < 2 ||
+        parts.length > 3 ||
+        parts.some(part => !Number.isFinite(part) || part < 0)
+    ) {
+        return 0;
+    }
+
+    const seconds = parts.reduce(
+        (total, part) => total * 60 + part,
+        0
+    );
+
+    return seconds > 0 ? seconds : 0;
+}
+
+
+/* =========================================
+   NORMALIZE DURATION DATA
+========================================= */
+
+function getDurationMap(data) {
+    const map = new Map();
+
+    if (!data || typeof data !== "object") {
+        throw new Error("durations.json must contain an object.");
+    }
+
+    /*
+     * Format:
+     * {
+     *   "songs": [
+     *     {
+     *       "file": "song.mp3",
+     *       "duration": 200
+     *     }
+     *   ]
+     * }
+     */
+
+    if (Array.isArray(data.songs)) {
+        for (const entry of data.songs) {
+            if (!entry || !entry.file) continue;
+
+            const duration = parseDuration(
+                entry.duration ?? entry.seconds
+            );
+
+            if (duration > 0) {
+                map.set(entry.file, duration);
+            }
+        }
+    }
+
+    /*
+     * Format:
+     * {
+     *   "durations": {
+     *     "song.mp3": 200
+     *   }
+     * }
+     */
+
+    if (
+        data.durations &&
+        typeof data.durations === "object" &&
+        !Array.isArray(data.durations)
+    ) {
+        for (const [file, value] of Object.entries(data.durations)) {
+            const duration = parseDuration(
+                typeof value === "object"
+                    ? value.duration ?? value.seconds
+                    : value
+            );
+
+            if (duration > 0) {
+                map.set(file, duration);
+            }
+        }
+    }
+
+    /*
+     * Direct format:
+     * {
+     *   "song.mp3": 200,
+     *   "speech.mp3": 40
+     * }
+     */
+
+    for (const [key, value] of Object.entries(data)) {
+        if (
+            key === "songs" ||
+            key === "durations"
         ) {
+            continue;
+        }
 
-            const center =
-                (
-                    Math.random() - 0.5
-                ) *
-                driftAmount;
+        const duration = parseDuration(
+            typeof value === "object" && value !== null
+                ? value.duration ?? value.seconds
+                : value
+        );
 
-            const swing =
-                8 +
-                Math.random() *
-                (
-                    driftAmount *
-                    0.55
-                );
+        if (duration > 0) {
+            map.set(key, duration);
+        }
+    }
 
-            const direction =
-                Math.random() > 0.5
-                    ? 1
-                    : -1;
+    return map;
+}
 
-            snowflake.style.setProperty(
-                "--drift-start",
-                `${center - swing * direction}px`
-            );
 
-            snowflake.style.setProperty(
-                "--drift-one",
-                `${center + swing * 0.25 * direction}px`
-            );
+/* =========================================
+   LOAD DURATION MANIFEST
+========================================= */
 
-            snowflake.style.setProperty(
-                "--drift-two",
-                `${center + swing * direction}px`
-            );
+async function loadDurationManifest() {
+    const data = await fetchJSON(DURATION_MANIFEST);
 
-            snowflake.style.setProperty(
-                "--drift-three",
-                `${center + swing * 0.35 * direction}px`
-            );
+    const durationMap = getDurationMap(data);
 
-            snowflake.style.setProperty(
-                "--drift-four",
-                `${center - swing * 0.45 * direction}px`
-            );
+    if (durationMap.size === 0) {
+        throw new Error(
+            "durations.json did not contain any valid durations."
+        );
+    }
 
-            snowflake.style.setProperty(
-                "--drift-five",
-                `${center - swing * direction}px`
-            );
+    return durationMap;
+}
 
-            snowflake.style.setProperty(
-                "--drift-six",
-                `${center - swing * 0.30 * direction}px`
-            );
 
-            snowflake.style.setProperty(
-                "--drift-seven",
-                `${center + swing * 0.55 * direction}px`
-            );
+/* =========================================
+   LOAD SONG DURATIONS
+========================================= */
 
-            snowflake.style.setProperty(
-                "--drift-end",
-                `${center + swing * 0.15 * direction}px`
+function loadSongDurations(originalSongs, durationMap) {
+    return originalSongs.map(song => {
+        const duration = durationMap.get(song.file);
+
+        if (!Number.isFinite(duration) || duration <= 0) {
+            throw new Error(
+                `Missing duration for "${song.file}" in durations.json.`
             );
         }
 
-        function createSnowflakes(
-            container,
-            amount
+        return {
+            ...song,
+            duration
+        };
+    });
+}
+
+
+/* =========================================
+   SPEECH DURATION
+========================================= */
+
+function loadSpeechDuration(durationMap) {
+    const duration =
+        durationMap.get(SPEECH_FILE) ??
+        durationMap.get("speech") ??
+        0;
+
+    return Number.isFinite(duration) && duration > 0
+        ? duration
+        : 0;
+}
+
+
+/* =========================================
+   CALCULATE PLAYLIST DURATION
+========================================= */
+
+function calculatePlaylistDuration() {
+    let duration = 0;
+
+    for (let i = 0; i < songs.length; i++) {
+        duration += songs[i].duration;
+
+        if (
+            (i + 1) % SONGS_PER_SPEECH === 0 &&
+            speechDuration > 0
         ) {
-
-            for (
-                let i = 0;
-                i < amount;
-                i++
-            ) {
-
-                const snowflake =
-                    document.createElement(
-                        "div"
-                    );
-
-                snowflake.className =
-                    "snowflake";
-
-                snowflake.textContent =
-                    Math.random() > 0.5
-                        ? "❄"
-                        : "•";
-
-                snowflake.style.left =
-                    `${Math.random() * 100}%`;
-
-                snowflake.style.setProperty(
-                    "--size",
-                    `${8 + Math.random() * 14}px`
-                );
-
-                snowflake.style.setProperty(
-                    "--opacity",
-                    `${0.25 + Math.random() * 0.65}`
-                );
-
-                snowflake.style.setProperty(
-                    "--duration",
-                    `${7 + Math.random() * 12}s`
-                );
-
-                snowflake.style.setProperty(
-                    "--delay",
-                    `${-Math.random() * 15}s`
-                );
-
-                setSnowDrift(
-                    snowflake,
-                    50
-                );
-
-                container.appendChild(
-                    snowflake
-                );
-            }
+            duration += speechDuration;
         }
+    }
 
-        function createCircleSnow(
-            container,
-            amount,
-            depth
+    return duration;
+}
+
+
+/* =========================================
+   LOAD ALL METADATA
+========================================= */
+
+async function loadDurations() {
+    if (metadataLoaded) {
+        return songs;
+    }
+
+    if (metadataLoadingPromise) {
+        return metadataLoadingPromise;
+    }
+
+    metadataLoadingPromise = (async () => {
+        const [
+            originalSongs,
+            durationMap
+        ] = await Promise.all([
+            loadPlaylistManifest(),
+            loadDurationManifest()
+        ]);
+
+        const loadedSongs = loadSongDurations(
+            originalSongs,
+            durationMap
+        );
+
+        songs = shuffleSongs(loadedSongs);
+
+        speechDuration = loadSpeechDuration(durationMap);
+
+        totalPlaylistDuration = calculatePlaylistDuration();
+
+        if (
+            !Number.isFinite(totalPlaylistDuration) ||
+            totalPlaylistDuration <= 0
         ) {
-
-            for (
-                let i = 0;
-                i < amount;
-                i++
-            ) {
-
-                const snowflake =
-                    document.createElement(
-                        "div"
-                    );
-
-                snowflake.className =
-                    `snowflake circle-snow ${depth}`;
-
-                snowflake.textContent =
-                    "•";
-
-                let minSize;
-                let maxSize;
-
-                let minOpacity;
-                let maxOpacity;
-
-                let minDuration;
-                let maxDuration;
-
-                let driftAmount;
-
-                if (
-                    depth === "far"
-                ) {
-
-                    minSize = 3;
-                    maxSize = 7;
-
-                    minOpacity = 0.18;
-                    maxOpacity = 0.42;
-
-                    minDuration = 10;
-                    maxDuration = 20;
-
-                    driftAmount = 35;
-
-                } else if (
-                    depth === "mid"
-                ) {
-
-                    minSize = 5;
-                    maxSize = 11;
-
-                    minOpacity = 0.35;
-                    maxOpacity = 0.68;
-
-                    minDuration = 8;
-                    maxDuration = 16;
-
-                    driftAmount = 50;
-
-                } else {
-
-                    minSize = 8;
-                    maxSize = 17;
-
-                    minOpacity = 0.55;
-                    maxOpacity = 0.95;
-
-                    minDuration = 6;
-                    maxDuration = 13;
-
-                    driftAmount = 65;
-                }
-
-                const size =
-                    minSize +
-                    Math.random() *
-                    (
-                        maxSize -
-                        minSize
-                    );
-
-                const opacity =
-                    minOpacity +
-                    Math.random() *
-                    (
-                        maxOpacity -
-                        minOpacity
-                    );
-
-                const duration =
-                    minDuration +
-                    Math.random() *
-                    (
-                        maxDuration -
-                        minDuration
-                    );
-
-                snowflake.style.left =
-                    `${Math.random() * 100}%`;
-
-                snowflake.style.setProperty(
-                    "--size",
-                    `${size}px`
-                );
-
-                snowflake.style.setProperty(
-                    "--opacity",
-                    opacity
-                );
-
-                snowflake.style.setProperty(
-                    "--duration",
-                    `${duration}s`
-                );
-
-                snowflake.style.setProperty(
-                    "--delay",
-                    `${-Math.random() * duration}s`
-                );
-
-                snowflake.style.top =
-                    `${-20 - Math.random() * 100}px`;
-
-                setSnowDrift(
-                    snowflake,
-                    driftAmount
-                );
-
-                let aboveChance;
-
-                if (
-                    depth === "far"
-                ) {
-
-                    aboveChance =
-                        0.08;
-
-                } else if (
-                    depth === "mid"
-                ) {
-
-                    aboveChance =
-                        0.40;
-
-                } else {
-
-                    aboveChance =
-                        0.70;
-                }
-
-                const shouldGoAbove =
-                    Math.random() <
-                    aboveChance;
-
-                if (
-                    shouldGoAbove
-                ) {
-
-                    document
-                        .getElementById(
-                            "snowAbove"
-                        )
-                        .appendChild(
-                            snowflake
-                        );
-
-                } else {
-
-                    container.appendChild(
-                        snowflake
-                    );
-                }
-            }
+            throw new Error("Could not calculate playlist duration.");
         }
 
-        createSnowflakes(
-            document.getElementById(
-                "snowFar"
-            ),
-            20
+        metadataLoaded = true;
+
+        console.log("Playlist loaded successfully.");
+        console.log("Total songs:", songs.length);
+        console.log("Speech duration:", formatTime(speechDuration));
+        console.log(
+            "Total playlist duration:",
+            formatTime(totalPlaylistDuration)
         );
 
-        createSnowflakes(
-            document.getElementById(
-                "snowMid"
-            ),
-            15
+        console.log(
+            "Daily randomized playlist:",
+            songs.map(song => song.name)
         );
 
-        createSnowflakes(
-            document.getElementById(
-                "snowNear"
-            ),
-            10
+        return songs;
+
+    })().catch(error => {
+        metadataLoaded = false;
+        metadataLoadingPromise = null;
+
+        console.error("Playlist loading failed:", error);
+
+        throw error;
+    });
+
+    return metadataLoadingPromise;
+}
+
+
+/* =========================================
+   CHRISTMAS COUNTDOWN
+========================================= */
+
+function updateCountdown() {
+    const now = new Date();
+
+    let christmas = new Date(
+        now.getFullYear(),
+        11,
+        25,
+        0,
+        0,
+        0,
+        0
+    );
+
+    if (now >= christmas) {
+        christmas = new Date(
+            now.getFullYear() + 1,
+            11,
+            25,
+            0,
+            0,
+            0,
+            0
+        );
+    }
+
+    const seconds = Math.max(
+        0,
+        Math.floor(
+            (christmas.getTime() - now.getTime()) / 1000
+        )
+    );
+
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    countdownElement.textContent =
+        `${days}d ${hours}h ${minutes}m ${secs}s`;
+}
+
+updateCountdown();
+
+setInterval(updateCountdown, 1000);
+
+
+/* =========================================
+   SNOW DRIFT
+========================================= */
+
+function setSnowDrift(snowflake, driftAmount) {
+    const center = (Math.random() - 0.5) * driftAmount;
+    const swing = 8 + Math.random() * (driftAmount * 0.55);
+    const direction = Math.random() > 0.5 ? 1 : -1;
+
+    const positions = {
+        "--drift-start": center - swing * direction,
+        "--drift-one": center + swing * .25 * direction,
+        "--drift-two": center + swing * direction,
+        "--drift-three": center + swing * .35 * direction,
+        "--drift-four": center - swing * .45 * direction,
+        "--drift-five": center - swing * direction,
+        "--drift-six": center - swing * .30 * direction,
+        "--drift-seven": center + swing * .55 * direction,
+        "--drift-end": center + swing * .15 * direction
+    };
+
+    for (const [property, value] of Object.entries(positions)) {
+        snowflake.style.setProperty(
+            property,
+            `${value}px`
+        );
+    }
+}
+
+
+/* =========================================
+   CREATE SNOWFLAKES
+========================================= */
+
+function createSnowflakes(container, amount) {
+    for (let i = 0; i < amount; i++) {
+        const snowflake = document.createElement("div");
+
+        snowflake.className = "snowflake";
+        snowflake.textContent =
+            Math.random() > .5 ? "❄" : "•";
+
+        snowflake.style.left = `${Math.random() * 100}%`;
+
+        snowflake.style.setProperty(
+            "--size",
+            `${8 + Math.random() * 14}px`
         );
 
-        createCircleSnow(
-            document.getElementById(
-                "snowFar"
-            ),
-            45,
-            "far"
+        snowflake.style.setProperty(
+            "--opacity",
+            `${.25 + Math.random() * .65}`
         );
 
-        createCircleSnow(
-            document.getElementById(
-                "snowMid"
-            ),
-            38,
-            "mid"
+        snowflake.style.setProperty(
+            "--duration",
+            `${7 + Math.random() * 12}s`
         );
 
-        createCircleSnow(
-            document.getElementById(
-                "snowNear"
-            ),
-            28,
-            "near"
+        snowflake.style.setProperty(
+            "--delay",
+            `${-Math.random() * 15}s`
         );
 
-        /*
-         * =====================================================
-         * LOAD durations.json
-         * =====================================================
-         */
-
-        async function loadDurations() {
-
-            if (
-                metadataLoaded
-            ) {
-                return;
-            }
-
-            if (
-                metadataLoadingPromise
-            ) {
-                return metadataLoadingPromise;
-            }
-
-            metadataLoadingPromise =
-                (async () => {
-
-                    const response =
-                        await fetch(
-                            DURATION_MANIFEST,
-                            {
-                                cache:
-                                    "no-store"
-                            }
-                        );
-
-                    if (
-                        !response.ok
-                    ) {
-
-                        throw new Error(
-                            `Could not load durations.json (${response.status})`
-                        );
-                    }
-
-                    const data =
-                        await response.json();
-
-                    if (
-                        !data ||
-                        !Array.isArray(
-                            data.songs
-                        )
-                    ) {
-
-                        throw new Error(
-                            "durations.json must contain a 'songs' array."
-                        );
-                    }
-
-                    songs =
-                        data.songs.map(
-                            (
-                                entry,
-                                index
-                            ) => {
-
-                                if (
-                                    !entry ||
-                                    typeof entry !==
-                                        "object"
-                                ) {
-
-                                    throw new Error(
-                                        `Invalid song entry at index ${index}.`
-                                    );
-                                }
-
-                                const name =
-                                    String(
-                                        entry.name ??
-                                        ""
-                                    ).trim();
-
-                                const file =
-                                    String(
-                                        entry.file ??
-                                        ""
-                                    ).trim();
-
-                                const duration =
-                                    Number(
-                                        entry.duration
-                                    );
-
-                                if (
-                                    !name
-                                ) {
-
-                                    throw new Error(
-                                        `Song ${index + 1} is missing its name.`
-                                    );
-                                }
-
-                                if (
-                                    !file
-                                ) {
-
-                                    throw new Error(
-                                        `"${name}" is missing its file in durations.json.`
-                                    );
-                                }
-
-                                if (
-                                    !Number.isFinite(
-                                        duration
-                                    ) ||
-                                    duration <= 0
-                                ) {
-
-                                    throw new Error(
-                                        `"${name}" has an invalid duration in durations.json.`
-                                    );
-                                }
-
-                                return {
-                                    name,
-                                    file,
-                                    duration
-                                };
-                            }
-                        );
-
-                    if (
-                        songs.length === 0
-                    ) {
-
-                        throw new Error(
-                            "durations.json contains no songs."
-                        );
-                    }
-
-                    try {
-
-                        const speechMetadata =
-                            document.createElement(
-                                "audio"
-                            );
-
-                        speechMetadata.preload =
-                            "metadata";
-
-                        speechMetadata.src =
-                            SPEECH_SRC;
-
-                        speechDuration =
-                            await new Promise(
-                                (
-                                    resolve,
-                                    reject
-                                ) => {
-
-                                    const timeout =
-                                        setTimeout(
-                                            () => {
-
-                                                reject(
-                                                    new Error(
-                                                        "Timed out loading speech.mp3"
-                                                    )
-                                                );
-
-                                            },
-                                            15000
-                                        );
-
-                                    speechMetadata.addEventListener(
-                                        "loadedmetadata",
-                                        () => {
-
-                                            clearTimeout(
-                                                timeout
-                                            );
-
-                                            const duration =
-                                                speechMetadata.duration;
-
-                                            if (
-                                                Number.isFinite(
-                                                    duration
-                                                ) &&
-                                                duration > 0
-                                            ) {
-
-                                                resolve(
-                                                    duration
-                                                );
-
-                                            } else {
-
-                                                reject(
-                                                    new Error(
-                                                        "Invalid speech duration"
-                                                    )
-                                                );
-                                            }
-
-                                        },
-                                        {
-                                            once:
-                                                true
-                                        }
-                                    );
-
-                                    speechMetadata.addEventListener(
-                                        "error",
-                                        () => {
-
-                                            clearTimeout(
-                                                timeout
-                                            );
-
-                                            reject(
-                                                new Error(
-                                                    "Could not load speech.mp3"
-                                                )
-                                            );
-
-                                        },
-                                        {
-                                            once:
-                                                true
-                                        }
-                                    );
-
-                                    speechMetadata.load();
-
-                                }
-                            );
-
-                    } catch (
-                        error
-                    ) {
-
-                        console.error(
-                            "Could not read speech duration:",
-                            error
-                        );
-
-                        speechDuration =
-                            0;
-                    }
-
-                    totalPlaylistDuration =
-                        0;
-
-                    for (
-                        let i = 0;
-                        i < songs.length;
-                        i++
-                    ) {
-
-                        totalPlaylistDuration +=
-                            songs[i].duration;
-
-                        if (
-                            (i + 1) %
-                                SONGS_PER_SPEECH ===
-                                0 &&
-                            speechDuration > 0
-                        ) {
-
-                            totalPlaylistDuration +=
-                                speechDuration;
-                        }
-                    }
-
-                    if (
-                        totalPlaylistDuration <= 0
-                    ) {
-
-                        throw new Error(
-                            "No valid playlist duration was found."
-                        );
-                    }
-
-                    metadataLoaded =
-                        true;
-
-                    console.log(
-                        "Loaded songs:",
-                        songs.length
-                    );
-
-                    console.log(
-                        "Speech duration:",
-                        formatTime(
-                            speechDuration
-                        )
-                    );
-
-                    console.log(
-                        "Total radio timeline:",
-                        formatTime(
-                            totalPlaylistDuration
-                        )
-                    );
-
-                })()
-                    .catch(
-                        error => {
-
-                            metadataLoadingPromise =
-                                null;
-
-                            throw error;
-                        }
-                    );
-
-            return metadataLoadingPromise;
+        setSnowDrift(snowflake, 50);
+
+        container.appendChild(snowflake);
+    }
+}
+
+
+/* =========================================
+   CREATE CIRCLE SNOW
+========================================= */
+
+function createCircleSnow(container, amount, depth) {
+    for (let i = 0; i < amount; i++) {
+        const snowflake = document.createElement("div");
+
+        snowflake.className =
+            `snowflake circle-snow ${depth}`;
+
+        snowflake.textContent = "•";
+
+        let minSize;
+        let maxSize;
+        let minOpacity;
+        let maxOpacity;
+        let minDuration;
+        let maxDuration;
+        let driftAmount;
+
+        if (depth === "far") {
+            minSize = 3;
+            maxSize = 7;
+            minOpacity = .18;
+            maxOpacity = .42;
+            minDuration = 10;
+            maxDuration = 20;
+            driftAmount = 35;
+
+        } else if (depth === "mid") {
+            minSize = 5;
+            maxSize = 11;
+            minOpacity = .35;
+            maxOpacity = .68;
+            minDuration = 8;
+            maxDuration = 16;
+            driftAmount = 50;
+
+        } else {
+            minSize = 8;
+            maxSize = 17;
+            minOpacity = .55;
+            maxOpacity = .95;
+            minDuration = 6;
+            maxDuration = 13;
+            driftAmount = 65;
         }
 
-        /*
-         * =====================================================
-         * CACHE ALL RADIO AUDIO FOR OFFLINE PLAYBACK
-         *
-         * Called only after loadDurations() has populated songs.
-         * The service worker caches files in the background.
-         * Audio is downloaded for caching, not played.
-         * =====================================================
-         */
+        const size =
+            minSize + Math.random() * (maxSize - minSize);
 
-        async function cacheRadioAudio() {
+        const opacity =
+            minOpacity + Math.random() * (maxOpacity - minOpacity);
 
-            if (
-                !("serviceWorker" in navigator)
-            ) {
-                console.warn(
-                    "Service workers are not supported in this browser."
-                );
+        const duration =
+            minDuration + Math.random() * (maxDuration - minDuration);
 
-                return;
-            }
+        snowflake.style.left = `${Math.random() * 100}%`;
+        snowflake.style.setProperty("--size", `${size}px`);
+        snowflake.style.setProperty("--opacity", opacity);
+        snowflake.style.setProperty("--duration", `${duration}s`);
 
-            try {
+        snowflake.style.setProperty(
+            "--delay",
+            `${-Math.random() * duration}s`
+        );
 
-                /*
-                 * Wait until a service worker is active.
-                 * Registration was started near the top of this script.
-                 */
+        snowflake.style.top =
+            `${-20 - Math.random() * 100}px`;
 
-                const registration =
-                    await navigator.serviceWorker.ready;
+        setSnowDrift(snowflake, driftAmount);
 
-                const worker =
-                    registration.active;
+        let aboveChance;
 
-                if (!worker) {
-
-                    console.warn(
-                        "No active service worker is available yet."
-                    );
-
-                    return;
-                }
-
-                /*
-                 * Build the list after durations.json has loaded.
-                 * This ensures songs contains the complete playlist.
-                 */
-
-                const files = [
-                    SPEECH_SRC,
-                    ...songs.map(
-                        song =>
-                            SONG_FOLDER +
-                            encodeURIComponent(
-                                song.file
-                            )
-                    )
-                ];
-
-                worker.postMessage({
-                    type: "CACHE_RADIO_AUDIO",
-                    files
-                });
-
-                console.log(
-                    "Offline audio caching requested:",
-                    files.length,
-                    "files"
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Could not start offline audio caching:",
-                    error
-                );
-            }
+        if (depth === "far") {
+            aboveChance = .08;
+        } else if (depth === "mid") {
+            aboveChance = .40;
+        } else {
+            aboveChance = .70;
         }
 
-        /*
-         * =====================================================
-         * FIND LIVE SEGMENT
-         * =====================================================
-         */
+        if (Math.random() < aboveChance) {
+            document
+                .getElementById("snowAbove")
+                .appendChild(snowflake);
+        } else {
+            container.appendChild(snowflake);
+        }
+    }
+}
 
-        function findLiveSegment() {
 
-            if (
-                !metadataLoaded ||
-                totalPlaylistDuration <= 0
-            ) {
+/* =========================================
+   INITIALIZE SNOW
+========================================= */
 
-                return {
-                    type:
-                        "song",
+createSnowflakes(
+    document.getElementById("snowFar"),
+    20
+);
 
-                    index:
-                        0,
+createSnowflakes(
+    document.getElementById("snowMid"),
+    15
+);
 
-                    offset:
-                        0
-                };
-            }
+createSnowflakes(
+    document.getElementById("snowNear"),
+    10
+);
 
-            const elapsed =
-                (
-                    Date.now() -
-                    RADIO_START
-                ) / 1000;
+createCircleSnow(
+    document.getElementById("snowFar"),
+    45,
+    "far"
+);
 
-            const position =
-                (
-                    (
-                        elapsed %
-                        totalPlaylistDuration
-                    ) +
-                    totalPlaylistDuration
-                ) %
-                totalPlaylistDuration;
+createCircleSnow(
+    document.getElementById("snowMid"),
+    38,
+    "mid"
+);
 
-            let accumulated =
-                0;
+createCircleSnow(
+    document.getElementById("snowNear"),
+    28,
+    "near"
+);
 
-            for (
-                let i = 0;
-                i < songs.length;
-                i++
-            ) {
 
-                const duration =
-                    songs[i].duration;
+/* =========================================
+   OFFLINE AUDIO CACHING
+========================================= */
 
-                if (
-                    position <
-                    accumulated +
-                    duration
-                ) {
+async function cacheRadioAudio() {
+    if (!("serviceWorker" in navigator)) {
+        console.warn("Service workers are not supported.");
+        return;
+    }
 
-                    return {
-                        type:
-                            "song",
+    try {
+        const registration =
+            serviceWorkerRegistration ||
+            await serviceWorkerPromise ||
+            await navigator.serviceWorker.ready;
 
-                        index:
-                            i,
+        if (!registration) return;
 
-                        offset:
-                            position -
-                            accumulated
-                    };
-                }
+        const activeWorker =
+            registration.active ||
+            registration.waiting ||
+            registration.installing;
 
-                accumulated +=
-                    duration;
+        if (!activeWorker) {
+            console.warn("No service worker is available.");
+            return;
+        }
 
-                if (
-                    (i + 1) %
-                        SONGS_PER_SPEECH ===
-                        0 &&
-                    speechDuration > 0
-                ) {
+        const files = [
+            SPEECH_SRC,
+            ...songs.map(song =>
+                SONG_FOLDER + encodeURIComponent(song.file)
+            )
+        ];
 
-                    if (
-                        position <
-                        accumulated +
-                        speechDuration
-                    ) {
+        activeWorker.postMessage({
+            type: "CACHE_RADIO_AUDIO",
+            files
+        });
 
-                        return {
-                            type:
-                                "speech",
+        console.log(
+            "Offline audio caching requested:",
+            files.length,
+            "files"
+        );
 
-                            index:
-                                i,
+    } catch (error) {
+        console.error(
+            "Could not start offline caching:",
+            error
+        );
+    }
+}
 
-                            offset:
-                                position -
-                                accumulated
-                        };
-                    }
 
-                    accumulated +=
-                        speechDuration;
-                }
-            }
+/* =========================================
+   FIND LIVE SEGMENT
+========================================= */
 
+function findLiveSegment() {
+    if (
+        !metadataLoaded ||
+        totalPlaylistDuration <= 0
+    ) {
+        return {
+            type: "song",
+            index: 0,
+            offset: 0
+        };
+    }
+
+    const elapsed = Math.max(
+        0,
+        (Date.now() - RADIO_START) / 1000
+    );
+
+    const position = elapsed % totalPlaylistDuration;
+
+    let accumulated = 0;
+
+    for (let i = 0; i < songs.length; i++) {
+        const duration = songs[i].duration;
+
+        if (position < accumulated + duration) {
             return {
-                type:
-                    "song",
-
-                index:
-                    0,
-
-                offset:
-                    0
+                type: "song",
+                index: i,
+                offset: position - accumulated
             };
         }
 
-        /*
-         * =====================================================
-         * DISPLAY SONG INDEX
-         * =====================================================
-         */
+        accumulated += duration;
 
-        function getDisplaySongIndex(
-            segment
+        if (
+            (i + 1) % SONGS_PER_SPEECH === 0 &&
+            speechDuration > 0
         ) {
-
-            if (
-                segment.type ===
-                "speech"
-            ) {
-
-                return (
-                    (
-                        segment.index +
-                        1
-                    ) %
-                    songs.length
-                );
+            if (position < accumulated + speechDuration) {
+                return {
+                    type: "speech",
+                    index: i,
+                    offset: position - accumulated
+                };
             }
 
-            return segment.index;
+            accumulated += speechDuration;
         }
+    }
 
-        function getDisplayNextSongIndex(
-            segment
+    return {
+        type: "song",
+        index: 0,
+        offset: 0
+    };
+}
+
+
+/* =========================================
+   DISPLAY SONG INDEX
+========================================= */
+
+function getDisplaySongIndex(segment) {
+    if (segment.type === "speech") {
+        return (segment.index + 1) % songs.length;
+    }
+
+    return segment.index;
+}
+
+function getDisplayNextSongIndex(segment) {
+    return (
+        getDisplaySongIndex(segment) + 1
+    ) % songs.length;
+}
+
+
+/* =========================================
+   UPDATE RADIO UI
+========================================= */
+
+function updateRadioUI(segment) {
+    if (!songs.length) return;
+
+    const current = getDisplaySongIndex(segment);
+    const next = getDisplayNextSongIndex(segment);
+
+    if (segment.type === "speech") {
+        songNameElement.textContent =
+            `Christmas Message • ${songs[current].name}`;
+    } else {
+        songNameElement.textContent =
+            songs[current].name;
+    }
+
+    upNextElement.textContent =
+        songs[next].name;
+}
+
+
+/* =========================================
+   MEDIA SESSION
+========================================= */
+
+function updateLiveMediaSession() {
+    if (
+        !("mediaSession" in navigator) ||
+        !metadataLoaded ||
+        !songs.length
+    ) {
+        return;
+    }
+
+    const segment = findLiveSegment();
+
+    const title = segment.type === "speech"
+        ? "Christmas Radio Message"
+        : songs[segment.index].name;
+
+    try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title,
+            artist: "Christmas Countdown Radio",
+            album: "Christmas Countdown",
+            artwork: [{
+                src: "./favicon.ico",
+                sizes: "512x512",
+                type: "image/x-icon"
+            }]
+        });
+    } catch {}
+
+    try {
+        const audio = segment.type === "speech"
+            ? speechAudio
+            : musicAudio;
+
+        const duration = audio.duration;
+        const position = audio.currentTime;
+
+        if (
+            Number.isFinite(duration) &&
+            duration > 0 &&
+            Number.isFinite(position) &&
+            position >= 0 &&
+            position <= duration
         ) {
+            navigator.mediaSession.setPositionState({
+                duration,
+                playbackRate: audio.playbackRate || 1,
+                position
+            });
+        }
+    } catch {}
+}
 
-            const current =
-                getDisplaySongIndex(
-                    segment
-                );
 
-            return (
-                (
-                    current + 1
-                ) %
-                songs.length
+/* =========================================
+   MEDIA SESSION SETUP
+========================================= */
+
+function setupMediaSession() {
+    if (!("mediaSession" in navigator)) return;
+
+    try {
+        navigator.mediaSession.setActionHandler(
+            "play",
+            () => resumeLive()
+        );
+    } catch {}
+
+    try {
+        navigator.mediaSession.setActionHandler(
+            "pause",
+            pauseRadio
+        );
+    } catch {}
+
+    [
+        "previoustrack",
+        "nexttrack",
+        "seekbackward",
+        "seekforward",
+        "seekto"
+    ].forEach(action => {
+        try {
+            navigator.mediaSession.setActionHandler(
+                action,
+                () => {}
+            );
+        } catch {}
+    });
+}
+
+setupMediaSession();
+
+
+/* =========================================
+   AUDIO METADATA WAITING
+========================================= */
+
+function waitForAudioMetadata(audio) {
+    if (
+        audio.readyState >= 1 &&
+        Number.isFinite(audio.duration)
+    ) {
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+        let finished = false;
+
+        const timeout = setTimeout(() => {
+            finish(
+                new Error("Audio metadata timed out.")
+            );
+        }, DURATION_TIMEOUT);
+
+        function cleanup() {
+            clearTimeout(timeout);
+
+            audio.removeEventListener(
+                "loadedmetadata",
+                onLoaded
+            );
+
+            audio.removeEventListener(
+                "error",
+                onError
             );
         }
 
-        /*
-         * =====================================================
-         * UPDATE RADIO UI
-         * =====================================================
-         */
+        function finish(error) {
+            if (finished) return;
 
-        function updateRadioUI(
-            segment
-        ) {
+            finished = true;
+            cleanup();
 
-            if (
-                !songs.length
-            ) {
-                return;
-            }
-
-            const current =
-                getDisplaySongIndex(
-                    segment
-                );
-
-            const next =
-                getDisplayNextSongIndex(
-                    segment
-                );
-
-            songNameElement.textContent =
-                songs[current].name;
-
-            upNextElement.textContent =
-                songs[next].name;
-        }
-
-        /*
-         * =====================================================
-         * MEDIA SESSION
-         * =====================================================
-         */
-
-        function updateLiveMediaSession() {
-
-            if (
-                !("mediaSession" in navigator)
-            ) {
-                return;
-            }
-
-            if (
-                !metadataLoaded ||
-                !songs.length
-            ) {
-                return;
-            }
-
-            const segment =
-                findLiveSegment();
-
-            const title =
-                segment.type ===
-                    "speech"
-                    ? "Christmas Radio"
-                    : songs[
-                        segment.index
-                    ].name;
-
-            try {
-
-                navigator.mediaSession.metadata =
-                    new MediaMetadata({
-
-                        title:
-                            title,
-
-                        artist:
-                            "Christmas Countdown Radio",
-
-                        album:
-                            "Christmas Countdown",
-
-                        artwork: [
-                            {
-                                src:
-                                    "./favicon.ico",
-
-                                sizes:
-                                    "512x512",
-
-                                type:
-                                    "image/x-icon"
-                            }
-                        ]
-                    });
-
-            } catch {}
-
-            try {
-
-                const audio =
-                    segment.type ===
-                        "speech"
-                        ? speechAudio
-                        : musicAudio;
-
-                const duration =
-                    audio.duration;
-
-                const position =
-                    audio.currentTime;
-
-                if (
-                    Number.isFinite(
-                        duration
-                    ) &&
-                    duration > 0 &&
-                    Number.isFinite(
-                        position
-                    ) &&
-                    position >= 0 &&
-                    position <= duration
-                ) {
-
-                    navigator.mediaSession
-                        .setPositionState({
-
-                            duration,
-
-                            playbackRate:
-                                audio.playbackRate ||
-                                1,
-
-                            position
-                        });
-                }
-
-            } catch {}
-        }
-
-        /*
-         * =====================================================
-         * MEDIA SESSION SETUP
-         * =====================================================
-         */
-
-        function setupMediaSession() {
-
-            if (
-                !("mediaSession" in navigator)
-            ) {
-                return;
-            }
-
-            try {
-
-                navigator.mediaSession
-                    .setActionHandler(
-                        "play",
-                        () =>
-                            resumeLive()
-                    );
-
-            } catch {}
-
-            try {
-
-                navigator.mediaSession
-                    .setActionHandler(
-                        "pause",
-                        pauseRadio
-                    );
-
-            } catch {}
-
-            [
-                "previoustrack",
-                "nexttrack",
-                "seekbackward",
-                "seekforward"
-            ].forEach(
-                action => {
-
-                    try {
-
-                        navigator.mediaSession
-                            .setActionHandler(
-                                action,
-                                () => {}
-                            );
-
-                    } catch {}
-                }
-            );
-
-            try {
-
-                navigator.mediaSession
-                    .setActionHandler(
-                        "seekto",
-                        () => {}
-                    );
-
-            } catch {}
-        }
-
-        setupMediaSession();
-
-        /*
-         * =====================================================
-         * LOAD AUDIO
-         * =====================================================
-         */
-
-        async function loadAudio(
-            audio,
-            src,
-            offset
-        ) {
-
-            const absoluteURL =
-                new URL(
-                    src,
-                    location.href
-                ).href;
-
-            if (
-                audio.src !==
-                absoluteURL
-            ) {
-
-                audio.src =
-                    src;
-
-                audio.load();
-
-                await new Promise(
-                    (
-                        resolve,
-                        reject
-                    ) => {
-
-                        const onMetadata =
-                            () => {
-
-                                cleanup();
-
-                                resolve();
-                            };
-
-                        const onError =
-                            () => {
-
-                                cleanup();
-
-                                reject(
-                                    new Error(
-                                        "Could not load audio"
-                                    )
-                                );
-                            };
-
-                        const cleanup =
-                            () => {
-
-                                audio.removeEventListener(
-                                    "loadedmetadata",
-                                    onMetadata
-                                );
-
-                                audio.removeEventListener(
-                                    "error",
-                                    onError
-                                );
-                            };
-
-                        audio.addEventListener(
-                            "loadedmetadata",
-                            onMetadata,
-                            {
-                                once:
-                                    true
-                            }
-                        );
-
-                        audio.addEventListener(
-                            "error",
-                            onError,
-                            {
-                                once:
-                                    true
-                            }
-                        );
-
-                    }
-                );
-            }
-
-            if (
-                Number.isFinite(
-                    offset
-                ) &&
-                offset >= 0 &&
-                Number.isFinite(
-                    audio.duration
-                ) &&
-                offset <
-                    audio.duration
-            ) {
-
-                audio.currentTime =
-                    offset;
-            }
-        }
-
-        /*
-         * =====================================================
-         * LOAD SONG
-         * =====================================================
-         */
-
-        async function loadSong(
-            index,
-            offset
-        ) {
-
-            const song =
-                songs[index];
-
-            if (
-                !song ||
-                !song.file
-            ) {
-
-                throw new Error(
-                    `Song ${index + 1} has no file in durations.json.`
-                );
-            }
-
-            const songURL =
-                SONG_FOLDER +
-                encodeURIComponent(
-                    song.file
-                );
-
-            await loadAudio(
-                musicAudio,
-                songURL,
-                offset
-            );
-        }
-
-        /*
-         * =====================================================
-         * LOAD SPEECH
-         * =====================================================
-         */
-
-        async function loadSpeech(
-            offset
-        ) {
-
-            await loadAudio(
-                speechAudio,
-                SPEECH_SRC,
-                offset
-            );
-        }
-
-        /*
-         * =====================================================
-         * START LIVE RADIO
-         * =====================================================
-         */
-
-        async function playLive() {
-
-            if (
-                isChangingTrack
-            ) {
-                return;
-            }
-
-            isChangingTrack =
-                true;
-
-            try {
-
-                await loadDurations();
-
-                const segment =
-                    findLiveSegment();
-
-                currentSongIndex =
-                    getDisplaySongIndex(
-                        segment
-                    );
-
-                currentSegmentType =
-                    segment.type;
-
-                updateRadioUI(
-                    segment
-                );
-
-                if (
-                    segment.type ===
-                    "speech"
-                ) {
-
-                    musicAudio.pause();
-
-                    await loadSpeech(
-                        segment.offset
-                    );
-
-                    await speechAudio.play();
-
-                } else {
-
-                    speechAudio.pause();
-
-                    await loadSong(
-                        segment.index,
-                        segment.offset
-                    );
-
-                    await musicAudio.play();
-                }
-
-                radioPlaying =
-                    true;
-
-                updatePlayButton();
-
-                updateLiveMediaSession();
-
-                try {
-
-                    navigator.mediaSession
-                        .playbackState =
-                        "playing";
-
-                } catch {}
-
-            } catch (
-                error
-            ) {
-
-                console.error(
-                    "Could not start live radio:",
-                    error
-                );
-
-                radioPlaying =
-                    false;
-
-                updatePlayButton();
-
-                songNameElement.textContent =
-                    "Could not start radio";
-
-                upNextElement.textContent =
-                    "Please try again";
-
-            } finally {
-
-                isChangingTrack =
-                    false;
-            }
-        }
-
-        /*
-         * =====================================================
-         * PAUSE
-         * =====================================================
-         */
-
-        function pauseRadio() {
-
-            musicAudio.pause();
-
-            speechAudio.pause();
-
-            radioPlaying =
-                false;
-
-            updatePlayButton();
-
-            try {
-
-                navigator.mediaSession
-                    .playbackState =
-                    "paused";
-
-            } catch {}
-        }
-
-        /*
-         * =====================================================
-         * RESUME
-         * =====================================================
-         */
-
-        async function resumeLive() {
-
-            musicAudio.pause();
-
-            speechAudio.pause();
-
-            await playLive();
-        }
-
-        /*
-         * =====================================================
-         * BUTTON
-         * =====================================================
-         */
-
-        function updatePlayButton() {
-
-            if (
-                radioPlaying
-            ) {
-
-                playButton.textContent =
-                    "⏸ Pause";
-
-                playButton.classList.remove(
-                    "paused"
-                );
-
+            if (error) {
+                reject(error);
             } else {
-
-                playButton.textContent =
-                    "▶️ Play";
-
-                playButton.classList.add(
-                    "paused"
-                );
+                resolve();
             }
         }
 
-        playButton.addEventListener(
-            "click",
-            async () => {
+        function onLoaded() {
+            finish();
+        }
 
-                if (
-                    radioPlaying
-                ) {
-
-                    pauseRadio();
-
-                } else {
-
-                    await resumeLive();
-                }
-            }
-        );
-
-        /*
-         * =====================================================
-         * TRACK END
-         * =====================================================
-         */
-
-        musicAudio.addEventListener(
-            "ended",
-            async () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    await playLive();
-                }
-            }
-        );
-
-        speechAudio.addEventListener(
-            "ended",
-            async () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    await playLive();
-                }
-            }
-        );
-
-        /*
-         * =====================================================
-         * ERROR RECOVERY
-         * =====================================================
-         */
-
-        function retryLive() {
-
-            if (
-                !radioPlaying
-            ) {
-                return;
-            }
-
-            setTimeout(
-                () => {
-
-                    if (
-                        radioPlaying
-                    ) {
-
-                        playLive();
-                    }
-
-                },
-                1000
+        function onError() {
+            finish(
+                new Error("Could not load audio metadata.")
             );
         }
 
-        musicAudio.addEventListener(
-            "error",
-            retryLive
+        audio.addEventListener(
+            "loadedmetadata",
+            onLoaded,
+            { once: true }
         );
 
-        speechAudio.addEventListener(
+        audio.addEventListener(
             "error",
-            () => {
-
-                console.error(
-                    "Speech audio error."
-                );
-
-                retryLive();
-            }
+            onError,
+            { once: true }
         );
+    });
+}
 
-        /*
-         * =====================================================
-         * PERIODIC LIVE SYNCHRONIZATION
-         * =====================================================
-         */
 
-        async function syncRadio() {
+/* =========================================
+   LOAD AUDIO
+========================================= */
 
-            if (
-                !radioPlaying
-            ) {
-                return;
-            }
+async function loadAudio(audio, src, offset) {
+    const absoluteURL = new URL(
+        src,
+        location.href
+    ).href;
 
-            try {
+    if (audio.src !== absoluteURL) {
+        const metadataPromise =
+            waitForAudioMetadata(audio);
 
-                const live =
-                    findLiveSegment();
+        audio.src = src;
+        audio.load();
 
-                const displayIndex =
-                    getDisplaySongIndex(
-                        live
-                    );
+        await metadataPromise;
 
-                if (
-                    live.type !==
-                        currentSegmentType ||
-                    displayIndex !==
-                        currentSongIndex
-                ) {
+    } else {
+        await waitForAudioMetadata(audio);
+    }
 
-                    await playLive();
+    if (
+        Number.isFinite(offset) &&
+        offset >= 0 &&
+        Number.isFinite(audio.duration) &&
+        offset < audio.duration
+    ) {
+        audio.currentTime = offset;
+    }
+}
 
-                    return;
-                }
 
-                const audio =
-                    live.type ===
-                        "speech"
-                        ? speechAudio
-                        : musicAudio;
+/* =========================================
+   LOAD SONG
+========================================= */
 
-                const drift =
-                    Math.abs(
-                        audio.currentTime -
-                        live.offset
-                    );
+async function loadSong(index, offset) {
+    const song = songs[index];
 
-                if (
-                    drift > 3
-                ) {
+    if (!song || !song.file) {
+        throw new Error(
+            `Song ${index + 1} is missing its file.`
+        );
+    }
 
-                    audio.currentTime =
-                        live.offset;
-                }
+    const songURL =
+        SONG_FOLDER + encodeURIComponent(song.file);
 
-                updateRadioUI(
-                    live
-                );
+    await loadAudio(
+        musicAudio,
+        songURL,
+        offset
+    );
+}
 
-                updateLiveMediaSession();
 
-            } catch (
-                error
-            ) {
+/* =========================================
+   LOAD SPEECH
+========================================= */
 
-                console.warn(
-                    "Periodic sync failed:",
-                    error
-                );
-            }
+async function loadSpeech(offset) {
+    await loadAudio(
+        speechAudio,
+        SPEECH_SRC,
+        offset
+    );
+}
+
+
+/* =========================================
+   PLAY BUTTON STATE
+========================================= */
+
+function updatePlayButton() {
+    if (radioPlaying) {
+        playButton.textContent = "⏸ Pause";
+        playButton.classList.remove("paused");
+    } else {
+        playButton.textContent = "▶️ Play";
+        playButton.classList.add("paused");
+    }
+}
+
+
+/* =========================================
+   START LIVE RADIO
+========================================= */
+
+async function playLive() {
+    if (isChangingTrack) return;
+
+    isChangingTrack = true;
+
+    try {
+        await loadDurations();
+
+        const segment = findLiveSegment();
+
+        const segmentKey =
+            `${segment.type}:${segment.index}`;
+
+        currentSongIndex =
+            getDisplaySongIndex(segment);
+
+        currentSegmentType = segment.type;
+        currentSegmentKey = segmentKey;
+
+        updateRadioUI(segment);
+
+        if (segment.type === "speech") {
+            musicAudio.pause();
+
+            await loadSpeech(segment.offset);
+
+            await speechAudio.play();
+
+        } else {
+            speechAudio.pause();
+
+            await loadSong(
+                segment.index,
+                segment.offset
+            );
+
+            await musicAudio.play();
         }
 
-        setInterval(
-            syncRadio,
-            5000
+        radioPlaying = true;
+        retryCount = 0;
+
+        updatePlayButton();
+        updateLiveMediaSession();
+
+        try {
+            navigator.mediaSession.playbackState =
+                "playing";
+        } catch {}
+
+    } catch (error) {
+        console.error(
+            "Could not start live radio:",
+            error
         );
 
-        /*
-         * =====================================================
-         * MEDIA SESSION POSITION
-         * =====================================================
-         */
-
-        setInterval(
-            () => {
-
-                if (
-                    radioPlaying
-                ) {
-
-                    updateLiveMediaSession();
-                }
-
-            },
-            3000
-        );
-
-        /*
-         * =====================================================
-         * VISIBILITY SYNCHRONIZATION
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "visibilitychange",
-            async () => {
-
-                if (
-                    document.visibilityState !==
-                        "visible" ||
-                    !radioPlaying
-                ) {
-
-                    return;
-                }
-
-                try {
-
-                    const live =
-                        findLiveSegment();
-
-                    const displayIndex =
-                        getDisplaySongIndex(
-                            live
-                        );
-
-                    if (
-                        live.type !==
-                            currentSegmentType ||
-                        displayIndex !==
-                            currentSongIndex
-                    ) {
-
-                        await playLive();
-
-                        return;
-                    }
-
-                    const audio =
-                        live.type ===
-                            "speech"
-                            ? speechAudio
-                            : musicAudio;
-
-                    const drift =
-                        Math.abs(
-                            audio.currentTime -
-                            live.offset
-                        );
-
-                    if (
-                        drift > 3
-                    ) {
-
-                        await playLive();
-
-                    } else {
-
-                        updateRadioUI(
-                            live
-                        );
-
-                        updateLiveMediaSession();
-                    }
-
-                } catch (
-                    error
-                ) {
-
-                    console.warn(
-                        "Visibility sync failed:",
-                        error
-                    );
-                }
-            }
-        );
-
-        /*
-         * =====================================================
-         * BLOCK TRACK-SKIPPING KEYS
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "keydown",
-            event => {
-
-                const blocked = [
-                    "ArrowLeft",
-                    "ArrowRight",
-                    "Home",
-                    "End",
-                    "MediaTrackNext",
-                    "MediaTrackPrevious",
-                    "MediaFastForward",
-                    "MediaRewind"
-                ];
-
-                if (
-                    blocked.includes(
-                        event.key
-                    )
-                ) {
-
-                    event.preventDefault();
-                }
-            }
-        );
-
-        /*
-         * =====================================================
-         * BLOCK CONTEXT MENU
-         * =====================================================
-         */
-
-        document.addEventListener(
-            "contextmenu",
-            event =>
-                event.preventDefault()
-        );
-
-        /*
-         * =====================================================
-         * INITIAL UI
-         * =====================================================
-         */
+        radioPlaying = false;
 
         updatePlayButton();
 
         songNameElement.textContent =
-            "Christmas Radio Ready";
+            "Could not start radio";
 
         upNextElement.textContent =
-            "Loading...";
+            error.message;
 
-        /*
-         * =====================================================
-         * LOAD MANIFEST AND START OFFLINE CACHING
-         *
-         * The songs array is populated by loadDurations().
-         * Only after that finishes do we send the complete
-         * audio file list to the service worker.
-         * =====================================================
-         */
+    } finally {
+        isChangingTrack = false;
+    }
+}
 
-        loadDurations()
-            .then(
-                async () => {
 
-                    const live =
-                        findLiveSegment();
+/* =========================================
+   PAUSE RADIO
+========================================= */
 
-                    currentSongIndex =
-                        getDisplaySongIndex(
-                            live
-                        );
+function pauseRadio() {
+    musicAudio.pause();
+    speechAudio.pause();
 
-                    currentSegmentType =
-                        live.type;
+    radioPlaying = false;
 
-                    updateRadioUI(
-                        live
-                    );
+    updatePlayButton();
 
-                    updateLiveMediaSession();
+    try {
+        navigator.mediaSession.playbackState =
+            "paused";
+    } catch {}
+}
 
-                    /*
-                     * Start caching after the song list exists.
-                     * The caching happens in the background and
-                     * does not start audio playback.
-                     */
 
-                    await cacheRadioAudio();
+/* =========================================
+   RESUME RADIO
+========================================= */
 
-                }
-            )
-            .catch(
-                error => {
+async function resumeLive() {
+    if (radioPlaying) return;
 
-                    console.error(
-                        "Radio metadata initialization failed:",
-                        error
-                    );
+    musicAudio.pause();
+    speechAudio.pause();
 
-                    songNameElement.textContent =
-                        "Radio unavailable";
+    await playLive();
+}
 
-                    upNextElement.textContent =
-                        error.message;
-                }
+
+/* =========================================
+   PLAY BUTTON
+========================================= */
+
+playButton.addEventListener("click", async () => {
+    if (radioPlaying) {
+        pauseRadio();
+    } else {
+        await resumeLive();
+    }
+});
+
+
+/* =========================================
+   TRACK END
+========================================= */
+
+musicAudio.addEventListener("ended", async () => {
+    if (radioPlaying) {
+        await playLive();
+    }
+});
+
+speechAudio.addEventListener("ended", async () => {
+    if (radioPlaying) {
+        await playLive();
+    }
+});
+
+
+/* =========================================
+   ERROR RECOVERY
+========================================= */
+
+function retryLive() {
+    if (!radioPlaying) return;
+
+    if (retryTimeout) {
+        clearTimeout(retryTimeout);
+    }
+
+    if (retryCount >= 3) {
+        console.error(
+            "Radio stopped after repeated playback errors."
+        );
+
+        pauseRadio();
+
+        songNameElement.textContent =
+            "Radio playback stopped";
+
+        upNextElement.textContent =
+            "Please try playing again.";
+
+        return;
+    }
+
+    retryCount++;
+
+    retryTimeout = setTimeout(() => {
+        if (radioPlaying) {
+            playLive();
+        }
+    }, 1500);
+}
+
+musicAudio.addEventListener("error", retryLive);
+speechAudio.addEventListener("error", retryLive);
+
+
+/* =========================================
+   PERIODIC LIVE SYNCHRONIZATION
+========================================= */
+
+async function syncRadio() {
+    if (!radioPlaying || isChangingTrack) return;
+
+    try {
+        const live = findLiveSegment();
+
+        const liveKey =
+            `${live.type}:${live.index}`;
+
+        if (liveKey !== currentSegmentKey) {
+            await playLive();
+            return;
+        }
+
+        const audio = live.type === "speech"
+            ? speechAudio
+            : musicAudio;
+
+        const drift = Math.abs(
+            audio.currentTime - live.offset
+        );
+
+        if (drift > 3) {
+            audio.currentTime = live.offset;
+        }
+
+        updateRadioUI(live);
+        updateLiveMediaSession();
+
+    } catch (error) {
+        console.warn(
+            "Periodic synchronization failed:",
+            error
+        );
+    }
+}
+
+setInterval(syncRadio, 5000);
+
+
+/* =========================================
+   MEDIA SESSION POSITION
+========================================= */
+
+setInterval(() => {
+    if (radioPlaying) {
+        updateLiveMediaSession();
+    }
+}, 3000);
+
+
+/* =========================================
+   VISIBILITY SYNCHRONIZATION
+========================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    async () => {
+        if (
+            document.visibilityState !== "visible" ||
+            !radioPlaying
+        ) {
+            return;
+        }
+
+        try {
+            const live = findLiveSegment();
+
+            const liveKey =
+                `${live.type}:${live.index}`;
+
+            if (liveKey !== currentSegmentKey) {
+                await playLive();
+                return;
+            }
+
+            const audio = live.type === "speech"
+                ? speechAudio
+                : musicAudio;
+
+            const drift = Math.abs(
+                audio.currentTime - live.offset
             );
 
-        /*
-         * =====================================================
-         * CLEANUP
-         * =====================================================
-         */
-
-        window.addEventListener(
-            "beforeunload",
-            () => {
-
-                musicAudio.pause();
-
-                speechAudio.pause();
+            if (drift > 3) {
+                await playLive();
+            } else {
+                updateRadioUI(live);
+                updateLiveMediaSession();
             }
+
+        } catch (error) {
+            console.warn(
+                "Visibility synchronization failed:",
+                error
+            );
+        }
+    }
+);
+
+
+/* =========================================
+   BLOCK TRACK-SKIPPING KEYS
+========================================= */
+
+document.addEventListener("keydown", event => {
+    const blocked = [
+        "ArrowLeft",
+        "ArrowRight",
+        "Home",
+        "End",
+        "MediaTrackNext",
+        "MediaTrackPrevious",
+        "MediaFastForward",
+        "MediaRewind"
+    ];
+
+    if (blocked.includes(event.key)) {
+        event.preventDefault();
+    }
+});
+
+
+/* =========================================
+   CONTEXT MENU
+========================================= */
+
+document.addEventListener("contextmenu", event => {
+    event.preventDefault();
+});
+
+
+/* =========================================
+   INITIAL UI
+========================================= */
+
+updatePlayButton();
+
+songNameElement.textContent =
+    "Christmas Radio Ready";
+
+upNextElement.textContent =
+    "Loading playlist...";
+
+
+/* =========================================
+   INITIALIZE RADIO
+========================================= */
+
+async function initializeRadio() {
+    try {
+        await loadDurations();
+
+        const live = findLiveSegment();
+
+        currentSongIndex =
+            getDisplaySongIndex(live);
+
+        currentSegmentType = live.type;
+
+        currentSegmentKey =
+            `${live.type}:${live.index}`;
+
+        updateRadioUI(live);
+        updateLiveMediaSession();
+
+        await cacheRadioAudio();
+
+        console.log("Christmas Radio is ready.");
+
+    } catch (error) {
+        console.error(
+            "Radio initialization failed:",
+            error
         );
+
+        songNameElement.textContent =
+            "Radio unavailable";
+
+        upNextElement.textContent =
+            error.message;
+    }
+}
+
+initializeRadio();
+
+
+/* =========================================
+   CLEANUP
+========================================= */
+
+window.addEventListener("beforeunload", () => {
+    musicAudio.pause();
+    speechAudio.pause();
+
+    if (retryTimeout) {
+        clearTimeout(retryTimeout);
+    }
+});
+
 
     </script>
 
