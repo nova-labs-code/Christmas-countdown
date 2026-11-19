@@ -291,8 +291,10 @@ self.addEventListener("fetch", event => {
                     const match = range.match(/bytes=(\d*)-(\d*)/);
 
                     if (match) {
-                        const buffer = await cached.arrayBuffer();
-                        const size = buffer.byteLength;
+                        // Blob slices are lazy; reading the whole file into an
+                        // ArrayBuffer on every range request made playback stall
+                        const blob = await cached.blob();
+                        const size = blob.size;
 
                         let start = match[1] ? Number(match[1]) : 0;
                         let end = match[2] ? Number(match[2]) : size - 1;
@@ -315,7 +317,7 @@ self.addEventListener("fetch", event => {
                         end = Math.min(end, size - 1);
 
                         return new Response(
-                            buffer.slice(start, end + 1),
+                            blob.slice(start, end + 1),
                             {
                                 status: 206,
                                 headers: {
