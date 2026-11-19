@@ -105,12 +105,35 @@
             transition: width 0.15s ease;
         }
 
+        #fileProgress {
+            width: 100%;
+            height: 7px;
+            margin-top: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #35101d;
+            display: none;
+        }
+
+        #fileProgressBar {
+            width: 0%;
+            height: 100%;
+            background: #d45b7e;
+            transition: width 0.15s ease;
+        }
+
         .success {
             color: #8be28b !important;
         }
 
         .error {
             color: #ff8585 !important;
+        }
+
+        .muted {
+            color: #c9aeb7;
+            font-size: 13px;
+            margin-top: 12px;
         }
     </style>
 </head>
@@ -122,9 +145,10 @@
         <h1>Christmas Radio Duration Generator</h1>
 
         <div class="description">
-            Loads songs from <strong>songs.json</strong>, loads each MP3
-            from the <strong>songs</strong> folder, reads its duration,
-            and downloads a new <strong>durations.json</strong>.
+            Loads songs from <strong>songs.json</strong>, downloads
+            each MP3 from the <strong>songs</strong> folder, reads
+            its duration, and downloads a new
+            <strong>durations.json</strong>.
         </div>
 
         <button id="generateButton">
@@ -135,8 +159,16 @@
             <div id="progressBar"></div>
         </div>
 
+        <div id="fileProgress">
+            <div id="fileProgressBar"></div>
+        </div>
+
         <div id="status">
             Ready to load songs.json.
+        </div>
+
+        <div class="muted">
+            Songs are downloaded and processed individually.
         </div>
 
     </div>
@@ -147,7 +179,8 @@
         const SONG_MANIFEST = "./songs.json";
         const SONG_FOLDER = "./songs/";
 
-        const AUDIO_TIMEOUT = 60000;
+        const DOWNLOAD_TIMEOUT = 120000;
+        const METADATA_TIMEOUT = 20000;
 
         const generateButton =
             document.getElementById("generateButton");
@@ -160,6 +193,12 @@
 
         const progressBar =
             document.getElementById("progressBar");
+
+        const fileProgress =
+            document.getElementById("fileProgress");
+
+        const fileProgressBar =
+            document.getElementById("fileProgressBar");
 
 
         /*
@@ -252,166 +291,272 @@
 
 
         /*
-         * Load the complete audio file.
+         * Download the entire MP3.
          *
-         * Wait for the browser to finish loading the
-         * audio before reading its duration.
+         * This explicitly fetches the file rather than
+         * relying on browser audio preloading.
+         *
+         * Once downloaded, the Blob is converted into
+         * a temporary local URL for metadata reading.
          */
-        function getDuration(filename, onProgress) {
+        async function getDuration(filename, onProgress) {
 
-            return new Promise((resolve, reject) => {
+            const controller = new AbortController();
 
-                const audio = new Audio();
+            let objectURL = null;
+            let audio = null;
 
-                let finished = false;
+            let downloadTimeout;
 
-                audio.preload = "auto";
+            try {
+
+                const url = getSongURL(filename);
+
+                /*
+                 * Timeout for downloading the MP3.
+                 */
+                downloadTimeout = setTimeout(() => {
+                    controller.abort();
+                }, DOWNLOAD_TIMEOUT);
 
 
-                const timeout = setTimeout(() => {
+                /*
+                 * STEP 1:
+                 * Download the actual MP3 file.
+                 */
+                const response = await fetch(
+                    url,
+                    {
+                        cache: "no-store",
+                        signal: controller.signal
+                    }
+                );
 
-                    finish(
-                        new Error("Audio loading timed out")
+                if (!response.ok) {
+                    throw new Error(
+                        `Download failed: HTTP ${response.status}`
+                    );
+                }
+
+
+                /*
+                 * STEP 2:
+                 * Read the complete downloaded file.
+                 */
+                let blob;
+
+                if (response.body && response.body.getReader) {
+
+                    const reader = response.body.getReader();
+
+                    const chunks = [];
+
+                    const totalSize = Number(
+                        response.headers.get("content-length")
+                    ) || 0;
+
+                    let receivedSize = 0;
+
+                    while (true) {
+
+                        const result = await reader.read();
+
+                        if (result.done) {
+                            break;
+                        }
+
+                        chunks.push(result.value);
+
+                        receivedSize += result.value.length;
+
+                        if (
+                            typeof onProgress === "function"
+                        ) {
+                            onProgress({
+                                loaded: receivedSize,
+                                total: totalSize
+                            });
+                        }
+                    }
+
+                    blob = new Blob(
+                        chunks,
+                        {
+                            type: "audio/mpeg"
+                        }
                     );
 
-                }, AUDIO_TIMEOUT);
+                } else {
+
+                    blob = await response.blob();
+
+                    if (
+                        typeof onProgress === "function"
+                    ) {
+                        onProgress({
+                            loaded: blob.size,
+                            total: blob.size
+                        });
+                    }
+                }
+
+                clearTimeout(downloadTimeout);
 
 
-                function cleanup() {
-
-                    audio.removeEventListener(
-                        "loadedmetadata",
-                        handleMetadata
+                if (!blob.size) {
+                    throw new Error(
+                        "Downloaded MP3 is empty."
                     );
+                }
 
-                    audio.removeEventListener(
-                        "canplaythrough",
-                        handleLoaded
+
+                /*
+                 * STEP 3:
+                 * Create a temporary local audio URL.
+                 */
+                objectURL = URL.createObjectURL(blob);
+
+                audio = new Audio();
+
+                audio.preload = "metadata";
+
+
+                /*
+                 * STEP 4:
+                 * Wait for audio metadata.
+                 */
+                const duration = await new Promise(
+                    (resolve, reject) => {
+
+                        let finished = false;
+
+                        const metadataTimeout = setTimeout(() => {
+                            finish(
+                                new Error(
+                                    "Audio metadata loading timed out."
+                                )
+                            );
+                        }, METADATA_TIMEOUT);
+
+
+                        function cleanup() {
+
+                            audio.removeEventListener(
+                                "loadedmetadata",
+                                handleMetadata
+                            );
+
+                            audio.removeEventListener(
+                                "error",
+                                handleError
+                            );
+
+                            clearTimeout(metadataTimeout);
+                        }
+
+
+                        function finish(error, value) {
+
+                            if (finished) return;
+
+                            finished = true;
+
+                            cleanup();
+
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(value);
+                            }
+                        }
+
+
+                        function handleMetadata() {
+
+                            const value = audio.duration;
+
+                            if (
+                                !Number.isFinite(value) ||
+                                value <= 0
+                            ) {
+                                finish(
+                                    new Error(
+                                        "Invalid audio duration."
+                                    )
+                                );
+
+                                return;
+                            }
+
+                            finish(null, value);
+                        }
+
+
+                        function handleError() {
+
+                            finish(
+                                new Error(
+                                    "Could not read audio metadata."
+                                )
+                            );
+                        }
+
+
+                        audio.addEventListener(
+                            "loadedmetadata",
+                            handleMetadata
+                        );
+
+                        audio.addEventListener(
+                            "error",
+                            handleError
+                        );
+
+
+                        /*
+                         * Start reading the downloaded MP3.
+                         */
+                        audio.src = objectURL;
+
+                        audio.load();
+                    }
+                );
+
+
+                return duration;
+
+            } catch (error) {
+
+                if (error.name === "AbortError") {
+                    throw new Error(
+                        "MP3 download timed out."
                     );
+                }
 
-                    audio.removeEventListener(
-                        "error",
-                        handleError
-                    );
+                throw error;
 
-                    audio.removeEventListener(
-                        "progress",
-                        handleProgress
-                    );
+            } finally {
 
-                    clearTimeout(timeout);
+                clearTimeout(downloadTimeout);
 
+                /*
+                 * Release the temporary audio resources.
+                 */
+                if (audio) {
                     audio.pause();
                     audio.removeAttribute("src");
                     audio.load();
                 }
 
-
-                function finish(error, duration) {
-
-                    if (finished) return;
-
-                    finished = true;
-
-                    cleanup();
-
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve(duration);
-                    }
+                if (objectURL) {
+                    URL.revokeObjectURL(objectURL);
                 }
-
-
-                function handleMetadata() {
-
-                    const duration = audio.duration;
-
-                    if (
-                        !Number.isFinite(duration) ||
-                        duration <= 0
-                    ) {
-                        finish(
-                            new Error("Invalid audio duration")
-                        );
-
-                        return;
-                    }
-
-                    /*
-                     * The browser has loaded the metadata.
-                     * Now wait until the complete file is loaded.
-                     */
-                    if (audio.readyState >= 4) {
-                        finish(null, duration);
-                    }
-                }
-
-
-                function handleLoaded() {
-
-                    const duration = audio.duration;
-
-                    if (
-                        Number.isFinite(duration) &&
-                        duration > 0
-                    ) {
-                        finish(null, duration);
-                    }
-                }
-
-
-                function handleError() {
-
-                    finish(
-                        new Error("Could not load audio file")
-                    );
-                }
-
-
-                function handleProgress() {
-
-                    if (typeof onProgress === "function") {
-                        onProgress(audio);
-                    }
-                }
-
-
-                audio.addEventListener(
-                    "loadedmetadata",
-                    handleMetadata
-                );
-
-                audio.addEventListener(
-                    "canplaythrough",
-                    handleLoaded
-                );
-
-                audio.addEventListener(
-                    "error",
-                    handleError
-                );
-
-                audio.addEventListener(
-                    "progress",
-                    handleProgress
-                );
-
-
-                /*
-                 * Start loading only after all listeners
-                 * have been attached.
-                 */
-                audio.src = getSongURL(filename);
-
-                audio.load();
-
-            });
+            }
         }
 
 
         /*
-         * Download JSON.
+         * Download a JSON file.
          */
         function downloadJSON(data, filename) {
 
@@ -455,8 +600,10 @@
             generateButton.disabled = true;
 
             progress.style.display = "block";
+            fileProgress.style.display = "block";
 
             progressBar.style.width = "0%";
+            fileProgressBar.style.width = "0%";
 
             status.className = "";
 
@@ -467,20 +614,21 @@
                     "Loading songs.json...";
 
 
+                /*
+                 * Load the playlist.
+                 */
                 const songManifest =
                     await loadSongs();
-
 
                 const total =
                     songManifest.length;
 
 
                 status.textContent =
-                    `Found ${total} songs.\n\nPreparing to load audio files...`;
+                    `Found ${total} songs.\n\nPreparing to download audio files...`;
 
 
                 const songs = [];
-
                 const failed = [];
 
 
@@ -503,11 +651,13 @@
                         originalSong.name;
 
 
+                    fileProgressBar.style.width = "0%";
+
+
                     status.textContent =
                         `Song ${i + 1} of ${total}\n\n` +
-                        `Loading audio file:\n${name}\n\n` +
-                        `${file}\n\n` +
-                        `Waiting for audio to load...`;
+                        `${name}\n\n` +
+                        `Downloading MP3...`;
 
 
                     try {
@@ -515,28 +665,56 @@
                         const duration =
                             await getDuration(
                                 file,
-                                audio => {
+                                download => {
 
-                                    const percent =
-                                        audio.duration > 0
-                                            ? Math.round(
-                                                (audio.buffered.length > 0
-                                                    ? audio.buffered.end(
-                                                        audio.buffered.length - 1
-                                                    ) / audio.duration
-                                                    : 0
-                                                ) * 100
+                                    let percent = 0;
+
+                                    if (download.total > 0) {
+
+                                        percent = Math.min(
+                                            100,
+                                            Math.round(
+                                                download.loaded /
+                                                download.total *
+                                                100
                                             )
-                                            : 0;
+                                        );
+                                    }
+
+                                    fileProgressBar.style.width =
+                                        `${percent}%`;
+
+
+                                    const loadedMB =
+                                        (
+                                            download.loaded /
+                                            1024 /
+                                            1024
+                                        ).toFixed(2);
+
+                                    const totalMB =
+                                        download.total > 0
+                                            ? (
+                                                download.total /
+                                                1024 /
+                                                1024
+                                            ).toFixed(2)
+                                            : "Unknown";
+
 
                                     status.textContent =
                                         `Song ${i + 1} of ${total}\n\n` +
-                                        `Loading:\n${name}\n\n` +
-                                        `Audio loaded: ${percent}%`;
+                                        `${name}\n\n` +
+                                        `Downloading MP3...\n` +
+                                        `${percent}%\n` +
+                                        `${loadedMB} MB / ${totalMB} MB`;
                                 }
                             );
 
 
+                        /*
+                         * Save the successful duration.
+                         */
                         songs.push({
                             file,
                             name,
@@ -544,6 +722,9 @@
                                 duration.toFixed(3)
                             )
                         });
+
+
+                        fileProgressBar.style.width = "100%";
 
 
                     } catch (error) {
@@ -570,18 +751,27 @@
                     }
 
 
+                    /*
+                     * Update overall progress.
+                     */
                     const percent =
                         ((i + 1) / total) * 100;
-
 
                     progressBar.style.width =
                         `${percent}%`;
 
 
+                    const successful =
+                        songs.filter(
+                            song => song.duration !== null
+                        ).length;
+
+
                     status.textContent =
                         `Processed ${i + 1} of ${total} songs.\n\n` +
-                        `Successful: ${songs.filter(song => song.duration !== null).length}\n` +
-                        `Failed: ${failed.length}`;
+                        `Successful: ${successful}\n` +
+                        `Failed: ${failed.length}\n\n` +
+                        `Last processed: ${name}`;
                 }
 
 
@@ -599,18 +789,23 @@
                 );
 
 
+                /*
+                 * Show final results.
+                 */
                 if (failed.length > 0) {
 
                     status.className = "error";
 
                     status.textContent =
                         `Finished with ${failed.length} failed song(s).\n\n` +
-                        `Successfully loaded: ${songs.length - failed.length}\n` +
+                        `Successful: ${songs.length - failed.length}\n` +
                         `Failed: ${failed.length}\n\n` +
                         `durations.json has been downloaded.\n\n` +
                         `Failed files:\n\n` +
                         failed.map(song =>
-                            `${song.name}\n${song.file}\nReason: ${song.reason}`
+                            `${song.name}\n` +
+                            `${song.file}\n` +
+                            `Reason: ${song.reason}`
                         ).join("\n\n");
 
                 } else {
@@ -620,7 +815,7 @@
                     status.textContent =
                         `Successfully generated durations.json!\n\n` +
                         `${songs.length} songs processed.\n` +
-                        `All audio files loaded successfully.\n\n` +
+                        `All MP3 files downloaded successfully.\n\n` +
                         `The file has been downloaded.`;
                 }
 
@@ -640,6 +835,9 @@
         }
 
 
+        /*
+         * Start generator.
+         */
         generateButton.addEventListener(
             "click",
             generateDurations
