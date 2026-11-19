@@ -40,9 +40,7 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
-
         -webkit-tap-highlight-color: transparent;
-
         user-select: none;
         -webkit-user-select: none;
     }
@@ -51,110 +49,56 @@
     body {
         width: 100%;
         height: 100%;
-
         overflow: hidden;
-
         touch-action: none;
-
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
-
         overscroll-behavior: none;
     }
 
     body {
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "SF Pro Display",
-            "SF Pro Text",
-            "Segoe UI",
-            Arial,
-            sans-serif;
-
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Arial, sans-serif;
         color: var(--white);
-
         background:
-            radial-gradient(
-                circle at 15% 15%,
-                rgba(255, 255, 255, 0.08),
-                transparent 25%
-            ),
-            radial-gradient(
-                circle at 85% 80%,
-                rgba(11, 107, 58, 0.30),
-                transparent 35%
-            ),
-            radial-gradient(
-                circle at 15% 80%,
-                rgba(215, 25, 32, 0.28),
-                transparent 35%
-            ),
+            radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08), transparent 25%),
+            radial-gradient(circle at 85% 80%, rgba(11, 107, 58, 0.30), transparent 35%),
+            radial-gradient(circle at 15% 80%, rgba(215, 25, 32, 0.28), transparent 35%),
             #12030a;
     }
 
-    /*
-     * =====================================================
-     * MAIN PAGE
-     * =====================================================
-     */
+    /* MAIN PAGE */
 
     #phonePortraitViewport {
         width: 100%;
         height: 100%;
-
         position: relative;
-
         overflow: hidden;
     }
 
-    /*
-     * =====================================================
-     * BACKGROUND
-     * =====================================================
-     */
+    /* BACKGROUND */
 
     #bg {
         position: absolute;
-
         inset: -4%;
-
         width: 108%;
         height: 108%;
-
         background-image:
-            linear-gradient(
-                rgba(15, 0, 5, 0.20),
-                rgba(15, 0, 5, 0.48)
-            ),
+            linear-gradient(rgba(15, 0, 5, 0.20), rgba(15, 0, 5, 0.48)),
             url("christmas-background.jpg");
-
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-
-        filter:
-            saturate(1.2)
-            contrast(1.02);
-
+        filter: saturate(1.2) contrast(1.02);
         z-index: -5;
-
         transform: translateZ(0);
     }
 
-    /*
-     * =====================================================
-     * SNOW
-     * =====================================================
-     */
+    /* SNOW */
 
     .snow-layer {
         position: absolute;
-
         inset: 0;
-
         pointer-events: none;
-
         overflow: hidden;
     }
 
@@ -170,199 +114,77 @@
 
     .snowflake {
         position: absolute;
-
         top: -30px;
-
         color: rgba(255, 255, 255, 0.9);
-
         font-size: var(--size);
-
         opacity: var(--opacity);
-
-        animation:
-            smoothSnowFall
-            var(--duration)
-            linear
-            infinite;
-
+        animation: smoothSnowFall var(--duration) linear infinite;
         animation-delay: var(--delay);
-
         will-change: transform;
     }
 
     .circle-snow {
         color: #ffffff;
-
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: 400;
-
         line-height: 1;
-
-        text-shadow:
-            0 0 5px
-            rgba(255, 255, 255, 0.35);
-
-        will-change:
-            transform,
-            opacity;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.35);
+        will-change: transform, opacity;
     }
 
     .circle-snow.far {
-        filter:
-            blur(0.25px);
+        filter: blur(0.25px);
     }
 
     .circle-snow.mid {
-        filter:
-            blur(0.1px);
-
-        text-shadow:
-            0 0 7px
-            rgba(255, 255, 255, 0.45);
+        filter: blur(0.1px);
+        text-shadow: 0 0 7px rgba(255, 255, 255, 0.45);
     }
 
     .circle-snow.near {
         text-shadow:
-            0 0 9px
-            rgba(255, 255, 255, 0.65),
-            0 0 18px
-            rgba(255, 255, 255, 0.25);
+            0 0 9px rgba(255, 255, 255, 0.65),
+            0 0 18px rgba(255, 255, 255, 0.25);
     }
 
     @keyframes smoothSnowFall {
-
-        0% {
-            transform:
-                translate3d(
-                    var(--drift-start),
-                    -50px,
-                    0
-                );
-        }
-
-        12% {
-            transform:
-                translate3d(
-                    var(--drift-one),
-                    12vh,
-                    0
-                );
-        }
-
-        25% {
-            transform:
-                translate3d(
-                    var(--drift-two),
-                    25vh,
-                    0
-                );
-        }
-
-        37% {
-            transform:
-                translate3d(
-                    var(--drift-three),
-                    37vh,
-                    0
-                );
-        }
-
-        50% {
-            transform:
-                translate3d(
-                    var(--drift-four),
-                    50vh,
-                    0
-                );
-        }
-
-        62% {
-            transform:
-                translate3d(
-                    var(--drift-five),
-                    62vh,
-                    0
-                );
-        }
-
-        75% {
-            transform:
-                translate3d(
-                    var(--drift-six),
-                    75vh,
-                    0
-                );
-        }
-
-        87% {
-            transform:
-                translate3d(
-                    var(--drift-seven),
-                    87vh,
-                    0
-                );
-        }
-
-        100% {
-            transform:
-                translate3d(
-                    var(--drift-end),
-                    110vh,
-                    0
-                );
-        }
+        0%   { transform: translate3d(var(--drift-start), -50px, 0); }
+        12%  { transform: translate3d(var(--drift-one), 12vh, 0); }
+        25%  { transform: translate3d(var(--drift-two), 25vh, 0); }
+        37%  { transform: translate3d(var(--drift-three), 37vh, 0); }
+        50%  { transform: translate3d(var(--drift-four), 50vh, 0); }
+        62%  { transform: translate3d(var(--drift-five), 62vh, 0); }
+        75%  { transform: translate3d(var(--drift-six), 75vh, 0); }
+        87%  { transform: translate3d(var(--drift-seven), 87vh, 0); }
+        100% { transform: translate3d(var(--drift-end), 110vh, 0); }
     }
 
-    /*
-     * =====================================================
-     * MAIN CONTAINER
-     * =====================================================
-     */
+    /* MAIN CONTAINER */
 
     #container {
         width: 100%;
         height: 100%;
-
         display: flex;
-
         align-items: center;
         justify-content: center;
-
         padding:
             max(20px, env(safe-area-inset-top))
             max(20px, env(safe-area-inset-right))
             max(20px, env(safe-area-inset-bottom))
             max(20px, env(safe-area-inset-left));
-
         position: absolute;
-
         inset: 0;
-
         z-index: 5;
-
         overflow: hidden;
     }
 
-    /*
-     * =====================================================
-     * LIQUID GLASS CARD
-     * =====================================================
-     */
+    /* LIQUID GLASS CARD */
 
     .card {
         width: min(92vw, 900px);
-
-        padding:
-            clamp(30px, 5vw, 60px);
-
+        padding: clamp(30px, 5vw, 60px);
         text-align: center;
-
         position: relative;
-
         background:
             linear-gradient(
                 135deg,
@@ -370,22 +192,10 @@
                 rgba(255, 255, 255, 0.018) 45%,
                 rgba(255, 255, 255, 0.035)
             );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.18);
-
-        border-radius:
-            32px;
-
-        backdrop-filter:
-            blur(14px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(14px)
-            saturate(180%);
-
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 32px;
+        backdrop-filter: blur(14px) saturate(180%);
+        -webkit-backdrop-filter: blur(14px) saturate(180%);
         box-shadow:
             0 35px 100px rgba(0, 0, 0, 0.42),
             0 10px 30px rgba(0, 0, 0, 0.18),
@@ -396,172 +206,77 @@
 
     .card::before {
         content: "";
-
         position: absolute;
-
         inset: 1px;
-
         border-radius: 31px;
-
         pointer-events: none;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255,255,255,.08),
-                transparent 40%
-            );
+        background: linear-gradient(135deg, rgba(255,255,255,.08), transparent 40%);
     }
 
     .card::after {
         content: "";
-
         position: absolute;
-
         left: 10%;
         right: 10%;
-
         bottom: -18px;
-
         height: 35px;
-
         border-radius: 50%;
-
-        background:
-            rgba(255, 255, 255, 0.08);
-
-        filter:
-            blur(11px);
-
+        background: rgba(255, 255, 255, 0.08);
+        filter: blur(11px);
         pointer-events: none;
-
         z-index: -1;
     }
 
     .card > * {
         position: relative;
-
         z-index: 2;
     }
 
-    /*
-     * =====================================================
-     * LIVE LABEL
-     * =====================================================
-     */
+    /* LIVE LABEL */
 
     .live-label {
         display: inline-flex;
-
         align-items: center;
-
         gap: 9px;
-
-        padding:
-            9px 17px;
-
-        border-radius:
-            999px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.15),
-                rgba(255, 255, 255, 0.055)
-            );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.22);
-
+        padding: 9px 17px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.055));
+        border: 1px solid rgba(255, 255, 255, 0.22);
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.28),
-
-            0 5px 20px
-                rgba(0, 0, 0, 0.12);
-
-        backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        -webkit-backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.12em;
-
-        text-transform:
-            uppercase;
-
-        margin-bottom:
-            20px;
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            0 5px 20px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
     }
 
     .live-dot {
         width: 9px;
         height: 9px;
-
         border-radius: 50%;
-
-        background:
-            #ff3038;
-
+        background: #ff3038;
         box-shadow:
             0 0 8px #ff3038,
-            0 0 16px
-            rgba(255, 48, 56, 0.65);
-
-        animation:
-            livePulse
-            1.4s
-            infinite;
+            0 0 16px rgba(255, 48, 56, 0.65);
+        animation: livePulse 1.4s infinite;
     }
 
     @keyframes livePulse {
-
-        0%,
-        100% {
-            opacity: 1;
-
-            transform:
-                scale(1);
-        }
-
-        50% {
-            opacity: 0.45;
-
-            transform:
-                scale(0.75);
-        }
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.45; transform: scale(0.75); }
     }
 
-    /*
-     * =====================================================
-     * CHRISTMAS TITLE
-     * =====================================================
-     */
+    /* CHRISTMAS TITLE */
 
     #title {
-        font-size:
-            clamp(3rem, 9vw, 7rem);
-
-        font-weight:
-            900;
-
-        line-height:
-            0.95;
-
-        margin:
-            0 0 10px;
-
+        font-size: clamp(3rem, 9vw, 7rem);
+        font-weight: 900;
+        line-height: 0.95;
+        margin: 0 0 10px;
         background:
             linear-gradient(
                 105deg,
@@ -571,236 +286,100 @@
                 #0b6b3a 82%,
                 #16a864 100%
             );
-
-        -webkit-background-clip:
-            text;
-
-        -webkit-text-fill-color:
-            transparent;
-
-        background-clip:
-            text;
-
-        text-shadow:
-            0 8px 30px
-            rgba(0, 0, 0, 0.25);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
     }
 
-    /*
-     * =====================================================
-     * COUNTDOWN TITLE
-     * =====================================================
-     */
+    /* COUNTDOWN TITLE */
 
     #subtitle {
-        font-size:
-            clamp(2rem, 5vw, 4rem);
-
-        line-height:
-            1;
-
-        font-weight:
-            800;
-
-        color:
-            #ffffff;
-
-        text-shadow:
-            0 5px 25px
-            rgba(0, 0, 0, 0.4);
-
-        margin-bottom:
-            28px;
+        font-size: clamp(2rem, 5vw, 4rem);
+        line-height: 1;
+        font-weight: 800;
+        color: #ffffff;
+        text-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+        margin-bottom: 28px;
     }
 
-    /*
-     * =====================================================
-     * COUNTDOWN GLASS
-     * =====================================================
-     */
+    /* COUNTDOWN GLASS */
 
     #countdown {
-        display:
-            inline-flex;
-
-        align-items:
-            center;
-
-        justify-content:
-            center;
-
-        min-width:
-            min(90%, 500px);
-
-        padding:
-            15px 25px;
-
-        border-radius:
-            999px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.13),
-                rgba(255, 255, 255, 0.045)
-            );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.24);
-
-        backdrop-filter:
-            blur(11px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(11px)
-            saturate(180%);
-
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: min(90%, 500px);
+        padding: 15px 25px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045));
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(11px) saturate(180%);
+        -webkit-backdrop-filter: blur(11px) saturate(180%);
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.35),
-
-            inset 0 -1px 0
-                rgba(255, 255, 255, 0.07),
-
-            0 12px 35px
-                rgba(0, 0, 0, 0.20);
-
-        font-size:
-            clamp(1.1rem, 3vw, 1.7rem);
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.03em;
-
-        margin-bottom:
-            30px;
+            inset 0 1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.07),
+            0 12px 35px rgba(0, 0, 0, 0.20);
+        font-size: clamp(1.1rem, 3vw, 1.7rem);
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        margin-bottom: 30px;
     }
 
-    /*
-     * =====================================================
-     * NOW PLAYING
-     * =====================================================
-     */
+    /* NOW PLAYING */
 
     .song-wrapper {
-        margin-bottom:
-            28px;
+        margin-bottom: 28px;
     }
 
     .now-playing {
-        font-size:
-            0.72rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.18em;
-
-        opacity:
-            0.72;
-
-        margin-bottom:
-            9px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        opacity: 0.72;
+        margin-bottom: 9px;
     }
 
     #songName {
-        min-height:
-            1.5em;
-
-        font-size:
-            clamp(1rem, 3vw, 1.45rem);
-
-        font-weight:
-            700;
-
-        color:
-            #ffffff;
-
-        text-shadow:
-            0 2px 12px
-            rgba(0, 0, 0, 0.45);
+        min-height: 1.5em;
+        font-size: clamp(1rem, 3vw, 1.45rem);
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
     }
 
     .up-next-wrapper {
-        margin-top:
-            14px;
-
-        margin-bottom:
-            4px;
+        margin-top: 14px;
+        margin-bottom: 4px;
     }
 
     .up-next-label {
-        font-size:
-            0.62rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.16em;
-
-        opacity:
-            0.52;
-
-        margin-bottom:
-            5px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        opacity: 0.52;
+        margin-bottom: 5px;
     }
 
     #upNext {
-        min-height:
-            1.3em;
-
-        font-size:
-            clamp(0.85rem, 2.5vw, 1rem);
-
-        font-weight:
-            700;
-
-        color:
-            rgba(255, 255, 255, 0.78);
-
-        text-shadow:
-            0 2px 10px
-            rgba(0, 0, 0, 0.35);
+        min-height: 1.3em;
+        font-size: clamp(0.85rem, 2.5vw, 1rem);
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.78);
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     }
 
-    /*
-     * =====================================================
-     * PLAY BUTTON
-     * =====================================================
-     */
+    /* PLAY BUTTON */
 
     #playButton {
-        position:
-            relative;
-
-        overflow:
-            hidden;
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.25);
-
-        outline:
-            none;
-
-        padding:
-            15px 28px;
-
-        border-radius:
-            999px;
-
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        outline: none;
+        padding: 15px 28px;
+        border-radius: 999px;
         background:
             linear-gradient(
                 135deg,
@@ -808,106 +387,48 @@
                 rgba(215, 25, 32, 0.42),
                 rgba(141, 7, 16, 0.55)
             );
-
-        color:
-            white;
-
-        font-size:
-            1rem;
-
-        font-weight:
-            800;
-
-        cursor:
-            pointer;
-
-        touch-action:
-            manipulation;
-
-        backdrop-filter:
-            blur(20px)
-            saturate(170%);
-
-        -webkit-backdrop-filter:
-            blur(20px)
-            saturate(170%);
-
+        color: white;
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        touch-action: manipulation;
+        backdrop-filter: blur(20px) saturate(170%);
+        -webkit-backdrop-filter: blur(20px) saturate(170%);
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            inset 0 -1px 0
-                rgba(0, 0, 0, 0.15),
-
-            0 12px 35px
-                rgba(120, 0, 0, 0.28);
-
-        transition:
-            transform 0.18s ease,
-            box-shadow 0.18s ease;
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+            0 12px 35px rgba(120, 0, 0, 0.28);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
 
     #playButton::before {
-        content:
-            "";
-
-        position:
-            absolute;
-
-        top:
-            0;
-
-        left:
-            -40%;
-
-        width:
-            35%;
-
-        height:
-            100%;
-
-        background:
-            linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.30),
-                transparent
-            );
-
-        transform:
-            skewX(-20deg);
-
-        transition:
-            left 0.65s ease;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -40%;
+        width: 35%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.30), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.65s ease;
     }
 
     #playButton:hover::before {
-        left:
-            110%;
+        left: 110%;
     }
 
     #playButton:active {
-        transform:
-            scale(0.96);
-
+        transform: scale(0.96);
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.3),
-
-            0 5px 18px
-                rgba(0, 0, 0, 0.25);
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 5px 18px rgba(0, 0, 0, 0.25);
     }
 
     #playButton:hover {
-        transform:
-            translateY(-2px);
-
+        transform: translateY(-2px);
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.45),
-
-            0 16px 40px
-                rgba(120, 0, 0, 0.34);
+            inset 0 1px 0 rgba(255, 255, 255, 0.45),
+            0 16px 40px rgba(120, 0, 0, 0.34);
     }
 
     #playButton.paused {
@@ -918,48 +439,26 @@
                 rgba(13, 122, 67, 0.45),
                 rgba(7, 85, 47, 0.55)
             );
-
         box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            0 12px 35px
-                rgba(0, 80, 40, 0.25);
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 12px 35px rgba(0, 80, 40, 0.25);
     }
 
-    /*
-     * =====================================================
-     * FOOTER
-     * =====================================================
-     */
+    /* FOOTER */
 
     footer {
-        margin-top:
-            28px;
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            700;
-
-        opacity:
-            0.65;
-
-        letter-spacing:
-            0.08em;
+        margin-top: 28px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        opacity: 0.65;
+        letter-spacing: 0.08em;
     }
 
     audio {
-        display:
-            none !important;
+        display: none !important;
     }
 
-    /*
-     * =====================================================
-     * MOBILE PORTRAIT
-     * =====================================================
-     */
+    /* MOBILE PORTRAIT */
 
     @media (max-width: 768px) {
 
@@ -972,64 +471,38 @@
         }
 
         .card {
-            width:
-                94vw;
-
-            padding:
-                30px 20px;
-
-            border-radius:
-                28px;
-
-            backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
+            width: 94vw;
+            padding: 30px 20px;
+            border-radius: 28px;
+            backdrop-filter: blur(12.5px) saturate(180%);
+            -webkit-backdrop-filter: blur(12.5px) saturate(180%);
         }
 
         .card::before {
-            border-radius:
-                27px;
+            border-radius: 27px;
         }
 
         #countdown {
-            min-width:
-                0;
-
-            width:
-                100%;
-
-            padding:
-                13px 15px;
-
-            margin-bottom:
-                24px;
+            min-width: 0;
+            width: 100%;
+            padding: 13px 15px;
+            margin-bottom: 24px;
         }
 
         #songName {
-            padding:
-                0 8px;
+            padding: 0 8px;
         }
 
         #playButton {
-            width:
-                min(100%, 330px);
+            width: min(100%, 330px);
         }
 
         footer {
-            margin-top:
-                22px;
+            margin-top: 22px;
         }
     }
 
-    /*
-     * =====================================================
-     * PHONE LANDSCAPE
-     * =====================================================
-     */
+    /* PHONE LANDSCAPE */
 
     @media (max-width: 900px) and (orientation: landscape) {
 
@@ -1042,592 +515,276 @@
         }
 
         .card {
-            width:
-                min(
-                    94vw,
-                    850px
-                );
-
-            height:
-                min(
-                    92dvh,
-                    440px
-                );
-
-            min-height:
-                0;
-
-            padding:
-                clamp(12px, 3vh, 22px)
-                clamp(18px, 4vw, 38px);
-
-            border-radius:
-                25px;
-
-            overflow:
-                hidden;
-
-            display:
-                grid;
-
-            grid-template-columns:
-                minmax(0, 1.15fr)
-                minmax(0, 0.95fr);
-
-            grid-template-rows:
-                auto
-                auto
-                auto
-                auto;
-
+            width: min(94vw, 850px);
+            height: min(92dvh, 440px);
+            min-height: 0;
+            padding: clamp(12px, 3vh, 22px) clamp(18px, 4vw, 38px);
+            border-radius: 25px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+            grid-template-rows: auto auto auto auto;
             grid-template-areas:
                 "live live"
                 "title info"
                 "subtitle info"
                 "countdown button";
-
-            column-gap:
-                clamp(18px, 5vw, 48px);
-
-            row-gap:
-                clamp(2px, 0.8vh, 7px);
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            backdrop-filter:
-                blur(14px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(14px)
-                saturate(180%);
+            column-gap: clamp(18px, 5vw, 48px);
+            row-gap: clamp(2px, 0.8vh, 7px);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
         }
 
         .card::before {
-            border-radius:
-                24px;
+            border-radius: 24px;
         }
 
         .live-label {
-            grid-area:
-                live;
-
-            justify-self:
-                center;
-
-            padding:
-                5px 12px;
-
-            gap:
-                7px;
-
-            font-size:
-                0.58rem;
-
-            margin-bottom:
-                2px;
+            grid-area: live;
+            justify-self: center;
+            padding: 5px 12px;
+            gap: 7px;
+            font-size: 0.58rem;
+            margin-bottom: 2px;
         }
 
         .live-dot {
-            width:
-                7px;
-
-            height:
-                7px;
+            width: 7px;
+            height: 7px;
         }
 
         #title {
-            grid-area:
-                title;
-
-            font-size:
-                clamp(
-                    2.25rem,
-                    9.5vh,
-                    4.4rem
-                );
-
-            line-height:
-                0.86;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
+            grid-area: title;
+            font-size: clamp(2.25rem, 9.5vh, 4.4rem);
+            line-height: 0.86;
+            margin: 0;
+            white-space: nowrap;
         }
 
         #subtitle {
-            grid-area:
-                subtitle;
-
-            font-size:
-                clamp(
-                    1.45rem,
-                    5.5vh,
-                    2.5rem
-                );
-
-            line-height:
-                0.9;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
+            grid-area: subtitle;
+            font-size: clamp(1.45rem, 5.5vh, 2.5rem);
+            line-height: 0.9;
+            margin: 0;
+            white-space: nowrap;
         }
 
         #countdown {
-            grid-area:
-                countdown;
-
-            justify-self:
-                center;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            max-width:
-                100%;
-
-            padding:
-                8px 12px;
-
-            margin:
-                2px 0 0;
-
-            font-size:
-                clamp(
-                    0.72rem,
-                    3.2vh,
-                    1.05rem
-                );
-
-            white-space:
-                nowrap;
+            grid-area: countdown;
+            justify-self: center;
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            padding: 8px 12px;
+            margin: 2px 0 0;
+            font-size: clamp(0.72rem, 3.2vh, 1.05rem);
+            white-space: nowrap;
         }
 
         .song-wrapper {
-            grid-area:
-                info;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            margin:
-                0;
-
-            padding:
-                0 2px;
-
-            text-align:
-                center;
+            grid-area: info;
+            width: 100%;
+            min-width: 0;
+            margin: 0;
+            padding: 0 2px;
+            text-align: center;
         }
 
         .now-playing {
-            font-size:
-                0.55rem;
-
-            letter-spacing:
-                0.16em;
-
-            margin-bottom:
-                4px;
-
-            opacity:
-                0.68;
+            font-size: 0.55rem;
+            letter-spacing: 0.16em;
+            margin-bottom: 4px;
+            opacity: 0.68;
         }
 
         #songName {
-            min-height:
-                1.2em;
-
-            padding:
-                0;
-
-            font-size:
-                clamp(
-                    0.82rem,
-                    3.2vh,
-                    1.1rem
-                );
-
-            line-height:
-                1.15;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
+            min-height: 1.2em;
+            padding: 0;
+            font-size: clamp(0.82rem, 3.2vh, 1.1rem);
+            line-height: 1.15;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .up-next-wrapper {
-            margin:
-                7px 0 0;
+            margin: 7px 0 0;
         }
 
         .up-next-label {
-            font-size:
-                0.47rem;
-
-            letter-spacing:
-                0.14em;
-
-            margin-bottom:
-                2px;
+            font-size: 0.47rem;
+            letter-spacing: 0.14em;
+            margin-bottom: 2px;
         }
 
         #upNext {
-            min-height:
-                1.1em;
-
-            font-size:
-                clamp(
-                    0.64rem,
-                    2.5vh,
-                    0.86rem
-                );
-
-            line-height:
-                1.1;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
+            min-height: 1.1em;
+            font-size: clamp(0.64rem, 2.5vh, 0.86rem);
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #playButton {
-            grid-area:
-                button;
-
-            justify-self:
-                center;
-
-            width:
-                min(
-                    100%,
-                    250px
-                );
-
-            min-width:
-                0;
-
-            padding:
-                8px 16px;
-
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.7vh,
-                    0.88rem
-                );
-
-            white-space:
-                nowrap;
+            grid-area: button;
+            justify-self: center;
+            width: min(100%, 250px);
+            min-width: 0;
+            padding: 8px 16px;
+            font-size: clamp(0.68rem, 2.7vh, 0.88rem);
+            white-space: nowrap;
         }
 
         footer {
-            position:
-                absolute;
-
-            left:
-                50%;
-
-            bottom:
-                7px;
-
-            transform:
-                translateX(-50%);
-
-            margin:
-                0;
-
-            font-size:
-                clamp(
-                    0.45rem,
-                    1.8vh,
-                    0.6rem
-                );
-
-            white-space:
-                nowrap;
-
-            opacity:
-                0.55;
+            position: absolute;
+            left: 50%;
+            bottom: 7px;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: clamp(0.45rem, 1.8vh, 0.6rem);
+            white-space: nowrap;
+            opacity: 0.55;
         }
     }
 
-    /*
-     * =====================================================
-     * VERY SHORT LANDSCAPE PHONES
-     * =====================================================
-     */
+    /* VERY SHORT LANDSCAPE PHONES */
 
     @media (max-width: 900px)
         and (orientation: landscape)
         and (max-height: 430px) {
 
         #container {
-            padding:
-                5px 10px;
+            padding: 5px 10px;
         }
 
         .card {
-            width:
-                min(
-                    95vw,
-                    850px
-                );
-
-            height:
-                calc(
-                    100dvh -
-                    env(safe-area-inset-top) -
-                    env(safe-area-inset-bottom) -
-                    10px
-                );
-
-            padding:
-                8px 16px;
-
-            border-radius:
-                21px;
-
-            grid-template-columns:
-                minmax(0, 1.15fr)
-                minmax(0, 0.95fr);
-
-            column-gap:
-                20px;
-
-            row-gap:
-                1px;
+            width: min(95vw, 850px);
+            height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px);
+            padding: 8px 16px;
+            border-radius: 21px;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+            column-gap: 20px;
+            row-gap: 1px;
         }
 
         .card::before {
-            border-radius:
-                20px;
+            border-radius: 20px;
         }
 
         .live-label {
-            padding:
-                3px 9px;
-
-            gap:
-                5px;
-
-            font-size:
-                0.48rem;
+            padding: 3px 9px;
+            gap: 5px;
+            font-size: 0.48rem;
         }
 
         .live-dot {
-            width:
-                6px;
-
-            height:
-                6px;
+            width: 6px;
+            height: 6px;
         }
 
         #title {
-            font-size:
-                clamp(
-                    1.85rem,
-                    9vh,
-                    3.2rem
-                );
+            font-size: clamp(1.85rem, 9vh, 3.2rem);
         }
 
         #subtitle {
-            font-size:
-                clamp(
-                    1.15rem,
-                    5vh,
-                    1.9rem
-                );
+            font-size: clamp(1.15rem, 5vh, 1.9rem);
         }
 
         #countdown {
-            padding:
-                6px 9px;
-
-            font-size:
-                clamp(
-                    0.62rem,
-                    3vh,
-                    0.88rem
-                );
+            padding: 6px 9px;
+            font-size: clamp(0.62rem, 3vh, 0.88rem);
         }
 
         .now-playing {
-            font-size:
-                0.46rem;
-
-            margin-bottom:
-                2px;
+            font-size: 0.46rem;
+            margin-bottom: 2px;
         }
 
         #songName {
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.8vh,
-                    0.88rem
-                );
+            font-size: clamp(0.68rem, 2.8vh, 0.88rem);
         }
 
         .up-next-wrapper {
-            margin-top:
-                4px;
+            margin-top: 4px;
         }
 
         .up-next-label {
-            font-size:
-                0.4rem;
-
-            margin-bottom:
-                1px;
+            font-size: 0.4rem;
+            margin-bottom: 1px;
         }
 
         #upNext {
-            font-size:
-                clamp(
-                    0.55rem,
-                    2.3vh,
-                    0.73rem
-                );
+            font-size: clamp(0.55rem, 2.3vh, 0.73rem);
         }
 
         #playButton {
-            width:
-                min(
-                    100%,
-                    220px
-                );
-
-            padding:
-                6px 13px;
-
-            font-size:
-                clamp(
-                    0.59rem,
-                    2.4vh,
-                    0.76rem
-                );
+            width: min(100%, 220px);
+            padding: 6px 13px;
+            font-size: clamp(0.59rem, 2.4vh, 0.76rem);
         }
 
         footer {
-            bottom:
-                4px;
-
-            font-size:
-                0.42rem;
+            bottom: 4px;
+            font-size: 0.42rem;
         }
     }
 
-    /*
-     * =====================================================
-     * SMALL PORTRAIT PHONES
-     * =====================================================
-     */
+    /* SMALL PORTRAIT PHONES */
 
-    @media (max-width: 380px)
-        and (orientation: portrait) {
+    @media (max-width: 380px) and (orientation: portrait) {
 
         .card {
-            padding:
-                25px 15px;
-
-            border-radius:
-                25px;
+            padding: 25px 15px;
+            border-radius: 25px;
         }
 
         #countdown {
-            font-size:
-                0.95rem;
+            font-size: 0.95rem;
         }
 
         #songName {
-            font-size:
-                0.95rem;
+            font-size: 0.95rem;
         }
 
         #upNext {
-            font-size:
-                0.8rem;
+            font-size: 0.8rem;
         }
 
         #playButton {
-            font-size:
-                0.9rem;
-
-            padding:
-                13px 20px;
+            font-size: 0.9rem;
+            padding: 13px 20px;
         }
     }
 
-    /*
-     * =====================================================
-     * TABLET LANDSCAPE
-     * =====================================================
-     */
+    /* TABLET LANDSCAPE */
 
     @media (min-width: 769px)
         and (max-width: 1100px)
         and (orientation: landscape) {
 
         #container {
-            padding:
-                15px;
+            padding: 15px;
         }
 
         .card {
-            max-height:
-                94dvh;
-
-            overflow:
-                hidden;
+            max-height: 94dvh;
+            overflow: hidden;
         }
     }
 
-    /*
-     * =====================================================
-     * REDUCED MOTION
-     * =====================================================
-     */
+    /* REDUCED MOTION */
 
     @media (prefers-reduced-motion: reduce) {
 
         *,
         *::before,
         *::after {
-            animation-duration:
-                0.001ms !important;
-
-            animation-iteration-count:
-                1 !important;
-
-            transition-duration:
-                0.001ms !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
         }
     }
 
@@ -1640,36 +797,18 @@
 
         <div id="bg"></div>
 
-        <div
-            id="snowFar"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowMid"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowNear"
-            class="snow-layer">
-        </div>
-
-        <div
-            id="snowAbove"
-            class="snow-layer">
-        </div>
+        <div id="snowFar" class="snow-layer"></div>
+        <div id="snowMid" class="snow-layer"></div>
+        <div id="snowNear" class="snow-layer"></div>
+        <div id="snowAbove" class="snow-layer"></div>
 
         <main id="container">
 
             <section class="card">
 
                 <div class="live-label">
-
                     <span class="live-dot"></span>
-
                     Christmas Radio
-
                 </div>
 
                 <h1 id="title">
@@ -1810,6 +949,8 @@ const DURATION_MANIFEST = "./songs/durations.json";
 const SONGS_PER_SPEECH = 4;
 const DURATION_TIMEOUT = 30000;
 
+const SIGNATURE_STORAGE_KEY = "christmasRadioContentSignature";
+
 const RADIO_START = new Date(
     "December 1, 2026 00:00:00"
 ).getTime();
@@ -1834,6 +975,8 @@ let currentSegmentKey = "";
 let isChangingTrack = false;
 let retryCount = 0;
 let retryTimeout = null;
+
+let contentSignature = "";
 
 
 /* =========================================
@@ -2188,6 +1331,46 @@ function calculatePlaylistDuration() {
 
 
 /* =========================================
+   CONTENT SIGNATURE
+
+   Changes whenever a song name, file,
+   duration or the speech duration changes.
+   Built from the unshuffled list (sorted),
+   so the daily shuffle never triggers it.
+========================================= */
+
+function computeContentSignature(loadedSongs, speechSeconds) {
+    const text = loadedSongs
+        .map(song => `${song.file}|${song.name}|${song.duration}`)
+        .sort()
+        .join("\n") + `\nspeech|${speechSeconds}`;
+
+    let hash = 2166136261;
+
+    for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+
+    return (hash >>> 0).toString(16) + "-" + text.length;
+}
+
+function getSavedSignature() {
+    try {
+        return localStorage.getItem(SIGNATURE_STORAGE_KEY);
+    } catch {
+        return null;
+    }
+}
+
+function saveSignature(signature) {
+    try {
+        localStorage.setItem(SIGNATURE_STORAGE_KEY, signature);
+    } catch {}
+}
+
+
+/* =========================================
    LOAD ALL METADATA
 ========================================= */
 
@@ -2217,6 +1400,11 @@ async function loadDurations() {
         songs = shuffleSongs(loadedSongs);
 
         speechDuration = loadSpeechDuration(durationMap);
+
+        contentSignature = computeContentSignature(
+            loadedSongs,
+            speechDuration
+        );
 
         totalPlaylistDuration = calculatePlaylistDuration();
 
@@ -2512,6 +1700,14 @@ createCircleSnow(
 
 /* =========================================
    OFFLINE AUDIO CACHING
+
+   If songs or durations changed since the
+   last completed caching run, the service
+   worker wipes the audio cache and downloads
+   everything again. The new signature is only
+   saved once the worker reports that every
+   file downloaded, so an interrupted refresh
+   is retried on the next visit.
 ========================================= */
 
 async function cacheRadioAudio() {
@@ -2545,16 +1741,33 @@ async function cacheRadioAudio() {
             )
         ];
 
-        activeWorker.postMessage({
-            type: "CACHE_RADIO_AUDIO",
-            files
-        });
+        const contentChanged =
+            getSavedSignature() !== contentSignature;
 
-        console.log(
-            "Offline audio caching requested:",
-            files.length,
-            "files"
-        );
+        if (contentChanged) {
+            activeWorker.postMessage({
+                type: "REFRESH_RADIO_AUDIO",
+                files,
+                signature: contentSignature
+            });
+
+            console.log(
+                "Playlist changed. Re-caching all audio:",
+                files.length,
+                "files"
+            );
+        } else {
+            activeWorker.postMessage({
+                type: "CACHE_RADIO_AUDIO",
+                files
+            });
+
+            console.log(
+                "Offline audio caching requested:",
+                files.length,
+                "files"
+            );
+        }
 
     } catch (error) {
         console.error(
@@ -2562,6 +1775,28 @@ async function cacheRadioAudio() {
             error
         );
     }
+}
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", event => {
+        const data = event.data || {};
+
+        if (data.type === "RADIO_AUDIO_CACHE_FINISHED") {
+            console.log(
+                `Audio caching finished: ${data.completed}/${data.total}` +
+                (data.failed ? `, ${data.failed} failed` : "")
+            );
+
+            // Remember the new playlist only after a fully successful refresh
+            if (
+                data.refreshed &&
+                data.failed === 0 &&
+                data.signature
+            ) {
+                saveSignature(data.signature);
+            }
+        }
+    });
 }
 
 
