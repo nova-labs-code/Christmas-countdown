@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -121,9 +122,9 @@
         <h1>Christmas Radio Duration Generator</h1>
 
         <div class="description">
-            Loads the song names from <strong>songs.json</strong>, checks each
-            corresponding MP3 in the <strong>songs</strong> folder, reads its
-            duration, and downloads a new <strong>durations.json</strong>.
+            Loads song names and filenames from <strong>songs.json</strong>,
+            checks each corresponding MP3 in the <strong>songs</strong> folder,
+            reads its duration, and downloads a new <strong>durations.json</strong>.
         </div>
 
         <button id="generateButton">
@@ -141,8 +142,11 @@
     </div>
 
     <script>
-        const SONG_FOLDER = "./songs/";
+        "use strict";
 
+        const SONG_MANIFEST = "./songs.json";
+        const SONG_FOLDER = "./songs/";
+        
         const generateButton =
             document.getElementById("generateButton");
 
@@ -157,28 +161,27 @@
 
 
         /*
-         * Load song names from songs.json.
+         * Load songs from the new songs.json format.
          *
-         * Expected format:
+         * Expected:
          *
          * {
          *     "songs": [
          *         {
-         *             "name": "All I Want For Christmas Is You.2"
-         *         },
-         *         {
-         *             "name": "Baby It's Cold Outside"
+         *             "file": "Song File.mp3",
+         *             "name": "Song Display Name"
          *         }
          *     ]
          * }
-         *
-         * String entries are also supported.
          */
-        async function loadSongNames() {
+        async function loadSongs() {
 
-            const response = await fetch("./songs.json", {
-                cache: "no-store"
-            });
+            const response = await fetch(
+                SONG_MANIFEST,
+                {
+                    cache: "no-store"
+                }
+            );
 
             if (!response.ok) {
                 throw new Error(
@@ -197,27 +200,25 @@
             const songs = data.songs
                 .map(song => {
 
-                    /*
-                     * Support:
-                     *
-                     * { "name": "Song Name" }
-                     *
-                     * and:
-                     *
-                     * "Song Name"
-                     */
-                    if (typeof song === "string") {
-                        return song.trim();
-                    }
-
                     if (
-                        song &&
-                        typeof song.name === "string"
+                        !song ||
+                        typeof song.file !== "string" ||
+                        typeof song.name !== "string"
                     ) {
-                        return song.name.trim();
+                        return null;
                     }
 
-                    return "";
+                    const file = song.file.trim();
+                    const name = song.name.trim();
+
+                    if (!file || !name) {
+                        return null;
+                    }
+
+                    return {
+                        file,
+                        name
+                    };
                 })
                 .filter(Boolean);
 
@@ -232,56 +233,18 @@
 
 
         /*
-         * Remove a trailing .number from the song name
-         * ONLY for the displayed/generated "name".
+         * Create the URL for an MP3.
          *
-         * Examples:
-         *
-         * "Song.1"  -> "Song"
-         * "Song.2"  -> "Song"
-         * "Song.15" -> "Song"
-         * "Song"    -> "Song"
-         *
-         * The original name is still used to locate
-         * the actual MP3 file.
+         * Uses the exact filename from songs.json.
          */
-        function getDisplayName(songName) {
-
-            return songName.replace(/\.\d+$/, "");
-        }
-
-
-        /*
-         * Convert the original song name into the MP3 filename.
-         *
-         * Example:
-         *
-         * "All I Want For Christmas Is You.2"
-         *
-         * becomes:
-         *
-         * "All I Want For Christmas Is You.2.mp3"
-         */
-        function getFilename(songName) {
-
-            return `${songName}.mp3`;
-        }
-
-
-        /*
-         * Create the URL for the MP3.
-         *
-         * This uses the ORIGINAL song name so that
-         * .number remains in the filename.
-         */
-        function getSongURL(songName) {
-
-            const filename =
-                getFilename(songName);
+        function getSongURL(filename) {
 
             return (
                 SONG_FOLDER +
-                encodeURIComponent(filename)
+                filename
+                    .split("/")
+                    .map(part => encodeURIComponent(part))
+                    .join("/")
             );
         }
 
@@ -289,17 +252,15 @@
         /*
          * Read the duration of an MP3.
          *
-         * This is only used by the generator
-         * to create durations.json.
+         * Used only by this generator.
          */
-        function getDuration(songName) {
+        function getDuration(filename) {
 
             return new Promise((resolve, reject) => {
 
                 const audio = new Audio();
 
                 let finished = false;
-
 
                 const cleanup = () => {
 
@@ -313,7 +274,8 @@
                         handleError
                     );
 
-                    audio.src = "";
+                    audio.removeAttribute("src");
+                    audio.load();
                 };
 
 
@@ -325,17 +287,14 @@
 
                     finished = true;
 
-                    const duration =
-                        audio.duration;
+                    const duration = audio.duration;
 
                     cleanup();
-
 
                     if (
                         !Number.isFinite(duration) ||
                         duration <= 0
                     ) {
-
                         reject(
                             new Error(
                                 "Invalid audio duration"
@@ -344,7 +303,6 @@
 
                         return;
                     }
-
 
                     resolve(duration);
                 };
@@ -370,21 +328,17 @@
 
                 audio.preload = "metadata";
 
-
                 audio.addEventListener(
                     "loadedmetadata",
                     handleMetadata
                 );
-
 
                 audio.addEventListener(
                     "error",
                     handleError
                 );
 
-
-                audio.src =
-                    getSongURL(songName);
+                audio.src = getSongURL(filename);
 
                 audio.load();
             });
@@ -396,42 +350,31 @@
          */
         function downloadJSON(data, filename) {
 
-            const json =
-                JSON.stringify(
-                    data,
-                    null,
-                    2
-                );
+            const json = JSON.stringify(
+                data,
+                null,
+                2
+            );
 
+            const blob = new Blob(
+                [json],
+                {
+                    type: "application/json"
+                }
+            );
 
-            const blob =
-                new Blob(
-                    [json],
-                    {
-                        type: "application/json"
-                    }
-                );
+            const url = URL.createObjectURL(blob);
 
-
-            const url =
-                URL.createObjectURL(blob);
-
-
-            const link =
-                document.createElement("a");
-
+            const link = document.createElement("a");
 
             link.href = url;
-
             link.download = filename;
-
 
             document.body.appendChild(link);
 
             link.click();
 
             link.remove();
-
 
             setTimeout(() => {
                 URL.revokeObjectURL(url);
@@ -447,126 +390,76 @@
             generateButton.disabled = true;
 
             progress.style.display = "block";
-
             progressBar.style.width = "0%";
 
             status.className = "";
 
-
             try {
 
                 status.textContent =
-                    "Loading song names from songs.json...";
+                    "Loading songs from songs.json...";
 
+                const songsManifest = await loadSongs();
 
-                /*
-                 * songs.json is the source
-                 * for playlist order and names.
-                 */
-                const songNames =
-                    await loadSongNames();
-
-
-                const total =
-                    songNames.length;
-
+                const total = songsManifest.length;
 
                 status.textContent =
                     `Checking ${total} hosted songs...`;
 
-
                 const songs = [];
-
                 const failed = [];
 
 
                 for (
                     let i = 0;
-                    i < songNames.length;
+                    i < songsManifest.length;
                     i++
                 ) {
 
-                    /*
-                     * This is the ORIGINAL name.
-                     *
-                     * If it is:
-                     *
-                     * "Song.2"
-                     *
-                     * then the actual file will be:
-                     *
-                     * "Song.2.mp3"
-                     */
-                    const originalName =
-                        songNames[i];
+                    const originalSong = songsManifest[i];
 
-
-                    /*
-                     * Remove .number ONLY for
-                     * the generated single/display name.
-                     */
-                    const displayName =
-                        getDisplayName(originalName);
-
-
-                    /*
-                     * Keep the .number in the
-                     * actual filename.
-                     */
-                    const file =
-                        getFilename(originalName);
-
+                    const file = originalSong.file;
+                    const name = originalSong.name;
 
                     status.textContent =
-                        `Checking ${i + 1} of ${total}\n\n${displayName}`;
+                        `Checking ${i + 1} of ${total}\n\n${name}\n${file}`;
 
 
                     try {
 
-                        const duration =
-                            await getDuration(originalName);
-
+                        const duration = await getDuration(file);
 
                         songs.push({
-                            name: displayName,
-                            file: file,
+                            file,
+                            name,
                             duration: Number(
                                 duration.toFixed(3)
                             )
                         });
 
-
                     } catch (error) {
 
                         console.error(
-                            `Failed to load ${originalName}:`,
+                            `Failed to load ${file}:`,
                             error
                         );
 
-
-                        /*
-                         * Keep the song in the
-                         * generated manifest so
-                         * the failure is visible.
-                         *
-                         * The display name has .number
-                         * removed, but the file keeps it.
-                         */
                         songs.push({
-                            name: displayName,
-                            file: file,
+                            file,
+                            name,
                             duration: null,
                             error: true
                         });
 
-
-                        failed.push(displayName);
+                        failed.push({
+                            name,
+                            file
+                        });
                     }
 
 
                     const percent =
                         ((i + 1) / total) * 100;
-
 
                     progressBar.style.width =
                         `${percent}%`;
@@ -577,9 +470,8 @@
                  * Create the final durations.json.
                  */
                 const output = {
-                    songs: songs
+                    songs
                 };
-
 
                 downloadJSON(
                     output,
@@ -589,21 +481,19 @@
 
                 if (failed.length > 0) {
 
-                    status.className =
-                        "error";
-
+                    status.className = "error";
 
                     status.textContent =
                         `Finished with ${failed.length} failed song(s).\n\n` +
                         `durations.json has been downloaded.\n\n` +
-                        `Failed songs:\n` +
-                        failed.join("\n");
+                        `Failed songs:\n\n` +
+                        failed.map(song =>
+                            `${song.name}\n${song.file}`
+                        ).join("\n\n");
 
                 } else {
 
-                    status.className =
-                        "success";
-
+                    status.className = "success";
 
                     status.textContent =
                         `Successfully generated durations.json.\n\n` +
@@ -611,19 +501,15 @@
                         `The file has been downloaded.`;
                 }
 
-
             } catch (error) {
 
                 console.error(error);
 
-                status.className =
-                    "error";
-
+                status.className = "error";
 
                 status.textContent =
                     `Error:\n\n${error.message}`;
             }
-
 
             generateButton.disabled = false;
         }
@@ -633,6 +519,7 @@
             "click",
             generateDurations
         );
+
     </script>
 
 </body>
