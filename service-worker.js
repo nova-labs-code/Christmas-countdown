@@ -4,7 +4,6 @@ const CACHE_NAME = "christmas-radio-v2";
 const AUDIO_CACHE = "christmas-radio-audio-v2";
 
 const SPEECH_PATH = "./songs/speech.mp3";
-const SONGS_MANIFEST_PATH = "./songs.json";
 const DURATIONS_PATH = "./songs/durations.json";
 
 const CORE_FILES = [
@@ -12,7 +11,6 @@ const CORE_FILES = [
     "./index.html",
     "./favicon.ico",
     "./christmas-background.jpg",
-    SONGS_MANIFEST_PATH,
     DURATIONS_PATH,
     SPEECH_PATH
 ];
@@ -22,10 +20,7 @@ function scopedURL(path) {
 }
 
 function isManifest(url) {
-    return (
-        url.pathname.endsWith("/durations.json") ||
-        url.pathname.endsWith("/songs.json")
-    );
+    return url.pathname.endsWith("/durations.json");
 }
 
 async function notifyClients(message) {
@@ -111,7 +106,7 @@ async function runCacheJob(files, refresh, signature) {
         await coreCache.delete(scopedURL(SPEECH_PATH));
 
         // Re-fetch the manifests so the cached copies are current
-        for (const path of [SONGS_MANIFEST_PATH, DURATIONS_PATH]) {
+        for (const path of [DURATIONS_PATH]) {
             try {
                 const response = await fetch(
                     scopedURL(path),
@@ -231,7 +226,7 @@ self.addEventListener("fetch", event => {
     }
 
     /*
-     * Manifests (songs.json, durations.json):
+     * Manifests (durations.json):
      * network first, so changes are always seen.
      * Cached copy is used only when offline.
      *
