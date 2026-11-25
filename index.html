@@ -3339,8 +3339,8 @@ function updateLiveMediaSession() {
     } catch {}
 
     try {
-        const duration = audio.duration;
-        const position = audio.currentTime;
+        const duration = song.duration;
+const position = findLiveSegment().offset;
 
         if (
             Number.isFinite(duration) &&
