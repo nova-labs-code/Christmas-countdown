@@ -2129,7 +2129,7 @@ const DURATION_TIMEOUT = 30000;
 const SIGNATURE_STORAGE_KEY = "christmasRadioContentSignature";
 
 // Fixed instant: midnight Eastern Standard Time (UTC-5)
-const RADIO_START = Date.parse("2026-11-25T00:00:00-05:00");
+const RADIO_START = Date.parse("2025-12-01T00:00:00-05:00");
 
 const EASTERN_ZONE = "America/New_York";
 
@@ -2159,6 +2159,70 @@ let contentSignature = "";
 
 let segmentTimer = null;
 let driftStrikes = 0;
+
+// Total timeline length in whole milliseconds, and the rounded speech length.
+let totalPlaylistMs = 0;
+let speechMs = 0;
+
+// Learned per device: how long seek + play() takes to start (seconds).
+let startLatency = 0.3;
+
+/* =====================================================
+   SERVER CLOCK
+
+   nowMs() is the time every calculation uses. It is the
+   device clock, corrected only when the device clock is
+   clearly wrong (more than 2 seconds away from the server).
+   The HTTP Date header only has 1-second resolution, so a
+   correct clock is never touched.
+   ===================================================== */
+
+let clockOffset = 0;
+
+function nowMs() {
+    return Date.now() + clockOffset;
+}
+
+async function syncClock() {
+    try {
+        let best = null;
+
+        for (let i = 0; i < 3; i++) {
+            const t0 = Date.now();
+
+            const response = await fetch(
+                "./?clock=" + t0 + "-" + i,
+                { method: "HEAD", cache: "no-store" }
+            );
+
+            const t1 = Date.now();
+            const header = response.headers.get("Date");
+            const server = header ? new Date(header).getTime() : NaN;
+
+            if (!Number.isFinite(server)) continue;
+
+            const rtt = t1 - t0;
+
+            // +500 centers the 1-second truncation of the Date header.
+            const offset = server + 500 - (t0 + rtt / 2);
+
+            if (!best || rtt < best.rtt) {
+                best = { rtt, offset };
+            }
+        }
+
+        if (!best) return;
+
+        clockOffset = Math.abs(best.offset) > 2000
+            ? Math.round(best.offset)
+            : 0;
+
+        console.log("Clock offset applied (ms):", clockOffset);
+
+    } catch (error) {
+        console.warn("Could not sync clock:", error);
+    }
+}
 
 /* =====================================================
    TIME FORMAT
@@ -2376,7 +2440,8 @@ function parseSongs(data) {
             );
         }
 
-        return { name, file, duration };
+        // Whole milliseconds: every device does identical integer math.
+        return { name, file, duration, ms: Math.round(duration * 1000) };
     });
 
     if (parsed.length === 0) {
@@ -2468,7 +2533,7 @@ function parseInterruptions(data) {
    FIND ACTIVE INTERRUPTION
    ===================================================== */
 
-function findLiveInterruption(now = Date.now()) {
+function findLiveInterruption(now = nowMs()) {
     if (!interruptions.length) {
         return null;
     }
@@ -2499,7 +2564,7 @@ function findLiveInterruption(now = Date.now()) {
    FIND NEXT INTERRUPTION BOUNDARY
    ===================================================== */
 
-function findNextInterruptionBoundary(now = Date.now()) {
+function findNextInterruptionBoundary(now = nowMs()) {
     let next = Infinity;
 
     for (const interruption of interruptions) {
@@ -2537,7 +2602,7 @@ function scheduleInterruptionBoundary() {
 
     const delay = Math.max(
         25,
-        boundary - Date.now() + 25
+        boundary - nowMs() + 25
     );
 
     interruptionBoundaryTimer = setTimeout(() => {
@@ -2593,20 +2658,24 @@ async function loadSpeechDuration() {
    ===================================================== */
 
 function calculatePlaylistDuration() {
-    let duration = 0;
+    speechMs = Math.round(speechDuration * 1000);
+
+    let ms = 0;
 
     for (let i = 0; i < songs.length; i++) {
-        duration += songs[i].duration;
+        ms += songs[i].ms;
 
         if (
             (i + 1) % SONGS_PER_SPEECH === 0 &&
-            speechDuration > 0
+            speechMs > 0
         ) {
-            duration += speechDuration;
+            ms += speechMs;
         }
     }
 
-    return duration;
+    totalPlaylistMs = ms;
+
+    return ms / 1000;
 
 }
 
@@ -2714,6 +2783,7 @@ async function loadDurations() {
             totalPlaylistDuration
         );
         console.log("Content signature:", contentSignature);
+        console.log("Total timeline (ms):", totalPlaylistMs);
 
         return songs;
 
@@ -2740,7 +2810,7 @@ const easternYearFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 function updateCountdown() {
-    const now = Date.now();
+    const now = nowMs();
 
     const year = Number(easternYearFormatter.format(new Date(now)));
 
@@ -3135,7 +3205,7 @@ function getDisplayNextSongIndex(segment) {
 function findNormalLiveSegment() {
     if (
         !metadataLoaded ||
-        totalPlaylistDuration <= 0
+        totalPlaylistMs <= 0
     ) {
         return {
             type: "song",
@@ -3145,43 +3215,41 @@ function findNormalLiveSegment() {
         };
     }
 
-    const elapsed = Math.max(
-        0,
-        (Date.now() - RADIO_START) / 1000
-    );
+    // One unbroken timeline that started at RADIO_START (Dec 1, 2025).
+    const elapsedMs = Math.max(0, nowMs() - RADIO_START);
 
-    const position = elapsed % totalPlaylistDuration;
+    const positionMs = Math.floor(elapsedMs) % totalPlaylistMs;
 
     let accumulated = 0;
 
     for (let i = 0; i < songs.length; i++) {
-        const duration = songs[i].duration;
+        const durationMs = songs[i].ms;
 
-        if (position < accumulated + duration) {
+        if (positionMs < accumulated + durationMs) {
             return {
                 type: "song",
                 index: i,
-                offset: position - accumulated,
-                length: duration
+                offset: (positionMs - accumulated) / 1000,
+                length: durationMs / 1000
             };
         }
 
-        accumulated += duration;
+        accumulated += durationMs;
 
         if (
             (i + 1) % SONGS_PER_SPEECH === 0 &&
-            speechDuration > 0
+            speechMs > 0
         ) {
-            if (position < accumulated + speechDuration) {
+            if (positionMs < accumulated + speechMs) {
                 return {
                     type: "speech",
                     index: i,
-                    offset: position - accumulated,
-                    length: speechDuration
+                    offset: (positionMs - accumulated) / 1000,
+                    length: speechMs / 1000
                 };
             }
 
-            accumulated += speechDuration;
+            accumulated += speechMs;
         }
     }
 
@@ -3654,7 +3722,8 @@ async function playLive() {
             return;
         }
 
-        await seekAudio(audio, live.offset);
+        // Start slightly ahead to make up for how long this device takes to begin playing.
+        await seekAudio(audio, live.offset + startLatency);
 
         // The timeline might have changed during the seek.
         const afterSeek = findLiveSegment();
@@ -3667,16 +3736,27 @@ async function playLive() {
             return;
         }
 
+        const playStarted = performance.now();
+
         await audio.play();
+
+        // Learn how long starting takes on this device (smoothed and capped).
+        const measuredLatency =
+            (performance.now() - playStarted) / 1000;
+
+        startLatency = Math.min(
+            3,
+            startLatency * 0.5 + measuredLatency * 0.5
+        );
 
         // Compensate for the time spent seeking and starting.
         const after = findLiveSegment();
 
         if (
             getSegmentKey(after) === currentSegmentKey &&
-            Math.abs(audio.currentTime - after.offset) > 0.75
+            Math.abs(audio.currentTime - after.offset) > 0.4
         ) {
-            await seekAudio(audio, after.offset);
+            await seekAudio(audio, after.offset + startLatency);
         }
 
         updateLiveMediaSession();
@@ -3858,12 +3938,12 @@ async function syncRadio(force = false) {
             audio.currentTime - live.offset
         );
 
-        if (drift > 3) {
+        if (drift > 1.2) {
             driftStrikes++;
 
-            if (driftStrikes >= 2 || force) {
+            if (driftStrikes >= 2 || force || drift > 4) {
                 driftStrikes = 0;
-                await seekAudio(audio, live.offset);
+                await seekAudio(audio, live.offset + startLatency);
             }
         } else {
             driftStrikes = 0;
@@ -3897,11 +3977,12 @@ setInterval(() => {
    ===================================================== */
 
 document.addEventListener("visibilitychange", () => {
-    if (
-        document.visibilityState === "visible" &&
-        radioPlaying
-    ) {
-        syncRadio(true);
+    if (document.visibilityState === "visible") {
+        syncClock();
+
+        if (radioPlaying) {
+            syncRadio(true);
+        }
     }
 });
 
@@ -3953,6 +4034,8 @@ upNextElement.textContent =
 
 async function initializeRadio() {
     try {
+        await syncClock();
+
         await loadDurations();
 
         const live = findLiveSegment();
@@ -3988,6 +4071,8 @@ async function initializeRadio() {
 }
 
 initializeRadio();
+
+setInterval(syncClock, 10 * 60 * 1000);
 
 /* =====================================================
    CLEANUP
