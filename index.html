@@ -24,44 +24,82 @@
 
 <style>
 :root {
-    --red: #d71920;
-    --red-dark: #8d0710;
-    --green: #0b6b3a;
-    --green-dark: #063d25;
-    --gold: #ffd76a;
-    --white: #ffffff;
+    --red:
+        #d71920;
 
-    --glass-bg: rgba(255, 255, 255, 0.075);
-    --glass-bg-strong: rgba(255, 255, 255, 0.105);
-    --glass-border: rgba(255, 255, 255, 0.25);
-    --glass-highlight: rgba(255, 255, 255, 0.42);
-    --glass-shadow: rgba(0, 0, 0, 0.42);
+    --red-dark:
+        #8d0710;
+
+    --green:
+        #0b6b3a;
+
+    --green-dark:
+        #063d25;
+
+    --gold:
+        #ffd76a;
+
+    --white:
+        #ffffff;
+
+    --glass-bg:
+        rgba(255, 255, 255, .075);
+
+    --glass-bg-strong:
+        rgba(255, 255, 255, .105);
+
+    --glass-border:
+        rgba(255, 255, 255, .25);
+
+    --glass-highlight:
+        rgba(255, 255, 255, .42);
+
+    --glass-shadow:
+        rgba(0, 0, 0, .42);
 }
 
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    box-sizing:
+        border-box;
 
-    -webkit-tap-highlight-color: transparent;
+    margin:
+        0;
 
-    user-select: none;
-    -webkit-user-select: none;
+    padding:
+        0;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
+    user-select:
+        none;
+
+    -webkit-user-select:
+        none;
 }
 
 html,
 body {
-    width: 100%;
-    height: 100%;
+    width:
+        100%;
 
-    overflow: hidden;
+    height:
+        100%;
 
-    touch-action: none;
+    overflow:
+        hidden;
 
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    touch-action:
+        none;
 
-    overscroll-behavior: none;
+    -webkit-text-size-adjust:
+        100%;
+
+    text-size-adjust:
+        100%;
+
+    overscroll-behavior:
+        none;
 }
 
 body {
@@ -74,22 +112,23 @@ body {
         Arial,
         sans-serif;
 
-    color: var(--white);
+    color:
+        var(--white);
 
     background:
         radial-gradient(
             circle at 15% 15%,
-            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, .08),
             transparent 25%
         ),
         radial-gradient(
             circle at 85% 80%,
-            rgba(11, 107, 58, 0.30),
+            rgba(11, 107, 58, .30),
             transparent 35%
         ),
         radial-gradient(
             circle at 15% 80%,
-            rgba(215, 25, 32, 0.28),
+            rgba(215, 25, 32, .28),
             transparent 35%
         ),
         #12030a;
@@ -102,12 +141,17 @@ body {
  */
 
 #phonePortraitViewport {
-    width: 100%;
-    height: 100%;
+    width:
+        100%;
 
-    position: relative;
+    height:
+        100%;
 
-    overflow: hidden;
+    position:
+        relative;
+
+    overflow:
+        hidden;
 }
 
 /*
@@ -117,31 +161,39 @@ body {
  */
 
 #bg {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: -4%;
+    inset:
+        -4%;
 
-    width: 108%;
-    height: 108%;
+    width:
+        108%;
+
+    height:
+        108%;
 
     background-image:
-        linear-gradient(
-            rgba(15, 0, 5, 0.20),
-            rgba(15, 0, 5, 0.48)
-        ),
+        linear-gradient(rgba(15, 0, 5, .20), rgba(15, 0, 5, .48)),
         url("christmas-background.jpg");
 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-size:
+        cover;
+
+    background-position:
+        center;
+
+    background-repeat:
+        no-repeat;
 
     filter:
-        saturate(1.2)
-        contrast(1.02);
+        saturate(1.2) contrast(1.02);
 
-    z-index: -5;
+    z-index:
+        -5;
 
-    transform: translateZ(0);
+    transform:
+        translateZ(0);
 }
 
 /*
@@ -151,62 +203,74 @@ body {
  */
 
 .snow-layer {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    overflow: hidden;
+    overflow:
+        hidden;
 }
 
 #snowFar,
 #snowMid,
 #snowNear {
-    z-index: 2;
+    z-index:
+        2;
 }
 
 #snowAbove {
-    z-index: 10;
+    z-index:
+        10;
 }
 
 .snowflake {
-    position: absolute;
+    position:
+        absolute;
 
-    top: -30px;
+    top:
+        -30px;
 
-    color: rgba(255, 255, 255, 0.9);
+    color:
+        rgba(255, 255, 255, .9);
 
-    font-size: var(--size);
+    font-size:
+        var(--size);
 
-    opacity: var(--opacity);
+    opacity:
+        var(--opacity);
 
     animation:
-        smoothSnowFall
-        var(--duration)
-        linear
-        infinite;
+        smoothSnowFall var(--duration) linear infinite;
 
-    animation-delay: var(--delay);
+    animation-delay:
+        var(--delay);
 
-    will-change: transform;
+    will-change:
+        transform;
 }
 
 .circle-snow {
-    color: #ffffff;
+    color:
+        #fff;
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
 
-    font-weight: 400;
+    font-weight:
+        400;
 
-    line-height: 1;
+    line-height:
+        1;
 
     text-shadow:
-        0 0 5px
-        rgba(255, 255, 255, 0.35);
+        0 0 5px rgba(255, 255, 255, .35);
 
     will-change:
         transform,
@@ -215,107 +279,67 @@ body {
 
 .circle-snow.far {
     filter:
-        blur(0.25px);
+        blur(.25px);
 }
 
 .circle-snow.mid {
     filter:
-        blur(0.1px);
+        blur(.1px);
 
     text-shadow:
-        0 0 7px
-        rgba(255, 255, 255, 0.45);
+        0 0 7px rgba(255, 255, 255, .45);
 }
 
 .circle-snow.near {
     text-shadow:
-        0 0 9px
-        rgba(255, 255, 255, 0.65),
-        0 0 18px
-        rgba(255, 255, 255, 0.25);
+        0 0 9px rgba(255, 255, 255, .65),
+        0 0 18px rgba(255, 255, 255, .25);
 }
 
 @keyframes smoothSnowFall {
-
     0% {
         transform:
-            translate3d(
-                var(--drift-start),
-                -50px,
-                0
-            );
+            translate3d(var(--drift-start), -50px, 0);
     }
 
     12% {
         transform:
-            translate3d(
-                var(--drift-one),
-                12vh,
-                0
-            );
+            translate3d(var(--drift-one), 12vh, 0);
     }
 
     25% {
         transform:
-            translate3d(
-                var(--drift-two),
-                25vh,
-                0
-            );
+            translate3d(var(--drift-two), 25vh, 0);
     }
 
     37% {
         transform:
-            translate3d(
-                var(--drift-three),
-                37vh,
-                0
-            );
+            translate3d(var(--drift-three), 37vh, 0);
     }
 
     50% {
         transform:
-            translate3d(
-                var(--drift-four),
-                50vh,
-                0
-            );
+            translate3d(var(--drift-four), 50vh, 0);
     }
 
     62% {
         transform:
-            translate3d(
-                var(--drift-five),
-                62vh,
-                0
-            );
+            translate3d(var(--drift-five), 62vh, 0);
     }
 
     75% {
         transform:
-            translate3d(
-                var(--drift-six),
-                75vh,
-                0
-            );
+            translate3d(var(--drift-six), 75vh, 0);
     }
 
     87% {
         transform:
-            translate3d(
-                var(--drift-seven),
-                87vh,
-                0
-            );
+            translate3d(var(--drift-seven), 87vh, 0);
     }
 
     100% {
         transform:
-            translate3d(
-                var(--drift-end),
-                110vh,
-                0
-            );
+            translate3d(var(--drift-end), 110vh, 0);
     }
 }
 
@@ -326,27 +350,35 @@ body {
  */
 
 #container {
-    width: 100%;
-    height: 100%;
+    width:
+        100%;
 
-    display: flex;
+    height:
+        100%;
 
-    align-items: center;
-    justify-content: center;
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
 
     padding:
-        max(20px, env(safe-area-inset-top))
-        max(20px, env(safe-area-inset-right))
-        max(20px, env(safe-area-inset-bottom))
-        max(20px, env(safe-area-inset-left));
+        max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
 
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    z-index: 5;
+    z-index:
+        5;
 
-    overflow: hidden;
+    overflow:
+        hidden;
 }
 
 /*
@@ -356,94 +388,111 @@ body {
  */
 
 .card {
-    width: min(92vw, 900px);
+    width:
+        min(92vw, 900px);
 
     padding:
         clamp(30px, 5vw, 60px);
 
-    text-align: center;
+    text-align:
+        center;
 
-    position: relative;
+    position:
+        relative;
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.065),
-            rgba(255, 255, 255, 0.018) 45%,
-            rgba(255, 255, 255, 0.035)
+            rgba(255, 255, 255, .065),
+            rgba(255, 255, 255, .018) 45%,
+            rgba(255, 255, 255, .035)
         );
 
     border:
-        1px solid
-        rgba(255, 255, 255, 0.18);
+        1px solid rgba(255, 255, 255, .18);
 
     border-radius:
         32px;
 
     backdrop-filter:
-        blur(14px)
-        saturate(180%);
+        blur(14px) saturate(180%);
 
     -webkit-backdrop-filter:
-        blur(14px)
-        saturate(180%);
+        blur(14px) saturate(180%);
 
     box-shadow:
-        0 35px 100px rgba(0, 0, 0, 0.42),
-        0 10px 30px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22),
-        inset 1px 0 0 rgba(255, 255, 255, 0.07),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+        0 35px 100px rgba(0, 0, 0, .42),
+        0 10px 30px rgba(0, 0, 0, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .22),
+        inset 1px 0 0 rgba(255, 255, 255, .07),
+        inset 0 -1px 0 rgba(255, 255, 255, .04);
 }
 
 .card::before {
-    content: "";
+    content:
+        "";
 
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 1px;
+    inset:
+        1px;
 
-    border-radius: 31px;
+    border-radius:
+        31px;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
     background:
         linear-gradient(
             135deg,
-            rgba(255,255,255,.08),
+            rgba(255, 255, 255, .08),
             transparent 40%
         );
 }
 
 .card::after {
-    content: "";
+    content:
+        "";
 
-    position: absolute;
+    position:
+        absolute;
 
-    left: 10%;
-    right: 10%;
+    left:
+        10%;
 
-    bottom: -18px;
+    right:
+        10%;
 
-    height: 35px;
+    bottom:
+        -18px;
 
-    border-radius: 50%;
+    height:
+        35px;
+
+    border-radius:
+        50%;
 
     background:
-        rgba(255, 255, 255, 0.08);
+        rgba(255, 255, 255, .08);
 
     filter:
         blur(11px);
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    z-index: -1;
+    z-index:
+        -1;
 }
 
 .card > * {
-    position: relative;
+    position:
+        relative;
 
-    z-index: 2;
+    z-index:
+        2;
 }
 
 /*
@@ -453,11 +502,14 @@ body {
  */
 
 .live-label {
-    display: inline-flex;
+    display:
+        inline-flex;
 
-    align-items: center;
+    align-items:
+        center;
 
-    gap: 9px;
+    gap:
+        9px;
 
     padding:
         9px 17px;
@@ -468,37 +520,31 @@ body {
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.15),
-            rgba(255, 255, 255, 0.055)
+            rgba(255, 255, 255, .15),
+            rgba(255, 255, 255, .055)
         );
 
     border:
-        1px solid
-        rgba(255, 255, 255, 0.22);
+        1px solid rgba(255, 255, 255, .22);
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.28),
-
-        0 5px 20px
-            rgba(0, 0, 0, 0.12);
+        inset 0 1px 0 rgba(255, 255, 255, .28),
+        0 5px 20px rgba(0, 0, 0, .12);
 
     backdrop-filter:
-        blur(18px)
-        saturate(160%);
+        blur(18px) saturate(160%);
 
     -webkit-backdrop-filter:
-        blur(18px)
-        saturate(160%);
+        blur(18px) saturate(160%);
 
     font-size:
-        0.78rem;
+        .78rem;
 
     font-weight:
         800;
 
     letter-spacing:
-        0.12em;
+        .12em;
 
     text-transform:
         uppercase;
@@ -508,46 +554,48 @@ body {
 }
 
 .live-dot {
-    width: 9px;
-    height: 9px;
+    width:
+        9px;
 
-    border-radius: 50%;
+    height:
+        9px;
+
+    border-radius:
+        50%;
 
     background:
         #ff3038;
 
     box-shadow:
         0 0 8px #ff3038,
-        0 0 16px
-        rgba(255, 48, 56, 0.65);
+        0 0 16px rgba(255, 48, 56, .65);
 
     animation:
-        livePulse
-        1.4s
-        infinite;
+        livePulse 1.4s infinite;
 }
 
 @keyframes livePulse {
-
     0%,
     100% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             scale(1);
     }
 
     50% {
-        opacity: 0.45;
+        opacity:
+            .45;
 
         transform:
-            scale(0.75);
+            scale(.75);
     }
 }
 
 /*
  * =====================================================
- * CHRISTMAS TITLE
+ * CHRISTMAS TITLE / COUNTDOWN TITLE
  * =====================================================
  */
 
@@ -559,7 +607,7 @@ body {
         900;
 
     line-height:
-        0.95;
+        .95;
 
     margin:
         0 0 10px;
@@ -584,15 +632,8 @@ body {
         text;
 
     text-shadow:
-        0 8px 30px
-        rgba(0, 0, 0, 0.25);
+        0 8px 30px rgba(0, 0, 0, .25);
 }
-
-/*
- * =====================================================
- * COUNTDOWN TITLE
- * =====================================================
- */
 
 #subtitle {
     font-size:
@@ -605,11 +646,10 @@ body {
         800;
 
     color:
-        #ffffff;
+        #fff;
 
     text-shadow:
-        0 5px 25px
-        rgba(0, 0, 0, 0.4);
+        0 5px 25px rgba(0, 0, 0, .4);
 
     margin-bottom:
         28px;
@@ -643,31 +683,23 @@ body {
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.13),
-            rgba(255, 255, 255, 0.045)
+            rgba(255, 255, 255, .13),
+            rgba(255, 255, 255, .045)
         );
 
     border:
-        1px solid
-        rgba(255, 255, 255, 0.24);
+        1px solid rgba(255, 255, 255, .24);
 
     backdrop-filter:
-        blur(11px)
-        saturate(180%);
+        blur(11px) saturate(180%);
 
     -webkit-backdrop-filter:
-        blur(11px)
-        saturate(180%);
+        blur(11px) saturate(180%);
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.35),
-
-        inset 0 -1px 0
-            rgba(255, 255, 255, 0.07),
-
-        0 12px 35px
-            rgba(0, 0, 0, 0.20);
+        inset 0 1px 0 rgba(255, 255, 255, .35),
+        inset 0 -1px 0 rgba(255, 255, 255, .07),
+        0 12px 35px rgba(0, 0, 0, .20);
 
     font-size:
         clamp(1.1rem, 3vw, 1.7rem);
@@ -676,33 +708,26 @@ body {
         800;
 
     letter-spacing:
-        0.03em;
+        .03em;
 
     margin-bottom:
         30px;
 
-    cursor: pointer;
+    cursor:
+        pointer;
 
-    touch-action: manipulation;
+    touch-action:
+        manipulation;
 }
-
-/*
- * =====================================================
- * DOUBLE-TAP DISPLAY TOGGLE
- * =====================================================
- */
 
 .song-wrapper {
     margin-bottom:
         28px;
 }
 
-/*
- * Original song-info-only mode retained.
- */
-
 .card.hide-song-info .song-wrapper {
-    display: none !important;
+    display:
+        none!important;
 }
 
 /*
@@ -718,118 +743,173 @@ body {
  */
 
 .card.countdown-only {
-    position: relative;
+    position:
+        relative;
 
-    inset: auto;
+    inset:
+        auto;
 
-    width: min(92vw, 900px);
-    height: auto;
+    width:
+        min(92vw, 900px);
 
-    max-width: 900px;
-    max-height: none;
+    height:
+        auto;
 
-    min-width: 0;
-    min-height: 0;
+    max-width:
+        900px;
 
-    margin: auto;
+    max-height:
+        none;
 
-    padding: clamp(30px, 5vw, 60px);
+    min-width:
+        0;
 
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 32px;
+    min-height:
+        0;
+
+    margin:
+        auto;
+
+    padding:
+        clamp(30px, 5vw, 60px);
+
+    border:
+        1px solid rgba(255, 255, 255, .18);
+
+    border-radius:
+        32px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.065),
-            rgba(255, 255, 255, 0.018) 45%,
-            rgba(255, 255, 255, 0.035)
+            rgba(255, 255, 255, .065),
+            rgba(255, 255, 255, .018) 45%,
+            rgba(255, 255, 255, .035)
         );
 
     box-shadow:
-        0 35px 100px rgba(0, 0, 0, 0.42),
-        0 10px 30px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+        0 35px 100px rgba(0, 0, 0, .42),
+        0 10px 30px rgba(0, 0, 0, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .22);
 
-    backdrop-filter: blur(14px) saturate(180%);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    backdrop-filter:
+        blur(14px) saturate(180%);
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    -webkit-backdrop-filter:
+        blur(14px) saturate(180%);
 
-    overflow: visible;
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    overflow:
+        visible;
 }
 
-/* Hide everything inside the card by default */
 .card.countdown-only > * {
-    display: none !important;
+    display:
+        none!important;
 }
 
-/* Always keep the live label and headings visible */
 .card.countdown-only > .live-label {
-    display: inline-flex !important;
+    display:
+        inline-flex!important;
 }
 
 .card.countdown-only > #title,
 .card.countdown-only > #subtitle {
-    display: block !important;
+    display:
+        block!important;
 }
 
-/* Keep decorative card effects */
 .card.countdown-only::before,
 .card.countdown-only::after {
-    display: block;
+    display:
+        block;
 }
 
-/* Show the countdown pill */
 .card.countdown-only #countdown {
-    display: inline-flex !important;
+    display:
+        inline-flex!important;
 
-    position: relative;
+    position:
+        relative;
 
-    inset: auto;
+    inset:
+        auto;
 
-    width: auto;
-    height: auto;
+    width:
+        auto;
 
-    min-width: min(90%, 500px);
-    min-height: 0;
+    height:
+        auto;
 
-    margin: 0;
+    min-width:
+        min(90%, 500px);
 
-    padding: 20px 30px;
+    min-height:
+        0;
 
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 999px;
+    margin:
+        0;
+
+    padding:
+        20px 30px;
+
+    border:
+        1px solid rgba(255, 255, 255, .35);
+
+    border-radius:
+        999px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.20),
-            rgba(255, 255, 255, 0.075)
+            rgba(255, 255, 255, .20),
+            rgba(255, 255, 255, .075)
         );
 
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.4),
-        0 15px 40px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, .4),
+        0 15px 40px rgba(0, 0, 0, .25);
 
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter:
+        blur(16px) saturate(180%);
 
-    font-size: clamp(1.35rem, 4vw, 2.2rem);
+    -webkit-backdrop-filter:
+        blur(16px) saturate(180%);
 
-    line-height: 1.2;
-    letter-spacing: 0.025em;
+    font-size:
+        clamp(1.35rem, 4vw, 2.2rem);
 
-    white-space: normal;
-    overflow-wrap: anywhere;
+    line-height:
+        1.2;
 
-    text-align: center;
+    letter-spacing:
+        .025em;
 
-    cursor: pointer;
-    touch-action: manipulation;
+    white-space:
+        normal;
+
+    overflow-wrap:
+        anywhere;
+
+    text-align:
+        center;
+
+    cursor:
+        pointer;
+
+    touch-action:
+        manipulation;
 }
 
 /*
@@ -840,7 +920,7 @@ body {
 
 .now-playing {
     font-size:
-        0.72rem;
+        .72rem;
 
     font-weight:
         800;
@@ -849,10 +929,10 @@ body {
         uppercase;
 
     letter-spacing:
-        0.18em;
+        .18em;
 
     opacity:
-        0.72;
+        .72;
 
     margin-bottom:
         9px;
@@ -869,11 +949,10 @@ body {
         700;
 
     color:
-        #ffffff;
+        #fff;
 
     text-shadow:
-        0 2px 12px
-        rgba(0, 0, 0, 0.45);
+        0 2px 12px rgba(0, 0, 0, .45);
 }
 
 .up-next-wrapper {
@@ -886,7 +965,7 @@ body {
 
 .up-next-label {
     font-size:
-        0.62rem;
+        .62rem;
 
     font-weight:
         800;
@@ -895,10 +974,10 @@ body {
         uppercase;
 
     letter-spacing:
-        0.16em;
+        .16em;
 
     opacity:
-        0.52;
+        .52;
 
     margin-bottom:
         5px;
@@ -909,17 +988,16 @@ body {
         1.3em;
 
     font-size:
-        clamp(0.85rem, 2.5vw, 1rem);
+        clamp(.85rem, 2.5vw, 1rem);
 
     font-weight:
         700;
 
     color:
-        rgba(255, 255, 255, 0.78);
+        rgba(255, 255, 255, .78);
 
     text-shadow:
-        0 2px 10px
-        rgba(0, 0, 0, 0.35);
+        0 2px 10px rgba(0, 0, 0, .35);
 }
 
 /*
@@ -936,8 +1014,7 @@ body {
         hidden;
 
     border:
-        1px solid
-        rgba(255, 255, 255, 0.25);
+        1px solid rgba(255, 255, 255, .25);
 
     outline:
         none;
@@ -951,13 +1028,13 @@ body {
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.20),
-            rgba(215, 25, 32, 0.42),
-            rgba(141, 7, 16, 0.55)
+            rgba(255, 255, 255, .20),
+            rgba(215, 25, 32, .42),
+            rgba(141, 7, 16, .55)
         );
 
     color:
-        white;
+        #fff;
 
     font-size:
         1rem;
@@ -972,26 +1049,19 @@ body {
         manipulation;
 
     backdrop-filter:
-        blur(20px)
-        saturate(170%);
+        blur(20px) saturate(170%);
 
     -webkit-backdrop-filter:
-        blur(20px)
-        saturate(170%);
+        blur(20px) saturate(170%);
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.4),
-
-        inset 0 -1px 0
-            rgba(0, 0, 0, 0.15),
-
-        0 12px 35px
-            rgba(120, 0, 0, 0.28);
+        inset 0 1px 0 rgba(255, 255, 255, .4),
+        inset 0 -1px 0 rgba(0, 0, 0, .15),
+        0 12px 35px rgba(120, 0, 0, .28);
 
     transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
+        transform .18s ease,
+        box-shadow .18s ease;
 }
 
 #playButton::before {
@@ -1017,7 +1087,7 @@ body {
         linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.30),
+            rgba(255, 255, 255, .30),
             transparent
         );
 
@@ -1025,7 +1095,7 @@ body {
         skewX(-20deg);
 
     transition:
-        left 0.65s ease;
+        left .65s ease;
 }
 
 #playButton:hover::before {
@@ -1035,14 +1105,11 @@ body {
 
 #playButton:active {
     transform:
-        scale(0.96);
+        scale(.96);
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.3),
-
-        0 5px 18px
-            rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, .3),
+        0 5px 18px rgba(0, 0, 0, .25);
 }
 
 #playButton:hover {
@@ -1050,28 +1117,22 @@ body {
         translateY(-2px);
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.45),
-
-        0 16px 40px
-            rgba(120, 0, 0, 0.34);
+        inset 0 1px 0 rgba(255, 255, 255, .45),
+        0 16px 40px rgba(120, 0, 0, .34);
 }
 
 #playButton.paused {
     background:
         linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.18),
-            rgba(13, 122, 67, 0.45),
-            rgba(7, 85, 47, 0.55)
+            rgba(255, 255, 255, .18),
+            rgba(13, 122, 67, .45),
+            rgba(7, 85, 47, .55)
         );
 
     box-shadow:
-        inset 0 1px 0
-            rgba(255, 255, 255, 0.4),
-
-        0 12px 35px
-            rgba(0, 80, 40, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, .4),
+        0 12px 35px rgba(0, 80, 40, .25);
 }
 
 /*
@@ -1085,21 +1146,21 @@ footer {
         28px;
 
     font-size:
-        0.78rem;
+        .78rem;
 
     font-weight:
         700;
 
     opacity:
-        0.65;
+        .65;
 
     letter-spacing:
-        0.08em;
+        .08em;
 }
 
 audio {
     display:
-        none !important;
+        none!important;
 }
 
 /*
@@ -1109,13 +1170,9 @@ audio {
  */
 
 @media (max-width: 768px) {
-
     #container {
         padding:
-            max(15px, env(safe-area-inset-top))
-            max(15px, env(safe-area-inset-right))
-            max(15px, env(safe-area-inset-bottom))
-            max(15px, env(safe-area-inset-left));
+            max(15px, env(safe-area-inset-top)) max(15px, env(safe-area-inset-right)) max(15px, env(safe-area-inset-bottom)) max(15px, env(safe-area-inset-left));
     }
 
     .card {
@@ -1129,12 +1186,10 @@ audio {
             28px;
 
         backdrop-filter:
-            blur(12.5px)
-            saturate(180%);
+            blur(12.5px) saturate(180%);
 
         -webkit-backdrop-filter:
-            blur(12.5px)
-            saturate(180%);
+            blur(12.5px) saturate(180%);
     }
 
     .card::before {
@@ -1179,34 +1234,23 @@ audio {
  */
 
 @media (max-width: 900px) and (orientation: landscape) {
-
     #container {
         padding:
-            max(8px, env(safe-area-inset-top))
-            max(12px, env(safe-area-inset-right))
-            max(8px, env(safe-area-inset-bottom))
-            max(12px, env(safe-area-inset-left));
+            max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     }
 
     .card {
         width:
-            min(
-                94vw,
-                850px
-            );
+            min(94vw, 850px);
 
         height:
-            min(
-                92dvh,
-                440px
-            );
+            min(92dvh, 440px);
 
         min-height:
             0;
 
         padding:
-            clamp(12px, 3vh, 22px)
-            clamp(18px, 4vw, 38px);
+            clamp(12px, 3vh, 22px) clamp(18px, 4vw, 38px);
 
         border-radius:
             25px;
@@ -1218,26 +1262,19 @@ audio {
             grid;
 
         grid-template-columns:
-            minmax(0, 1.15fr)
-            minmax(0, 0.95fr);
+            minmax(0, 1.15fr) minmax(0, .95fr);
 
         grid-template-rows:
-            auto
-            auto
-            auto
-            auto;
+            auto auto auto auto;
 
         grid-template-areas:
-            "live live"
-            "title info"
-            "subtitle info"
-            "countdown button";
+            "live live" "title info" "subtitle info" "countdown button";
 
         column-gap:
             clamp(18px, 5vw, 48px);
 
         row-gap:
-            clamp(2px, 0.8vh, 7px);
+            clamp(2px, .8vh, 7px);
 
         align-items:
             center;
@@ -1246,12 +1283,10 @@ audio {
             center;
 
         backdrop-filter:
-            blur(14px)
-            saturate(180%);
+            blur(14px) saturate(180%);
 
         -webkit-backdrop-filter:
-            blur(14px)
-            saturate(180%);
+            blur(14px) saturate(180%);
     }
 
     .card::before {
@@ -1273,7 +1308,7 @@ audio {
             7px;
 
         font-size:
-            0.58rem;
+            .58rem;
 
         margin-bottom:
             2px;
@@ -1292,14 +1327,10 @@ audio {
             title;
 
         font-size:
-            clamp(
-                2.25rem,
-                9.5vh,
-                4.4rem
-            );
+            clamp(2.25rem, 9.5vh, 4.4rem);
 
         line-height:
-            0.86;
+            .86;
 
         margin:
             0;
@@ -1313,14 +1344,10 @@ audio {
             subtitle;
 
         font-size:
-            clamp(
-                1.45rem,
-                5.5vh,
-                2.5rem
-            );
+            clamp(1.45rem, 5.5vh, 2.5rem);
 
         line-height:
-            0.9;
+            .9;
 
         margin:
             0;
@@ -1352,11 +1379,7 @@ audio {
             2px 0 0;
 
         font-size:
-            clamp(
-                0.72rem,
-                3.2vh,
-                1.05rem
-            );
+            clamp(.72rem, 3.2vh, 1.05rem);
 
         white-space:
             nowrap;
@@ -1384,16 +1407,16 @@ audio {
 
     .now-playing {
         font-size:
-            0.55rem;
+            .55rem;
 
         letter-spacing:
-            0.16em;
+            .16em;
 
         margin-bottom:
             4px;
 
         opacity:
-            0.68;
+            .68;
     }
 
     #songName {
@@ -1404,11 +1427,7 @@ audio {
             0;
 
         font-size:
-            clamp(
-                0.82rem,
-                3.2vh,
-                1.1rem
-            );
+            clamp(.82rem, 3.2vh, 1.1rem);
 
         line-height:
             1.15;
@@ -1430,10 +1449,10 @@ audio {
 
     .up-next-label {
         font-size:
-            0.47rem;
+            .47rem;
 
         letter-spacing:
-            0.14em;
+            .14em;
 
         margin-bottom:
             2px;
@@ -1444,11 +1463,7 @@ audio {
             1.1em;
 
         font-size:
-            clamp(
-                0.64rem,
-                2.5vh,
-                0.86rem
-            );
+            clamp(.64rem, 2.5vh, .86rem);
 
         line-height:
             1.1;
@@ -1471,10 +1486,7 @@ audio {
             center;
 
         width:
-            min(
-                100%,
-                250px
-            );
+            min(100%, 250px);
 
         min-width:
             0;
@@ -1483,11 +1495,7 @@ audio {
             8px 16px;
 
         font-size:
-            clamp(
-                0.68rem,
-                2.7vh,
-                0.88rem
-            );
+            clamp(.68rem, 2.7vh, .88rem);
 
         white-space:
             nowrap;
@@ -1510,17 +1518,13 @@ audio {
             0;
 
         font-size:
-            clamp(
-                0.45rem,
-                1.8vh,
-                0.6rem
-            );
+            clamp(.45rem, 1.8vh, .6rem);
 
         white-space:
             nowrap;
 
         opacity:
-            0.55;
+            .55;
     }
 }
 
@@ -1530,10 +1534,7 @@ audio {
  * =====================================================
  */
 
-@media (max-width: 900px)
-    and (orientation: landscape)
-    and (max-height: 430px) {
-
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 430px) {
     #container {
         padding:
             5px 10px;
@@ -1541,18 +1542,10 @@ audio {
 
     .card {
         width:
-            min(
-                95vw,
-                850px
-            );
+            min(95vw, 850px);
 
         height:
-            calc(
-                100dvh -
-                env(safe-area-inset-top) -
-                env(safe-area-inset-bottom) -
-                10px
-            );
+            calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px);
 
         padding:
             8px 16px;
@@ -1561,8 +1554,7 @@ audio {
             21px;
 
         grid-template-columns:
-            minmax(0, 1.15fr)
-            minmax(0, 0.95fr);
+            minmax(0, 1.15fr) minmax(0, .95fr);
 
         column-gap:
             20px;
@@ -1584,7 +1576,7 @@ audio {
             5px;
 
         font-size:
-            0.48rem;
+            .48rem;
     }
 
     .live-dot {
@@ -1597,20 +1589,12 @@ audio {
 
     #title {
         font-size:
-            clamp(
-                1.85rem,
-                9vh,
-                3.2rem
-            );
+            clamp(1.85rem, 9vh, 3.2rem);
     }
 
     #subtitle {
         font-size:
-            clamp(
-                1.15rem,
-                5vh,
-                1.9rem
-            );
+            clamp(1.15rem, 5vh, 1.9rem);
     }
 
     #countdown {
@@ -1618,16 +1602,12 @@ audio {
             6px 9px;
 
         font-size:
-            clamp(
-                0.62rem,
-                3vh,
-                0.88rem
-            );
+            clamp(.62rem, 3vh, .88rem);
     }
 
     .now-playing {
         font-size:
-            0.46rem;
+            .46rem;
 
         margin-bottom:
             2px;
@@ -1635,11 +1615,7 @@ audio {
 
     #songName {
         font-size:
-            clamp(
-                0.68rem,
-                2.8vh,
-                0.88rem
-            );
+            clamp(.68rem, 2.8vh, .88rem);
     }
 
     .up-next-wrapper {
@@ -1649,7 +1625,7 @@ audio {
 
     .up-next-label {
         font-size:
-            0.4rem;
+            .4rem;
 
         margin-bottom:
             1px;
@@ -1657,29 +1633,18 @@ audio {
 
     #upNext {
         font-size:
-            clamp(
-                0.55rem,
-                2.3vh,
-                0.73rem
-            );
+            clamp(.55rem, 2.3vh, .73rem);
     }
 
     #playButton {
         width:
-            min(
-                100%,
-                220px
-            );
+            min(100%, 220px);
 
         padding:
             6px 13px;
 
         font-size:
-            clamp(
-                0.59rem,
-                2.4vh,
-                0.76rem
-            );
+            clamp(.59rem, 2.4vh, .76rem);
     }
 
     footer {
@@ -1687,7 +1652,7 @@ audio {
             4px;
 
         font-size:
-            0.42rem;
+            .42rem;
     }
 }
 
@@ -1701,98 +1666,164 @@ audio {
  */
 
 @media (orientation: landscape) {
-
     .card.countdown-only {
-        position: fixed;
+        position:
+            fixed;
 
-        inset: 0;
+        inset:
+            0;
 
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
+        width:
+            100vw;
 
-        max-width: none;
-        max-height: none;
+        height:
+            100vh;
+
+        height:
+            100dvh;
+
+        max-width:
+            none;
+
+        max-height:
+            none;
 
         padding:
-            max(16px, env(safe-area-inset-top))
-            max(24px, env(safe-area-inset-right))
-            max(16px, env(safe-area-inset-bottom))
-            max(24px, env(safe-area-inset-left));
+            max(16px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
 
-        margin: 0;
+        margin:
+            0;
 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: clamp(6px, 2vh, 16px);
+        display:
+            flex;
 
-        grid-template-columns: none;
-        grid-template-rows: none;
-        grid-template-areas: none;
+        flex-direction:
+            column;
 
-        border: 0;
-        border-radius: 0;
+        align-items:
+            center;
 
-        overflow: hidden;
+        justify-content:
+            center;
 
-        background: transparent;
+        gap:
+            clamp(6px, 2vh, 16px);
 
-        box-shadow: none;
+        grid-template-columns:
+            none;
 
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
+        grid-template-rows:
+            none;
+
+        grid-template-areas:
+            none;
+
+        border:
+            0;
+
+        border-radius:
+            0;
+
+        overflow:
+            hidden;
+
+        background:
+            transparent;
+
+        box-shadow:
+            none;
+
+        backdrop-filter:
+            none;
+
+        -webkit-backdrop-filter:
+            none;
     }
 
     .card.countdown-only::before,
     .card.countdown-only::after {
-        display: none;
+        display:
+            none;
     }
 
     .card.countdown-only > .live-label {
-        display: inline-flex !important;
-        margin-bottom: clamp(2px, 1vh, 8px);
-        padding: 6px 14px;
-        font-size: clamp(0.6rem, 2vh, 0.8rem);
+        display:
+            inline-flex!important;
+
+        margin-bottom:
+            clamp(2px, 1vh, 8px);
+
+        padding:
+            6px 14px;
+
+        font-size:
+            clamp(.6rem, 2vh, .8rem);
     }
 
     .card.countdown-only > #title {
-        font-size: clamp(2.2rem, 11vh, 5.5rem);
-        line-height: 0.9;
-        margin: 0;
+        font-size:
+            clamp(2.2rem, 11vh, 5.5rem);
+
+        line-height:
+            .9;
+
+        margin:
+            0;
     }
 
     .card.countdown-only > #subtitle {
-        font-size: clamp(1.4rem, 6.5vh, 3.2rem);
-        line-height: 0.95;
-        margin: 0 0 clamp(6px, 2vh, 16px);
+        font-size:
+            clamp(1.4rem, 6.5vh, 3.2rem);
+
+        line-height:
+            .95;
+
+        margin:
+            0 0 clamp(6px, 2vh, 16px);
     }
 
     .card.countdown-only #countdown {
-        position: relative;
+        position:
+            relative;
 
-        inset: auto;
+        inset:
+            auto;
 
-        width: auto;
-        height: auto;
+        width:
+            auto;
 
-        min-width: min(85vw, 520px);
-        max-width: 92vw;
+        height:
+            auto;
 
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
+        min-width:
+            min(85vw, 520px);
 
-        padding: clamp(12px, 3vh, 24px) clamp(24px, 5vw, 48px);
+        max-width:
+            92vw;
 
-        margin: 0;
+        display:
+            inline-flex!important;
 
-        font-size: clamp(1.35rem, 6.5vh, 3.5rem);
+        align-items:
+            center;
 
-        white-space: nowrap;
+        justify-content:
+            center;
 
-        text-align: center;
+        padding:
+            clamp(12px, 3vh, 24px) clamp(24px, 5vw, 48px);
+
+        margin:
+            0;
+
+        font-size:
+            clamp(1.35rem, 6.5vh, 3.5rem);
+
+        white-space:
+            nowrap;
+
+        text-align:
+            center;
     }
 }
 
@@ -1802,9 +1833,7 @@ audio {
  * =====================================================
  */
 
-@media (max-width: 380px)
-    and (orientation: portrait) {
-
+@media (max-width: 380px) and (orientation: portrait) {
     .card {
         padding:
             25px 15px;
@@ -1815,22 +1844,22 @@ audio {
 
     #countdown {
         font-size:
-            0.95rem;
+            .95rem;
     }
 
     #songName {
         font-size:
-            0.95rem;
+            .95rem;
     }
 
     #upNext {
         font-size:
-            0.8rem;
+            .8rem;
     }
 
     #playButton {
         font-size:
-            0.9rem;
+            .9rem;
 
         padding:
             13px 20px;
@@ -1843,10 +1872,7 @@ audio {
  * =====================================================
  */
 
-@media (min-width: 769px)
-    and (max-width: 1100px)
-    and (orientation: landscape) {
-
+@media (min-width: 769px) and (max-width: 1100px) and (orientation: landscape) {
     #container {
         padding:
             15px;
@@ -1861,18 +1887,20 @@ audio {
     }
 
     .card.countdown-only {
-        max-height: none;
+        max-height:
+            none;
 
-        width: 100vw;
-        height: 100dvh;
+        width:
+            100vw;
+
+        height:
+            100dvh;
 
         padding:
-            max(16px, env(safe-area-inset-top))
-            max(24px, env(safe-area-inset-right))
-            max(16px, env(safe-area-inset-bottom))
-            max(24px, env(safe-area-inset-left));
+            max(16px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
 
-        margin: 0;
+        margin:
+            0;
     }
 }
 
@@ -1883,18 +1911,17 @@ audio {
  */
 
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
         animation-duration:
-            0.001ms !important;
+            .001ms!important;
 
         animation-iteration-count:
-            1 !important;
+            1!important;
 
         transition-duration:
-            0.001ms !important;
+            .001ms!important;
     }
 }
 
@@ -2523,42 +2550,41 @@ function scheduleInterruptionBoundary() {
 
 /* =====================================================
    SPEECH DURATION
+
+   Measured from speech.mp3, then rounded UP to a whole
+   second so every browser and device ends up with the
+   exact same value (for example 11.42 and 11.69 both
+   become 12).
+
+   It never falls back to 0. If the file can't be
+   measured, the radio shows an error instead of playing
+   the wrong song on a shifted timeline.
    ===================================================== */
 
-async function loadSpeechDuration(data) {
-    const listed = Number(
-        data.speech ??
-        data["speech.mp3"] ??
-        data.speechDuration
-    );
+async function loadSpeechDuration() {
+    const probe = new Audio();
 
-    if (Number.isFinite(listed) && listed > 0) {
-        return listed;
-    }
+    probe.preload = "metadata";
+    probe.src = SPEECH_SRC;
+    probe.load();
 
     try {
-        const probe = new Audio();
-
-        probe.preload = "metadata";
-        probe.src = SPEECH_SRC;
-        probe.load();
-
         await waitForAudioMetadata(probe);
-
-        if (
-            Number.isFinite(probe.duration) &&
-            probe.duration > 0
-        ) {
-            return probe.duration;
-        }
-    } catch (error) {
-        console.warn(
-            "Could not read speech duration. Add \"speech\" to durations.json:",
-            error
-        );
+    } finally {
+        // Release the probe element afterwards.
+        setTimeout(() => {
+            probe.removeAttribute("src");
+            probe.load();
+        }, 0);
     }
 
-    return 0;
+    const measured = probe.duration;
+
+    if (!Number.isFinite(measured) || measured <= 0) {
+        throw new Error("Could not read the speech.mp3 duration.");
+    }
+
+    return Math.ceil(measured);
 
 }
 
@@ -2586,6 +2612,9 @@ function calculatePlaylistDuration() {
 
 /* =====================================================
    CONTENT SIGNATURE
+
+   Includes everything that shapes the timeline, so a
+   stale page or stale data shows up as a mismatch.
    ===================================================== */
 
 function computeContentSignature(
@@ -2595,7 +2624,6 @@ function computeContentSignature(
 ) {
     const songText = loadedSongs
         .map(song => `${song.file}|${song.name}|${song.duration}`)
-        .sort()
         .join("\n");
 
     const interruptionText = loadedInterruptions
@@ -2606,7 +2634,8 @@ function computeContentSignature(
         .join("\n");
 
     const text =
-        songText +
+        `start|${RADIO_START}|perSpeech|${SONGS_PER_SPEECH}` +
+        `\n${songText}` +
         `\nspeech|${speechSeconds}` +
         `\ninterruptions\n${interruptionText}`;
 
@@ -2657,7 +2686,7 @@ async function loadDurations() {
         songs = parseSongs(data);
         interruptions = parseInterruptions(interruptionData);
 
-        speechDuration = await loadSpeechDuration(data);
+        speechDuration = await loadSpeechDuration();
 
         contentSignature = computeContentSignature(
             songs,
@@ -2678,11 +2707,13 @@ async function loadDurations() {
 
         console.log("Loaded songs:", songs.length);
         console.log("Loaded interruptions:", interruptions.length);
-        console.log("Speech duration:", formatTime(speechDuration));
+        console.log("Speech duration (rounded):", speechDuration);
         console.log(
             "Total radio timeline:",
-            formatTime(totalPlaylistDuration)
+            formatTime(totalPlaylistDuration),
+            totalPlaylistDuration
         );
+        console.log("Content signature:", contentSignature);
 
         return songs;
 
@@ -3975,6 +4006,7 @@ window.addEventListener("beforeunload", () => {
     }
 
 });
+
 
 </script>
 
