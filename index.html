@@ -708,12 +708,11 @@
  *
  * Double-tapping the countdown:
  * - Keeps the glass card visible.
- * - Keeps Christmas Radio above the countdown.
- * - Keeps Christmas and Countdown headings visible.
- * - Keeps Now Playing and Up Next visible.
- * - Keeps the play button and footer visible.
- * - Highlights the countdown without taking it
- *   out of the card.
+ * - Hides Christmas Radio information.
+ * - Hides Christmas and Countdown headings.
+ * - Hides Now Playing and Up Next.
+ * - Hides the play button and footer.
+ * - Keeps only the countdown visible.
  * =====================================================
  */
 
@@ -751,35 +750,28 @@
         0 10px 30px rgba(0, 0, 0, 0.18),
         inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
-    backdrop-filter:
-        blur(14px)
-        saturate(180%);
-
-    -webkit-backdrop-filter:
-        blur(14px)
-        saturate(180%);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
 
     display: block;
 
     overflow: visible;
 }
 
+/* Hide everything inside the card by default */
+.card.countdown-only > * {
+    display: none !important;
+}
+
+/* Keep decorative card effects */
 .card.countdown-only::before,
 .card.countdown-only::after {
     display: block;
 }
 
-.card.countdown-only > .live-label,
-.card.countdown-only > #title,
-.card.countdown-only > #subtitle,
-.card.countdown-only > .song-wrapper,
-.card.countdown-only > #playButton,
-.card.countdown-only > footer {
-    display: block;
-}
-
+/* Show only the countdown */
 .card.countdown-only #countdown {
-    display: inline-flex;
+    display: inline-flex !important;
 
     position: relative;
 
@@ -791,7 +783,7 @@
     min-width: min(90%, 500px);
     min-height: 0;
 
-    margin-bottom: 30px;
+    margin: 0;
 
     padding: 20px 30px;
 
@@ -809,31 +801,22 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.4),
         0 15px 40px rgba(0, 0, 0, 0.25);
 
-    backdrop-filter:
-        blur(16px)
-        saturate(180%);
-
-    -webkit-backdrop-filter:
-        blur(16px)
-        saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
 
     font-size: clamp(1.35rem, 4vw, 2.2rem);
 
     line-height: 1.2;
-
     letter-spacing: 0.025em;
 
     white-space: normal;
-
     overflow-wrap: anywhere;
 
     text-align: center;
 
     cursor: pointer;
-
     touch-action: manipulation;
 }
-
     /*
      * =====================================================
      * NOW PLAYING
@@ -2026,20 +2009,14 @@ const countdownElement = document.getElementById("countdown");
 
 const countdownCard = document.querySelector(".card");
 
-/* =========================================
-   DOUBLE-TAP COUNTDOWN FOCUS MODE
-
-   Double-tap the countdown to:
-   - Keep the glass card visible.
-   - Keep Christmas Radio above the countdown.
-   - Keep Christmas and Countdown headings.
-   - Keep Now Playing and Up Next.
-   - Keep the play button and footer.
-   - Highlight the countdown inside the card.
-
-   Double-tap again to restore the normal
-   countdown appearance.
-========================================= */
+/*
+ * =========================================
+ * DOUBLE-TAP COUNTDOWN FOCUS MODE
+ *
+ * Double-tap to show only the countdown.
+ * Double-tap again to restore everything.
+ * =========================================
+ */
 
 let lastCountdownTap = 0;
 
@@ -2056,7 +2033,6 @@ countdownElement.addEventListener("pointerup", event => {
         countdownCard.classList.toggle("countdown-only");
 
         lastCountdownTap = 0;
-
         return;
     }
 
