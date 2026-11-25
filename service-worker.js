@@ -1,10 +1,13 @@
 "use strict";
 
-const CACHE_NAME = "christmas-radio-v2";
-const AUDIO_CACHE = "christmas-radio-audio-v2";
+const CACHE_NAME = "christmas-radio-v3";
+const AUDIO_CACHE = "christmas-radio-audio-v3";
 
 const SPEECH_PATH = "./songs/speech.mp3";
 const DURATIONS_PATH = "./songs/durations.json";
+const INTERRUPTIONS_PATH = "./songs/interruptions.json";
+
+const MANIFEST_PATHS = [DURATIONS_PATH, INTERRUPTIONS_PATH];
 
 const CORE_FILES = [
     "./",
@@ -12,6 +15,7 @@ const CORE_FILES = [
     "./favicon.ico",
     "./christmas-background.jpg",
     DURATIONS_PATH,
+    INTERRUPTIONS_PATH,
     SPEECH_PATH
 ];
 
@@ -19,8 +23,13 @@ function scopedURL(path) {
     return new URL(path, self.registration.scope).href;
 }
 
+/*
+ * Manifests are always served network-first so every
+ * device sees the same playlist and interruption list.
+ */
 function isManifest(url) {
-    return url.pathname.endsWith("/durations.json");
+    return url.pathname.endsWith("/durations.json") ||
+           url.pathname.endsWith("/interruptions.json");
 }
 
 async function notifyClients(message) {
@@ -106,7 +115,7 @@ async function runCacheJob(files, refresh, signature) {
         await coreCache.delete(scopedURL(SPEECH_PATH));
 
         // Re-fetch the manifests so the cached copies are current
-        for (const path of [DURATIONS_PATH]) {
+        for (const path of MANIFEST_PATHS) {
             try {
                 const response = await fetch(
                     scopedURL(path),
@@ -226,12 +235,12 @@ self.addEventListener("fetch", event => {
     }
 
     /*
-     * Manifests (durations.json):
+     * Manifests (durations.json, interruptions.json):
      * network first, so changes are always seen.
      * Cached copy is used only when offline.
      *
      * This must be checked BEFORE the song check,
-     * because durations.json lives inside /songs/.
+     * because both files live inside /songs/.
      */
 
     if (isManifest(url)) {
@@ -239,7 +248,7 @@ self.addEventListener("fetch", event => {
             const cache = await caches.open(CACHE_NAME);
 
             try {
-                const response = await fetch(request);
+                const response = await fetch(request, { cache: "no-store" });
 
                 if (response.ok && response.type === "basic") {
                     await cache.put(url.href, response.clone());
@@ -253,7 +262,11 @@ self.addEventListener("fetch", event => {
                     return cached;
                 }
 
-                return new Response('{"songs":[]}', {
+                const fallback = url.pathname.endsWith("/interruptions.json")
+                    ? '{"interruptions":[]}'
+                    : '{"songs":[]}';
+
+                return new Response(fallback, {
                     status: 503,
                     headers: {
                         "Content-Type": "application/json"
@@ -361,6 +374,11 @@ self.addEventListener("fetch", event => {
 
         return;
     }
+
+    /*
+     * Everything else (index.html and other pages):
+     * network first, cached copy only when offline.
+     */
 
     event.respondWith((async () => {
         try {
