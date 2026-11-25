@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -678,11 +677,15 @@
 
         margin-bottom:
             30px;
+
+        cursor: pointer;
+
+        touch-action: manipulation;
     }
 
     /*
      * =====================================================
-     * DOUBLE-TAP SONG INFO TOGGLE
+     * DOUBLE-TAP DISPLAY TOGGLE
      * =====================================================
      */
 
@@ -691,12 +694,126 @@
             28px;
     }
 
+    /*
+     * Original song-info-only mode retained.
+     */
+
     .card.hide-song-info .song-wrapper {
         display: none !important;
     }
 
-    #countdown {
+    /*
+     * =====================================================
+     * COUNTDOWN-ONLY MODE
+     *
+     * Double-tapping the countdown hides:
+     * - Christmas Radio label
+     * - Christmas title
+     * - Countdown subtitle
+     * - Now Playing and Up Next
+     * - Play button
+     * - Footer
+     *
+     * The countdown fills the entire screen.
+     * This also works in landscape.
+     * =====================================================
+     */
+
+    .card.countdown-only {
+        position: fixed;
+
+        inset: 0;
+
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+
+        max-width: none;
+        max-height: none;
+
+        min-width: 0;
+        min-height: 0;
+
+        margin: 0;
+        padding: 0;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+
+        box-shadow: none;
+
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        overflow: hidden;
+    }
+
+    .card.countdown-only::before,
+    .card.countdown-only::after {
+        display: none !important;
+    }
+
+    .card.countdown-only > .live-label,
+    .card.countdown-only > #title,
+    .card.countdown-only > #subtitle,
+    .card.countdown-only > .song-wrapper,
+    .card.countdown-only > #playButton,
+    .card.countdown-only > footer {
+        display: none !important;
+    }
+
+    .card.countdown-only #countdown {
+        display: flex;
+
+        position: absolute;
+
+        inset: 0;
+
+        width: 100%;
+        height: 100%;
+
+        min-width: 0;
+        min-height: 0;
+
+        margin: 0;
+        padding:
+            max(20px, env(safe-area-inset-top))
+            max(20px, env(safe-area-inset-right))
+            max(20px, env(safe-area-inset-bottom))
+            max(20px, env(safe-area-inset-left));
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+
+        box-shadow: none;
+
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+
+        font-size:
+            clamp(1.35rem, 7vw, 5rem);
+
+        line-height: 1.2;
+
+        letter-spacing: 0.025em;
+
+        white-space: normal;
+
+        overflow-wrap: anywhere;
+
+        text-align: center;
+
         cursor: pointer;
+
         touch-action: manipulation;
     }
 
@@ -1561,6 +1678,87 @@
 
     /*
      * =====================================================
+     * COUNTDOWN-ONLY LANDSCAPE
+     *
+     * Overrides the normal landscape card grid.
+     * The countdown is the only visible element.
+     * =====================================================
+     */
+
+    @media (orientation: landscape) {
+
+        .card.countdown-only {
+            position: fixed;
+
+            inset: 0;
+
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+
+            max-width: none;
+            max-height: none;
+
+            padding: 0;
+            margin: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            grid-template-columns: none;
+            grid-template-rows: none;
+            grid-template-areas: none;
+
+            border: 0;
+            border-radius: 0;
+
+            overflow: hidden;
+
+            background: transparent;
+
+            box-shadow: none;
+
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .card.countdown-only #countdown {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            max-width: none;
+            max-height: none;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding:
+                max(15px, env(safe-area-inset-top))
+                max(20px, env(safe-area-inset-right))
+                max(15px, env(safe-area-inset-bottom))
+                max(20px, env(safe-area-inset-left));
+
+            margin: 0;
+
+            font-size:
+                clamp(1.5rem, 7vw, 5.5rem);
+
+            white-space: nowrap;
+
+            text-align: center;
+        }
+    }
+
+    /*
+     * =====================================================
      * SMALL PORTRAIT PHONES
      * =====================================================
      */
@@ -1622,6 +1820,16 @@
             overflow:
                 hidden;
         }
+
+        .card.countdown-only {
+            max-height: none;
+
+            width: 100vw;
+            height: 100dvh;
+
+            padding: 0;
+            margin: 0;
+        }
     }
 
     /*
@@ -1677,7 +1885,7 @@
                     Countdown
                 </h1>
 
-                <div id="countdown">
+                <div id="countdown" aria-label="Christmas countdown">
                     Loading...
                 </div>
 
@@ -1799,13 +2007,25 @@ const songNameElement = document.getElementById("songName");
 const upNextElement = document.getElementById("upNext");
 const countdownElement = document.getElementById("countdown");
 
-/* =========================================
-   DOUBLE-TAP COUNTDOWN TOGGLE
-========================================= */
-
 const countdownCard = document.querySelector(".card");
 
+/* =========================================
+   DOUBLE-TAP COUNTDOWN-ONLY MODE
+
+   Double-tap the countdown to:
+   - Hide the radio label.
+   - Hide the Christmas title.
+   - Hide the Countdown subtitle.
+   - Hide song information.
+   - Hide the play button.
+   - Hide the footer.
+   - Expand the countdown to the full screen.
+
+   Double-tap again to restore the page.
+========================================= */
+
 let lastCountdownTap = 0;
+
 const DOUBLE_TAP_DELAY = 350;
 
 countdownElement.addEventListener("pointerup", event => {
@@ -1816,11 +2036,14 @@ countdownElement.addEventListener("pointerup", event => {
     const now = Date.now();
 
     if (now - lastCountdownTap <= DOUBLE_TAP_DELAY) {
-        countdownCard.classList.toggle("hide-song-info");
+        countdownCard.classList.toggle("countdown-only");
+
         lastCountdownTap = 0;
-    } else {
-        lastCountdownTap = now;
+
+        return;
     }
+
+    lastCountdownTap = now;
 });
 
 /* =========================================
@@ -2169,10 +2392,6 @@ function parseInterruptions(data) {
 
 /* =========================================
    FIND ACTIVE INTERRUPTION
-
-   An interruption is active when the current
-   timestamp is between its scheduled start
-   and its scheduled end.
 ========================================= */
 
 function findLiveInterruption(now = Date.now()) {
@@ -2203,9 +2422,6 @@ function findLiveInterruption(now = Date.now()) {
 
 /* =========================================
    FIND NEXT INTERRUPTION BOUNDARY
-
-   Used to schedule a precise transition even
-   when the next regular sync check is later.
 ========================================= */
 
 function findNextInterruptionBoundary(now = Date.now()) {
@@ -2694,7 +2910,7 @@ async function cacheRadioAudio() {
             return;
         }
 
-        const startIndex = getDisplaySongIndex(findLiveSegment());
+        const startIndex = getDisplaySongIndex(findNormalLiveSegment());
 
         const songURLs = songs.map((_, i) => {
             const song = songs[(startIndex + i) % songs.length];
@@ -2791,52 +3007,7 @@ function findLiveSegment() {
         return activeInterruption;
     }
 
-    const elapsed = Math.max(
-        0,
-        (Date.now() - RADIO_START) / 1000
-    );
-
-    const position = elapsed % totalPlaylistDuration;
-
-    let accumulated = 0;
-
-    for (let i = 0; i < songs.length; i++) {
-        const duration = songs[i].duration;
-
-        if (position < accumulated + duration) {
-            return {
-                type: "song",
-                index: i,
-                offset: position - accumulated,
-                length: duration
-            };
-        }
-
-        accumulated += duration;
-
-        if (
-            (i + 1) % SONGS_PER_SPEECH === 0 &&
-            speechDuration > 0
-        ) {
-            if (position < accumulated + speechDuration) {
-                return {
-                    type: "speech",
-                    index: i,
-                    offset: position - accumulated,
-                    length: speechDuration
-                };
-            }
-
-            accumulated += speechDuration;
-        }
-    }
-
-    return {
-        type: "song",
-        index: 0,
-        offset: 0,
-        length: 0
-    };
+    return findNormalLiveSegment();
 }
 
 /* =========================================
@@ -3368,8 +3539,7 @@ async function playLive() {
 
         scheduleInterruptionBoundary();
 
-        // The actual file may be shorter than the manifest
-        // duration. Wait for the live timeline if necessary.
+        // The actual file may be shorter than its scheduled duration.
         if (live.offset >= audio.duration - 0.25) {
             console.warn(
                 "Audio is shorter than its scheduled duration:",
@@ -3483,10 +3653,6 @@ playButton.addEventListener("click", async () => {
 
 /* =========================================
    TRACK END
-
-   If the physical file ends before the
-   manifest's scheduled duration, wait for
-   the timeline instead of restarting it.
 ========================================= */
 
 async function handleTrackEnded() {
@@ -3548,9 +3714,6 @@ interruptionAudio.addEventListener("error", retryLive);
 
 /* =========================================
    LIVE SYNCHRONIZATION
-
-   Checks the interruption timeline as well
-   as the normal music and speech timeline.
 ========================================= */
 
 async function syncRadio(force = false) {
