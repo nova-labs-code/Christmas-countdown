@@ -2,10 +2,8 @@
 
 <html lang="en">
 
-
 <head>
     <meta charset="UTF-8">
-
 
 <meta name="viewport"
     content="width=device-width,
@@ -1929,9 +1927,7 @@ audio {
 
 </head>
 
-
 <body>
-
 
 <div id="phonePortraitViewport">
 
@@ -3339,8 +3335,8 @@ function updateLiveMediaSession() {
     } catch {}
 
     try {
-        const duration = song.duration;
-const position = findLiveSegment().offset;
+        const duration = audio.duration;
+        const position = audio.currentTime;
 
         if (
             Number.isFinite(duration) &&
@@ -3406,7 +3402,7 @@ setupMediaSession();
 function waitForAudioMetadata(audio) {
     if (
         audio.readyState >= 1 &&
-        Number.isFinite(song.duration)
+        Number.isFinite(audio.duration)
     ) {
         return Promise.resolve();
     }
@@ -3497,14 +3493,14 @@ async function loadAudio(audio, src) {
 
 function seekAudio(audio, time) {
     return new Promise(resolve => {
-        if (!Number.isFinite(song.duration)) {
+        if (!Number.isFinite(audio.duration)) {
             resolve();
             return;
         }
 
         const target = Math.min(
             Math.max(0, time),
-            Math.max(0, song.duration - 0.25)
+            Math.max(0, audio.duration - 0.25)
         );
 
         if (Math.abs(audio.currentTime - target) < 0.05) {
@@ -3712,7 +3708,7 @@ async function playLive() {
         scheduleInterruptionBoundary();
 
         // The actual file may be shorter than its scheduled duration.
-        if (live.offset >= song.duration - 0.25) {
+        if (live.offset >= audio.duration - 0.25) {
             console.warn(
                 "Audio is shorter than its scheduled duration:",
                 audio.src
@@ -4092,10 +4088,8 @@ window.addEventListener("beforeunload", () => {
 
 });
 
-
 </script>
 
 </body>
 
-
-</html>
+</html> research how the browser work with audio and some like this and adapt to it so they sync between all devices and browsers 
