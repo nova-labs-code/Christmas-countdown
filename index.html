@@ -1731,6 +1731,14 @@
             controlslist="nodownload noplaybackrate noremoteplayback">
         </audio>
 
+        <!-- Separate audio element for scheduled interruptions -->
+        <audio
+            id="interruptionAudio"
+            preload="auto"
+            playsinline
+            controlslist="nodownload noplaybackrate noremoteplayback">
+        </audio>
+
     </div>
 
     <script>
@@ -1784,6 +1792,8 @@ document.addEventListener("touchend", event => {
 
 const musicAudio = document.getElementById("musicAudio");
 const speechAudio = document.getElementById("speechAudio");
+const interruptionAudio = document.getElementById("interruptionAudio");
+
 const playButton = document.getElementById("playButton");
 const songNameElement = document.getElementById("songName");
 const upNextElement = document.getElementById("upNext");
@@ -1791,11 +1801,6 @@ const countdownElement = document.getElementById("countdown");
 
 /* =========================================
    DOUBLE-TAP COUNTDOWN TOGGLE
-
-   Double-tap the countdown to hide or show
-   the Now Playing and Up Next information.
-
-   This does not affect the radio or countdown.
 ========================================= */
 
 const countdownCard = document.querySelector(".card");
@@ -1826,14 +1831,14 @@ const SONG_FOLDER = "./songs/";
 const SPEECH_SRC = "./songs/speech.mp3";
 
 const DURATION_MANIFEST = "./songs/durations.json";
+const INTERRUPTION_MANIFEST = "./songs/interruptions.json";
 
 const SONGS_PER_SPEECH = 4;
 const DURATION_TIMEOUT = 30000;
 
 const SIGNATURE_STORAGE_KEY = "christmasRadioContentSignature";
 
-// Fixed instant: midnight Eastern Standard Time (UTC-5), the same
-// moment on every device worldwide
+// Fixed instant: midnight Eastern Standard Time (UTC-5)
 const RADIO_START = Date.parse("2025-12-01T00:00:00-05:00");
 
 const EASTERN_ZONE = "America/New_York";
@@ -1843,6 +1848,8 @@ const EASTERN_ZONE = "America/New_York";
 ========================================= */
 
 let songs = [];
+let interruptions = [];
+
 let speechDuration = 0;
 let totalPlaylistDuration = 0;
 
@@ -1886,18 +1893,146 @@ function formatTime(seconds) {
 }
 
 /* =========================================
+   EASTERN TIME CONVERSION
+
+   Interruption dates use:
+   M/D/YYYY/h:mmam
+
+   Example:
+   1/1/2026/12:00am
+
+   This converts the specified Eastern local
+   time into an absolute timestamp. It also
+   accounts for daylight-saving time.
+========================================= */
+
+const easternPartsFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: EASTERN_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+});
+
+function getEasternParts(timestamp) {
+    const parts = easternPartsFormatter.formatToParts(
+        new Date(timestamp)
+    );
+
+    const result = {};
+
+    for (const part of parts) {
+        if (part.type !== "literal") {
+            result[part.type] = Number(part.value);
+        }
+    }
+
+    return result;
+}
+
+function easternDateToTimestamp(year, month, day, hour, minute) {
+    const targetUTC = Date.UTC(
+        year,
+        month - 1,
+        day,
+        hour,
+        minute,
+        0
+    );
+
+    let candidate = targetUTC;
+
+    // Reconcile the desired Eastern clock time with its UTC offset.
+    for (let i = 0; i < 4; i++) {
+        const parts = getEasternParts(candidate);
+
+        const representedUTC = Date.UTC(
+            parts.year,
+            parts.month - 1,
+            parts.day,
+            parts.hour,
+            parts.minute,
+            parts.second
+        );
+
+        const difference = targetUTC - representedUTC;
+
+        if (difference === 0) {
+            break;
+        }
+
+        candidate += difference;
+    }
+
+    const verified = getEasternParts(candidate);
+
+    if (
+        verified.year !== year ||
+        verified.month !== month ||
+        verified.day !== day ||
+        verified.hour !== hour ||
+        verified.minute !== minute
+    ) {
+        throw new Error(
+            "The interruption date is not a valid Eastern local time."
+        );
+    }
+
+    return candidate;
+}
+
+function parseInterruptionDate(value) {
+    const text = String(value ?? "").trim();
+
+    const match = text.match(
+        /^(\d{1,2})\/(\d{1,2})\/(\d{4})\/(\d{1,2}):(\d{2})\s*(am|pm)$/i
+    );
+
+    if (!match) {
+        throw new Error(
+            `Invalid interruption date "${text}". Use M/D/YYYY/h:mmam.`
+        );
+    }
+
+    const month = Number(match[1]);
+    const day = Number(match[2]);
+    const year = Number(match[3]);
+
+    let hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const meridiem = match[6].toLowerCase();
+
+    if (
+        month < 1 || month > 12 ||
+        day < 1 || day > 31 ||
+        hour < 1 || hour > 12 ||
+        minute < 0 || minute > 59
+    ) {
+        throw new Error(
+            `Invalid interruption date "${text}".`
+        );
+    }
+
+    if (meridiem === "am") {
+        hour = hour === 12 ? 0 : hour;
+    } else {
+        hour = hour === 12 ? 12 : hour + 12;
+    }
+
+    return easternDateToTimestamp(
+        year,
+        month,
+        day,
+        hour,
+        minute
+    );
+}
+
+/* =========================================
    LOAD durations.json
-
-   Format:
-   {
-     "songs": [
-       { "file": "song.mp3", "name": "Song (Artist)", "duration": 164.013 }
-     ]
-   }
-
-   Optional, recommended: add the speech length
-   so every device uses the same value:
-     "speech": 40.5
 ========================================= */
 
 async function fetchJSON(path) {
@@ -1957,13 +2092,171 @@ function parseSongs(data) {
 }
 
 /* =========================================
-   SPEECH DURATION
+   LOAD interruptions.json
 
-   Uses the value in durations.json when it is
-   there ("speech": 40.5). Otherwise reads it
-   from speech.mp3. A listed value is better:
-   if a device could not read the file, its
-   timeline would drift from everyone else's.
+   Format:
+   {
+     "interruptions": [
+       {
+         "date": "1/1/2026/12:00am",
+         "file": "new-year.mp3",
+         "duration": 30
+       }
+     ]
+   }
+
+   Duration is measured in seconds.
+   Files are stored in ./songs/.
+========================================= */
+
+function parseInterruptions(data) {
+    if (!data || !Array.isArray(data.interruptions)) {
+        throw new Error(
+            "interruptions.json must contain an 'interruptions' array."
+        );
+    }
+
+    const parsed = data.interruptions.map((entry, index) => {
+        if (!entry || typeof entry !== "object") {
+            throw new Error(
+                `Invalid interruption entry at index ${index}.`
+            );
+        }
+
+        const file = String(entry.file ?? "").trim();
+        const date = String(entry.date ?? "").trim();
+        const duration = Number(entry.duration);
+
+        if (!file) {
+            throw new Error(
+                `Interruption ${index + 1} is missing its file.`
+            );
+        }
+
+        if (!date) {
+            throw new Error(
+                `Interruption ${index + 1} is missing its date.`
+            );
+        }
+
+        if (!Number.isFinite(duration) || duration <= 0) {
+            throw new Error(
+                `Interruption ${index + 1} has an invalid duration.`
+            );
+        }
+
+        const start = parseInterruptionDate(date);
+
+        const name = String(
+            entry.name ??
+            file.replace(/\.[^/.]+$/, "")
+        ).trim();
+
+        return {
+            date,
+            file,
+            name: name || file,
+            duration,
+            start,
+            end: start + duration * 1000
+        };
+    });
+
+    parsed.sort((a, b) => a.start - b.start);
+
+    return parsed;
+}
+
+/* =========================================
+   FIND ACTIVE INTERRUPTION
+
+   An interruption is active when the current
+   timestamp is between its scheduled start
+   and its scheduled end.
+========================================= */
+
+function findLiveInterruption(now = Date.now()) {
+    if (!interruptions.length) {
+        return null;
+    }
+
+    for (let i = 0; i < interruptions.length; i++) {
+        const interruption = interruptions[i];
+
+        if (
+            now >= interruption.start &&
+            now < interruption.end
+        ) {
+            return {
+                type: "interruption",
+                index: i,
+                offset: (now - interruption.start) / 1000,
+                length: interruption.duration,
+                name: interruption.name,
+                file: interruption.file
+            };
+        }
+    }
+
+    return null;
+}
+
+/* =========================================
+   FIND NEXT INTERRUPTION BOUNDARY
+
+   Used to schedule a precise transition even
+   when the next regular sync check is later.
+========================================= */
+
+function findNextInterruptionBoundary(now = Date.now()) {
+    let next = Infinity;
+
+    for (const interruption of interruptions) {
+        if (interruption.start > now) {
+            next = Math.min(next, interruption.start);
+        }
+
+        if (interruption.end > now) {
+            next = Math.min(next, interruption.end);
+        }
+    }
+
+    return next;
+}
+
+/* =========================================
+   SCHEDULE INTERRUPTION BOUNDARY
+========================================= */
+
+let interruptionBoundaryTimer = null;
+
+function scheduleInterruptionBoundary() {
+    clearTimeout(interruptionBoundaryTimer);
+
+    if (!radioPlaying || !metadataLoaded) {
+        return;
+    }
+
+    const boundary = findNextInterruptionBoundary();
+
+    if (!Number.isFinite(boundary)) {
+        return;
+    }
+
+    const delay = Math.max(
+        25,
+        boundary - Date.now() + 25
+    );
+
+    interruptionBoundaryTimer = setTimeout(() => {
+        if (radioPlaying) {
+            playLive();
+        }
+    }, delay);
+}
+
+/* =========================================
+   SPEECH DURATION
 ========================================= */
 
 async function loadSpeechDuration(data) {
@@ -2025,18 +2318,29 @@ function calculatePlaylistDuration() {
 
 /* =========================================
    CONTENT SIGNATURE
-
-   Changes whenever a song name, file,
-   duration or the speech duration changes.
-   Built from the unshuffled list (sorted),
-   so the daily shuffle never triggers it.
 ========================================= */
 
-function computeContentSignature(loadedSongs, speechSeconds) {
-    const text = loadedSongs
+function computeContentSignature(
+    loadedSongs,
+    speechSeconds,
+    loadedInterruptions
+) {
+    const songText = loadedSongs
         .map(song => `${song.file}|${song.name}|${song.duration}`)
         .sort()
-        .join("\n") + `\nspeech|${speechSeconds}`;
+        .join("\n");
+
+    const interruptionText = loadedInterruptions
+        .map(item =>
+            `${item.date}|${item.file}|${item.name}|${item.duration}`
+        )
+        .sort()
+        .join("\n");
+
+    const text =
+        songText +
+        `\nspeech|${speechSeconds}` +
+        `\ninterruptions\n${interruptionText}`;
 
     let hash = 2166136261;
 
@@ -2076,15 +2380,20 @@ async function loadDurations() {
     }
 
     metadataLoadingPromise = (async () => {
-        const data = await fetchJSON(DURATION_MANIFEST);
+        const [data, interruptionData] = await Promise.all([
+            fetchJSON(DURATION_MANIFEST),
+            fetchJSON(INTERRUPTION_MANIFEST)
+        ]);
 
         songs = parseSongs(data);
+        interruptions = parseInterruptions(interruptionData);
 
         speechDuration = await loadSpeechDuration(data);
 
         contentSignature = computeContentSignature(
             songs,
-            speechDuration
+            speechDuration,
+            interruptions
         );
 
         totalPlaylistDuration = calculatePlaylistDuration();
@@ -2099,6 +2408,7 @@ async function loadDurations() {
         metadataLoaded = true;
 
         console.log("Loaded songs:", songs.length);
+        console.log("Loaded interruptions:", interruptions.length);
         console.log("Speech duration:", formatTime(speechDuration));
         console.log(
             "Total radio timeline:",
@@ -2133,7 +2443,6 @@ function updateCountdown() {
 
     const year = Number(easternYearFormatter.format(new Date(now)));
 
-    // Midnight on December 25 Eastern Standard Time (UTC-5)
     let christmas = Date.parse(`${year}-12-25T00:00:00-05:00`);
 
     if (now >= christmas) {
@@ -2359,14 +2668,6 @@ createCircleSnow(
 
 /* =========================================
    OFFLINE AUDIO CACHING
-
-   If songs or durations changed since the
-   last completed caching run, the service
-   worker wipes the audio cache and downloads
-   everything again. The new signature is only
-   saved once the worker reports that every
-   file downloaded, so an interrupted refresh
-   is retried on the next visit.
 ========================================= */
 
 async function cacheRadioAudio() {
@@ -2393,7 +2694,6 @@ async function cacheRadioAudio() {
             return;
         }
 
-        // Start with the song that is playing now, so it is cached first
         const startIndex = getDisplaySongIndex(findLiveSegment());
 
         const songURLs = songs.map((_, i) => {
@@ -2401,11 +2701,15 @@ async function cacheRadioAudio() {
             return SONG_FOLDER + encodeURIComponent(song.file);
         });
 
-        // Only cache the speech file if durations.json lists it
+        const interruptionURLs = interruptions.map(interruption => {
+            return SONG_FOLDER + encodeURIComponent(interruption.file);
+        });
+
         const files = [
             songURLs[0],
             ...(speechDuration > 0 ? [SPEECH_SRC] : []),
-            ...songURLs.slice(1)
+            ...songURLs.slice(1),
+            ...interruptionURLs
         ];
 
         const contentChanged =
@@ -2419,7 +2723,7 @@ async function cacheRadioAudio() {
             });
 
             console.log(
-                "Playlist changed. Re-caching all audio:",
+                "Playlist or interruptions changed. Re-caching all audio:",
                 files.length,
                 "files"
             );
@@ -2454,9 +2758,6 @@ if ("serviceWorker" in navigator) {
                 (data.failed ? `, ${data.failed} failed` : "")
             );
 
-            // Remember the new playlist once the refresh has run, so it
-            // happens once per change. Files that failed are fetched
-            // by the normal caching run on the next visit.
             if (data.refreshed && data.signature) {
                 saveSignature(data.signature);
             }
@@ -2466,9 +2767,108 @@ if ("serviceWorker" in navigator) {
 
 /* =========================================
    FIND LIVE SEGMENT
+
+   Interruptions take priority over the
+   normal music and speech timeline.
 ========================================= */
 
 function findLiveSegment() {
+    if (
+        !metadataLoaded ||
+        totalPlaylistDuration <= 0
+    ) {
+        return {
+            type: "song",
+            index: 0,
+            offset: 0,
+            length: 0
+        };
+    }
+
+    const activeInterruption = findLiveInterruption();
+
+    if (activeInterruption) {
+        return activeInterruption;
+    }
+
+    const elapsed = Math.max(
+        0,
+        (Date.now() - RADIO_START) / 1000
+    );
+
+    const position = elapsed % totalPlaylistDuration;
+
+    let accumulated = 0;
+
+    for (let i = 0; i < songs.length; i++) {
+        const duration = songs[i].duration;
+
+        if (position < accumulated + duration) {
+            return {
+                type: "song",
+                index: i,
+                offset: position - accumulated,
+                length: duration
+            };
+        }
+
+        accumulated += duration;
+
+        if (
+            (i + 1) % SONGS_PER_SPEECH === 0 &&
+            speechDuration > 0
+        ) {
+            if (position < accumulated + speechDuration) {
+                return {
+                    type: "speech",
+                    index: i,
+                    offset: position - accumulated,
+                    length: speechDuration
+                };
+            }
+
+            accumulated += speechDuration;
+        }
+    }
+
+    return {
+        type: "song",
+        index: 0,
+        offset: 0,
+        length: 0
+    };
+}
+
+/* =========================================
+   DISPLAY SONG INDEX
+========================================= */
+
+function getDisplaySongIndex(segment) {
+    if (segment.type === "interruption") {
+        return getDisplaySongIndex(findNormalLiveSegment());
+    }
+
+    if (segment.type === "speech") {
+        return (segment.index + 1) % songs.length;
+    }
+
+    return segment.index;
+}
+
+function getDisplayNextSongIndex(segment) {
+    return (
+        getDisplaySongIndex(segment) + 1
+    ) % songs.length;
+}
+
+/* =========================================
+   FIND NORMAL LIVE SEGMENT
+
+   This ignores interruptions and calculates
+   the underlying music/speech timeline.
+========================================= */
+
+function findNormalLiveSegment() {
     if (
         !metadataLoaded ||
         totalPlaylistDuration <= 0
@@ -2530,35 +2930,33 @@ function findLiveSegment() {
 }
 
 /* =========================================
-   DISPLAY SONG INDEX
-========================================= */
-
-function getDisplaySongIndex(segment) {
-    if (segment.type === "speech") {
-        return (segment.index + 1) % songs.length;
-    }
-
-    return segment.index;
-}
-
-function getDisplayNextSongIndex(segment) {
-    return (
-        getDisplaySongIndex(segment) + 1
-    ) % songs.length;
-}
-
-/* =========================================
    UPDATE RADIO UI
 ========================================= */
 
 function updateRadioUI(segment) {
     if (!songs.length) return;
 
+    if (segment.type === "interruption") {
+        songNameElement.textContent =
+            segment.name || "Scheduled Interruption";
+
+        const nextSong = findNormalLiveSegment();
+
+        const nextIndex = getDisplayNextSongIndex(nextSong);
+
+        upNextElement.textContent =
+            songs[nextIndex].name;
+
+        return;
+    }
+
     const current = getDisplaySongIndex(segment);
     const next = getDisplayNextSongIndex(segment);
 
     songNameElement.textContent =
-        songs[current].name;
+        segment.type === "speech"
+            ? "Christmas Radio Announcement"
+            : songs[current].name;
 
     upNextElement.textContent =
         songs[next].name;
@@ -2579,9 +2977,19 @@ function updateLiveMediaSession() {
 
     const segment = findLiveSegment();
 
-    const title = segment.type === "speech"
-        ? "Christmas Radio"
-        : songs[segment.index].name;
+    let title;
+    let audio;
+
+    if (segment.type === "interruption") {
+        title = segment.name || "Scheduled Interruption";
+        audio = interruptionAudio;
+    } else if (segment.type === "speech") {
+        title = "Christmas Radio";
+        audio = speechAudio;
+    } else {
+        title = songs[segment.index].name;
+        audio = musicAudio;
+    }
 
     try {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -2597,10 +3005,6 @@ function updateLiveMediaSession() {
     } catch {}
 
     try {
-        const audio = segment.type === "speech"
-            ? speechAudio
-            : musicAudio;
-
         const duration = audio.duration;
         const position = audio.currentTime;
 
@@ -2733,13 +3137,6 @@ function waitForAudioMetadata(audio) {
 
 /* =========================================
    LOAD AUDIO
-
-   The metadata wait is started AFTER the new
-   source is set and load() has reset the
-   element. (Before, it was started first, saw
-   the previous song's metadata and returned
-   instantly, so the start position was
-   skipped.)
 ========================================= */
 
 async function loadAudio(audio, src) {
@@ -2824,6 +3221,25 @@ async function loadSpeech() {
 }
 
 /* =========================================
+   LOAD INTERRUPTION
+========================================= */
+
+async function loadInterruption(index) {
+    const interruption = interruptions[index];
+
+    if (!interruption || !interruption.file) {
+        throw new Error(
+            `Interruption ${index + 1} is missing its file.`
+        );
+    }
+
+    await loadAudio(
+        interruptionAudio,
+        SONG_FOLDER + encodeURIComponent(interruption.file)
+    );
+}
+
+/* =========================================
    PLAY BUTTON STATE
 ========================================= */
 
@@ -2839,11 +3255,6 @@ function updatePlayButton() {
 
 /* =========================================
    SEGMENT TIMER
-
-   Used when a file ends slightly before the
-   live clock reaches the next segment (or is
-   shorter than durations.json says). Waits for
-   the clock instead of restarting the file.
 ========================================= */
 
 function scheduleAfterSegment(live) {
@@ -2866,15 +3277,38 @@ function scheduleAfterSegment(live) {
 ========================================= */
 
 async function prepareSegment(segment) {
+    if (segment.type === "interruption") {
+        musicAudio.pause();
+        speechAudio.pause();
+
+        await loadInterruption(segment.index);
+
+        return interruptionAudio;
+    }
+
+    interruptionAudio.pause();
+
     if (segment.type === "speech") {
         musicAudio.pause();
+
         await loadSpeech();
+
         return speechAudio;
     }
 
     speechAudio.pause();
+
     await loadSong(segment.index);
+
     return musicAudio;
+}
+
+/* =========================================
+   SEGMENT KEY
+========================================= */
+
+function getSegmentKey(segment) {
+    return `${segment.type}:${segment.index}`;
 }
 
 /* =========================================
@@ -2891,12 +3325,11 @@ async function playLive() {
     try {
         await loadDurations();
 
-        let segment = findLiveSegment();
+        let segment;
         let audio = null;
 
-        // Loading takes time. If the live clock moved to another
-        // segment meanwhile, load that one instead.
-        for (let attempt = 0; attempt < 3; attempt++) {
+        // Keep checking the live timeline while files load.
+        for (let attempt = 0; attempt < 5; attempt++) {
             segment = findLiveSegment();
 
             audio = await prepareSegment(segment);
@@ -2904,19 +3337,26 @@ async function playLive() {
             const check = findLiveSegment();
 
             if (
-                check.type === segment.type &&
-                check.index === segment.index
+                getSegmentKey(check) === getSegmentKey(segment)
             ) {
+                segment = check;
                 break;
             }
         }
 
-        // Use the position as it is NOW, after loading
+        // Recalculate the actual position after loading.
         const live = findLiveSegment();
+
+        if (
+            getSegmentKey(live) !==
+            getSegmentKey(segment)
+        ) {
+            audio = await prepareSegment(live);
+        }
 
         currentSongIndex = getDisplaySongIndex(live);
         currentSegmentType = live.type;
-        currentSegmentKey = `${live.type}:${live.index}`;
+        currentSegmentKey = getSegmentKey(live);
 
         updateRadioUI(live);
 
@@ -2926,10 +3366,13 @@ async function playLive() {
 
         updatePlayButton();
 
-        // File is shorter than durations.json says: wait for the clock
+        scheduleInterruptionBoundary();
+
+        // The actual file may be shorter than the manifest
+        // duration. Wait for the live timeline if necessary.
         if (live.offset >= audio.duration - 0.25) {
             console.warn(
-                "Audio is shorter than its duration in durations.json:",
+                "Audio is shorter than its scheduled duration:",
                 audio.src
             );
 
@@ -2938,14 +3381,25 @@ async function playLive() {
         }
 
         await seekAudio(audio, live.offset);
+
+        // The timeline might have changed during the seek.
+        const afterSeek = findLiveSegment();
+
+        if (
+            getSegmentKey(afterSeek) !==
+            currentSegmentKey
+        ) {
+            await playLive();
+            return;
+        }
+
         await audio.play();
 
-        // Compensate for the time spent seeking and starting
+        // Compensate for the time spent seeking and starting.
         const after = findLiveSegment();
 
         if (
-            after.type === live.type &&
-            after.index === live.index &&
+            getSegmentKey(after) === currentSegmentKey &&
             Math.abs(audio.currentTime - after.offset) > 0.75
         ) {
             await seekAudio(audio, after.offset);
@@ -2985,9 +3439,11 @@ async function playLive() {
 
 function pauseRadio() {
     clearTimeout(segmentTimer);
+    clearTimeout(interruptionBoundaryTimer);
 
     musicAudio.pause();
     speechAudio.pause();
+    interruptionAudio.pause();
 
     radioPlaying = false;
 
@@ -3008,6 +3464,7 @@ async function resumeLive() {
 
     musicAudio.pause();
     speechAudio.pause();
+    interruptionAudio.pause();
 
     await playLive();
 }
@@ -3027,10 +3484,9 @@ playButton.addEventListener("click", async () => {
 /* =========================================
    TRACK END
 
-   A file can end a moment before the live
-   clock reaches the next segment. Restarting
-   playLive() then would replay the same song
-   from the start, so wait for the clock.
+   If the physical file ends before the
+   manifest's scheduled duration, wait for
+   the timeline instead of restarting it.
 ========================================= */
 
 async function handleTrackEnded() {
@@ -3038,7 +3494,7 @@ async function handleTrackEnded() {
 
     const live = findLiveSegment();
 
-    if (`${live.type}:${live.index}` === currentSegmentKey) {
+    if (getSegmentKey(live) === currentSegmentKey) {
         scheduleAfterSegment(live);
         return;
     }
@@ -3048,6 +3504,7 @@ async function handleTrackEnded() {
 
 musicAudio.addEventListener("ended", handleTrackEnded);
 speechAudio.addEventListener("ended", handleTrackEnded);
+interruptionAudio.addEventListener("ended", handleTrackEnded);
 
 /* =========================================
    ERROR RECOVERY
@@ -3087,13 +3544,13 @@ function retryLive() {
 
 musicAudio.addEventListener("error", retryLive);
 speechAudio.addEventListener("error", retryLive);
+interruptionAudio.addEventListener("error", retryLive);
 
 /* =========================================
    LIVE SYNCHRONIZATION
 
-   Only seeks after drift was seen on two
-   checks in a row, and never while the audio
-   is seeking or has just ended.
+   Checks the interruption timeline as well
+   as the normal music and speech timeline.
 ========================================= */
 
 async function syncRadio(force = false) {
@@ -3102,8 +3559,7 @@ async function syncRadio(force = false) {
     try {
         const live = findLiveSegment();
 
-        const liveKey =
-            `${live.type}:${live.index}`;
+        const liveKey = getSegmentKey(live);
 
         if (liveKey !== currentSegmentKey) {
             driftStrikes = 0;
@@ -3114,9 +3570,15 @@ async function syncRadio(force = false) {
         updateRadioUI(live);
         updateLiveMediaSession();
 
-        const audio = live.type === "speech"
-            ? speechAudio
-            : musicAudio;
+        let audio;
+
+        if (live.type === "interruption") {
+            audio = interruptionAudio;
+        } else if (live.type === "speech") {
+            audio = speechAudio;
+        } else {
+            audio = musicAudio;
+        }
 
         if (audio.ended || audio.seeking) return;
 
@@ -3135,6 +3597,8 @@ async function syncRadio(force = false) {
             driftStrikes = 0;
         }
 
+        scheduleInterruptionBoundary();
+
     } catch (error) {
         console.warn(
             "Periodic synchronization failed:",
@@ -3143,7 +3607,7 @@ async function syncRadio(force = false) {
     }
 }
 
-setInterval(syncRadio, 5000);
+setInterval(syncRadio, 1000);
 
 /* =========================================
    MEDIA SESSION POSITION
@@ -3225,7 +3689,7 @@ async function initializeRadio() {
         currentSegmentType = live.type;
 
         currentSegmentKey =
-            `${live.type}:${live.index}`;
+            getSegmentKey(live);
 
         updateRadioUI(live);
         updateLiveMediaSession();
@@ -3257,6 +3721,10 @@ initializeRadio();
 window.addEventListener("beforeunload", () => {
     musicAudio.pause();
     speechAudio.pause();
+    interruptionAudio.pause();
+
+    clearTimeout(segmentTimer);
+    clearTimeout(interruptionBoundaryTimer);
 
     if (retryTimeout) {
         clearTimeout(retryTimeout);
