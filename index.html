@@ -1,718 +1,719 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-        content="width=device-width,
-        initial-scale=1.0,
-        maximum-scale=1.0,
-        user-scalable=no,
-        viewport-fit=cover">
-
-    <meta name="theme-color" content="#12030a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="icon" href="favicon.ico">
-
-    <title>Christmas Countdown • Live Radio</title>
-
-    <style>
-    :root {
-        --red: #d71920;
-        --red-dark: #8d0710;
-        --green: #0b6b3a;
-        --green-dark: #063d25;
-        --gold: #ffd76a;
-        --white: #ffffff;
-
-        --glass-bg: rgba(255, 255, 255, 0.075);
-        --glass-bg-strong: rgba(255, 255, 255, 0.105);
-        --glass-border: rgba(255, 255, 255, 0.25);
-        --glass-highlight: rgba(255, 255, 255, 0.42);
-        --glass-shadow: rgba(0, 0, 0, 0.42);
-    }
-
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-
-        -webkit-tap-highlight-color: transparent;
-
-        user-select: none;
-        -webkit-user-select: none;
-    }
-
-    html,
-    body {
-        width: 100%;
-        height: 100%;
-
-        overflow: hidden;
-
-        touch-action: none;
-
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-
-        overscroll-behavior: none;
-    }
-
-    body {
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "SF Pro Display",
-            "SF Pro Text",
-            "Segoe UI",
-            Arial,
-            sans-serif;
-
-        color: var(--white);
-
-        background:
-            radial-gradient(
-                circle at 15% 15%,
-                rgba(255, 255, 255, 0.08),
-                transparent 25%
-            ),
-            radial-gradient(
-                circle at 85% 80%,
-                rgba(11, 107, 58, 0.30),
-                transparent 35%
-            ),
-            radial-gradient(
-                circle at 15% 80%,
-                rgba(215, 25, 32, 0.28),
-                transparent 35%
-            ),
-            #12030a;
-    }
-
-    /*
-     * =====================================================
-     * MAIN PAGE
-     * =====================================================
-     */
-
-    #phonePortraitViewport {
-        width: 100%;
-        height: 100%;
-
-        position: relative;
-
-        overflow: hidden;
-    }
 
-    /*
-     * =====================================================
-     * BACKGROUND
-     * =====================================================
-     */
+<meta name="viewport"
+    content="width=device-width,
+    initial-scale=1.0,
+    maximum-scale=1.0,
+    user-scalable=no,
+    viewport-fit=cover">
+
+<meta name="theme-color" content="#12030a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="icon" href="favicon.ico">
+
+<title>Christmas Countdown • Live Radio</title>
+
+<style>
+:root {
+    --red: #d71920;
+    --red-dark: #8d0710;
+    --green: #0b6b3a;
+    --green-dark: #063d25;
+    --gold: #ffd76a;
+    --white: #ffffff;
+
+    --glass-bg: rgba(255, 255, 255, 0.075);
+    --glass-bg-strong: rgba(255, 255, 255, 0.105);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-highlight: rgba(255, 255, 255, 0.42);
+    --glass-shadow: rgba(0, 0, 0, 0.42);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+
+    -webkit-tap-highlight-color: transparent;
+
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    touch-action: none;
+
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+
+    overscroll-behavior: none;
+}
+
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    color: var(--white);
+
+    background:
+        radial-gradient(
+            circle at 15% 15%,
+            rgba(255, 255, 255, 0.08),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(11, 107, 58, 0.30),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 15% 80%,
+            rgba(215, 25, 32, 0.28),
+            transparent 35%
+        ),
+        #12030a;
+}
+
+/*
+ * =====================================================
+ * MAIN PAGE
+ * =====================================================
+ */
+
+#phonePortraitViewport {
+    width: 100%;
+    height: 100%;
 
-    #bg {
-        position: absolute;
+    position: relative;
 
-        inset: -4%;
+    overflow: hidden;
+}
 
-        width: 108%;
-        height: 108%;
+/*
+ * =====================================================
+ * BACKGROUND
+ * =====================================================
+ */
 
-        background-image:
-            linear-gradient(
-                rgba(15, 0, 5, 0.20),
-                rgba(15, 0, 5, 0.48)
-            ),
-            url("christmas-background.jpg");
+#bg {
+    position: absolute;
 
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
+    inset: -4%;
 
-        filter:
-            saturate(1.2)
-            contrast(1.02);
+    width: 108%;
+    height: 108%;
 
-        z-index: -5;
+    background-image:
+        linear-gradient(
+            rgba(15, 0, 5, 0.20),
+            rgba(15, 0, 5, 0.48)
+        ),
+        url("christmas-background.jpg");
 
-        transform: translateZ(0);
-    }
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
-    /*
-     * =====================================================
-     * SNOW
-     * =====================================================
-     */
+    filter:
+        saturate(1.2)
+        contrast(1.02);
 
-    .snow-layer {
-        position: absolute;
+    z-index: -5;
 
-        inset: 0;
+    transform: translateZ(0);
+}
 
-        pointer-events: none;
+/*
+ * =====================================================
+ * SNOW
+ * =====================================================
+ */
 
-        overflow: hidden;
-    }
+.snow-layer {
+    position: absolute;
 
-    #snowFar,
-    #snowMid,
-    #snowNear {
-        z-index: 2;
-    }
-
-    #snowAbove {
-        z-index: 10;
-    }
-
-    .snowflake {
-        position: absolute;
-
-        top: -30px;
-
-        color: rgba(255, 255, 255, 0.9);
-
-        font-size: var(--size);
-
-        opacity: var(--opacity);
-
-        animation:
-            smoothSnowFall
-            var(--duration)
-            linear
-            infinite;
-
-        animation-delay: var(--delay);
-
-        will-change: transform;
-    }
-
-    .circle-snow {
-        color: #ffffff;
-
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-
-        font-weight: 400;
-
-        line-height: 1;
-
-        text-shadow:
-            0 0 5px
-            rgba(255, 255, 255, 0.35);
-
-        will-change:
-            transform,
-            opacity;
-    }
-
-    .circle-snow.far {
-        filter:
-            blur(0.25px);
-    }
-
-    .circle-snow.mid {
-        filter:
-            blur(0.1px);
-
-        text-shadow:
-            0 0 7px
-            rgba(255, 255, 255, 0.45);
-    }
-
-    .circle-snow.near {
-        text-shadow:
-            0 0 9px
-            rgba(255, 255, 255, 0.65),
-            0 0 18px
-            rgba(255, 255, 255, 0.25);
-    }
-
-    @keyframes smoothSnowFall {
-
-        0% {
-            transform:
-                translate3d(
-                    var(--drift-start),
-                    -50px,
-                    0
-                );
-        }
-
-        12% {
-            transform:
-                translate3d(
-                    var(--drift-one),
-                    12vh,
-                    0
-                );
-        }
-
-        25% {
-            transform:
-                translate3d(
-                    var(--drift-two),
-                    25vh,
-                    0
-                );
-        }
-
-        37% {
-            transform:
-                translate3d(
-                    var(--drift-three),
-                    37vh,
-                    0
-                );
-        }
-
-        50% {
-            transform:
-                translate3d(
-                    var(--drift-four),
-                    50vh,
-                    0
-                );
-        }
-
-        62% {
-            transform:
-                translate3d(
-                    var(--drift-five),
-                    62vh,
-                    0
-                );
-        }
-
-        75% {
-            transform:
-                translate3d(
-                    var(--drift-six),
-                    75vh,
-                    0
-                );
-        }
-
-        87% {
-            transform:
-                translate3d(
-                    var(--drift-seven),
-                    87vh,
-                    0
-                );
-        }
-
-        100% {
-            transform:
-                translate3d(
-                    var(--drift-end),
-                    110vh,
-                    0
-                );
-        }
-    }
-
-    /*
-     * =====================================================
-     * MAIN CONTAINER
-     * =====================================================
-     */
-
-    #container {
-        width: 100%;
-        height: 100%;
-
-        display: flex;
-
-        align-items: center;
-        justify-content: center;
-
-        padding:
-            max(20px, env(safe-area-inset-top))
-            max(20px, env(safe-area-inset-right))
-            max(20px, env(safe-area-inset-bottom))
-            max(20px, env(safe-area-inset-left));
-
-        position: absolute;
-
-        inset: 0;
-
-        z-index: 5;
-
-        overflow: hidden;
-    }
-
-    /*
-     * =====================================================
-     * LIQUID GLASS CARD
-     * =====================================================
-     */
-
-    .card {
-        width: min(92vw, 900px);
-
-        padding:
-            clamp(30px, 5vw, 60px);
-
-        text-align: center;
-
-        position: relative;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.065),
-                rgba(255, 255, 255, 0.018) 45%,
-                rgba(255, 255, 255, 0.035)
-            );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.18);
-
-        border-radius:
-            32px;
-
-        backdrop-filter:
-            blur(14px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(14px)
-            saturate(180%);
-
-        box-shadow:
-            0 35px 100px rgba(0, 0, 0, 0.42),
-            0 10px 30px rgba(0, 0, 0, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.22),
-            inset 1px 0 0 rgba(255, 255, 255, 0.07),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04);
-    }
-
-    .card::before {
-        content: "";
-
-        position: absolute;
-
-        inset: 1px;
-
-        border-radius: 31px;
-
-        pointer-events: none;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255,255,255,.08),
-                transparent 40%
+    inset: 0;
+
+    pointer-events: none;
+
+    overflow: hidden;
+}
+
+#snowFar,
+#snowMid,
+#snowNear {
+    z-index: 2;
+}
+
+#snowAbove {
+    z-index: 10;
+}
+
+.snowflake {
+    position: absolute;
+
+    top: -30px;
+
+    color: rgba(255, 255, 255, 0.9);
+
+    font-size: var(--size);
+
+    opacity: var(--opacity);
+
+    animation:
+        smoothSnowFall
+        var(--duration)
+        linear
+        infinite;
+
+    animation-delay: var(--delay);
+
+    will-change: transform;
+}
+
+.circle-snow {
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-weight: 400;
+
+    line-height: 1;
+
+    text-shadow:
+        0 0 5px
+        rgba(255, 255, 255, 0.35);
+
+    will-change:
+        transform,
+        opacity;
+}
+
+.circle-snow.far {
+    filter:
+        blur(0.25px);
+}
+
+.circle-snow.mid {
+    filter:
+        blur(0.1px);
+
+    text-shadow:
+        0 0 7px
+        rgba(255, 255, 255, 0.45);
+}
+
+.circle-snow.near {
+    text-shadow:
+        0 0 9px
+        rgba(255, 255, 255, 0.65),
+        0 0 18px
+        rgba(255, 255, 255, 0.25);
+}
+
+@keyframes smoothSnowFall {
+
+    0% {
+        transform:
+            translate3d(
+                var(--drift-start),
+                -50px,
+                0
             );
     }
 
-    .card::after {
-        content: "";
-
-        position: absolute;
-
-        left: 10%;
-        right: 10%;
-
-        bottom: -18px;
-
-        height: 35px;
-
-        border-radius: 50%;
-
-        background:
-            rgba(255, 255, 255, 0.08);
-
-        filter:
-            blur(11px);
-
-        pointer-events: none;
-
-        z-index: -1;
-    }
-
-    .card > * {
-        position: relative;
-
-        z-index: 2;
-    }
-
-    /*
-     * =====================================================
-     * LIVE LABEL
-     * =====================================================
-     */
-
-    .live-label {
-        display: inline-flex;
-
-        align-items: center;
-
-        gap: 9px;
-
-        padding:
-            9px 17px;
-
-        border-radius:
-            999px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.15),
-                rgba(255, 255, 255, 0.055)
+    12% {
+        transform:
+            translate3d(
+                var(--drift-one),
+                12vh,
+                0
             );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.22);
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.28),
-
-            0 5px 20px
-                rgba(0, 0, 0, 0.12);
-
-        backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        -webkit-backdrop-filter:
-            blur(18px)
-            saturate(160%);
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.12em;
-
-        text-transform:
-            uppercase;
-
-        margin-bottom:
-            20px;
     }
 
-    .live-dot {
-        width: 9px;
-        height: 9px;
-
-        border-radius: 50%;
-
-        background:
-            #ff3038;
-
-        box-shadow:
-            0 0 8px #ff3038,
-            0 0 16px
-            rgba(255, 48, 56, 0.65);
-
-        animation:
-            livePulse
-            1.4s
-            infinite;
-    }
-
-    @keyframes livePulse {
-
-        0%,
-        100% {
-            opacity: 1;
-
-            transform:
-                scale(1);
-        }
-
-        50% {
-            opacity: 0.45;
-
-            transform:
-                scale(0.75);
-        }
-    }
-
-    /*
-     * =====================================================
-     * CHRISTMAS TITLE
-     * =====================================================
-     */
-
-    #title {
-        font-size:
-            clamp(3rem, 9vw, 7rem);
-
-        font-weight:
-            900;
-
-        line-height:
-            0.95;
-
-        margin:
-            0 0 10px;
-
-        background:
-            linear-gradient(
-                105deg,
-                #ff2933 0%,
-                #d71920 30%,
-                #0fa15a 58%,
-                #0b6b3a 82%,
-                #16a864 100%
+    25% {
+        transform:
+            translate3d(
+                var(--drift-two),
+                25vh,
+                0
             );
-
-        -webkit-background-clip:
-            text;
-
-        -webkit-text-fill-color:
-            transparent;
-
-        background-clip:
-            text;
-
-        text-shadow:
-            0 8px 30px
-            rgba(0, 0, 0, 0.25);
     }
 
-    /*
-     * =====================================================
-     * COUNTDOWN TITLE
-     * =====================================================
-     */
-
-    #subtitle {
-        font-size:
-            clamp(2rem, 5vw, 4rem);
-
-        line-height:
-            1;
-
-        font-weight:
-            800;
-
-        color:
-            #ffffff;
-
-        text-shadow:
-            0 5px 25px
-            rgba(0, 0, 0, 0.4);
-
-        margin-bottom:
-            28px;
-    }
-
-    /*
-     * =====================================================
-     * COUNTDOWN GLASS
-     * =====================================================
-     */
-
-    #countdown {
-        display:
-            inline-flex;
-
-        align-items:
-            center;
-
-        justify-content:
-            center;
-
-        min-width:
-            min(90%, 500px);
-
-        padding:
-            15px 25px;
-
-        border-radius:
-            999px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.13),
-                rgba(255, 255, 255, 0.045)
+    37% {
+        transform:
+            translate3d(
+                var(--drift-three),
+                37vh,
+                0
             );
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.24);
-
-        backdrop-filter:
-            blur(11px)
-            saturate(180%);
-
-        -webkit-backdrop-filter:
-            blur(11px)
-            saturate(180%);
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.35),
-
-            inset 0 -1px 0
-                rgba(255, 255, 255, 0.07),
-
-            0 12px 35px
-                rgba(0, 0, 0, 0.20);
-
-        font-size:
-            clamp(1.1rem, 3vw, 1.7rem);
-
-        font-weight:
-            800;
-
-        letter-spacing:
-            0.03em;
-
-        margin-bottom:
-            30px;
-
-        cursor: pointer;
-
-        touch-action: manipulation;
     }
 
-    /*
-     * =====================================================
-     * DOUBLE-TAP DISPLAY TOGGLE
-     * =====================================================
-     */
-
-    .song-wrapper {
-        margin-bottom:
-            28px;
+    50% {
+        transform:
+            translate3d(
+                var(--drift-four),
+                50vh,
+                0
+            );
     }
 
-    /*
-     * Original song-info-only mode retained.
-     */
-
-    .card.hide-song-info .song-wrapper {
-        display: none !important;
+    62% {
+        transform:
+            translate3d(
+                var(--drift-five),
+                62vh,
+                0
+            );
     }
 
-   /*
+    75% {
+        transform:
+            translate3d(
+                var(--drift-six),
+                75vh,
+                0
+            );
+    }
+
+    87% {
+        transform:
+            translate3d(
+                var(--drift-seven),
+                87vh,
+                0
+            );
+    }
+
+    100% {
+        transform:
+            translate3d(
+                var(--drift-end),
+                110vh,
+                0
+            );
+    }
+}
+
+/*
+ * =====================================================
+ * MAIN CONTAINER
+ * =====================================================
+ */
+
+#container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        max(20px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(20px, env(safe-area-inset-left));
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 5;
+
+    overflow: hidden;
+}
+
+/*
+ * =====================================================
+ * LIQUID GLASS CARD
+ * =====================================================
+ */
+
+.card {
+    width: min(92vw, 900px);
+
+    padding:
+        clamp(30px, 5vw, 60px);
+
+    text-align: center;
+
+    position: relative;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.065),
+            rgba(255, 255, 255, 0.018) 45%,
+            rgba(255, 255, 255, 0.035)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.18);
+
+    border-radius:
+        32px;
+
+    backdrop-filter:
+        blur(14px)
+        saturate(180%);
+
+    -webkit-backdrop-filter:
+        blur(14px)
+        saturate(180%);
+
+    box-shadow:
+        0 35px 100px rgba(0, 0, 0, 0.42),
+        0 10px 30px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 1px 0 0 rgba(255, 255, 255, 0.07),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 1px;
+
+    border-radius: 31px;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.08),
+            transparent 40%
+        );
+}
+
+.card::after {
+    content: "";
+
+    position: absolute;
+
+    left: 10%;
+    right: 10%;
+
+    bottom: -18px;
+
+    height: 35px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    filter:
+        blur(11px);
+
+    pointer-events: none;
+
+    z-index: -1;
+}
+
+.card > * {
+    position: relative;
+
+    z-index: 2;
+}
+
+/*
+ * =====================================================
+ * LIVE LABEL
+ * =====================================================
+ */
+
+.live-label {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding:
+        9px 17px;
+
+    border-radius:
+        999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0.055)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.22);
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.28),
+
+        0 5px 20px
+            rgba(0, 0, 0, 0.12);
+
+    backdrop-filter:
+        blur(18px)
+        saturate(160%);
+
+    -webkit-backdrop-filter:
+        blur(18px)
+        saturate(160%);
+
+    font-size:
+        0.78rem;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        0.12em;
+
+    text-transform:
+        uppercase;
+
+    margin-bottom:
+        20px;
+}
+
+.live-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        #ff3038;
+
+    box-shadow:
+        0 0 8px #ff3038,
+        0 0 16px
+        rgba(255, 48, 56, 0.65);
+
+    animation:
+        livePulse
+        1.4s
+        infinite;
+}
+
+@keyframes livePulse {
+
+    0%,
+    100% {
+        opacity: 1;
+
+        transform:
+            scale(1);
+    }
+
+    50% {
+        opacity: 0.45;
+
+        transform:
+            scale(0.75);
+    }
+}
+
+/*
+ * =====================================================
+ * CHRISTMAS TITLE
+ * =====================================================
+ */
+
+#title {
+    font-size:
+        clamp(3rem, 9vw, 7rem);
+
+    font-weight:
+        900;
+
+    line-height:
+        0.95;
+
+    margin:
+        0 0 10px;
+
+    background:
+        linear-gradient(
+            105deg,
+            #ff2933 0%,
+            #d71920 30%,
+            #0fa15a 58%,
+            #0b6b3a 82%,
+            #16a864 100%
+        );
+
+    -webkit-background-clip:
+        text;
+
+    -webkit-text-fill-color:
+        transparent;
+
+    background-clip:
+        text;
+
+    text-shadow:
+        0 8px 30px
+        rgba(0, 0, 0, 0.25);
+}
+
+/*
+ * =====================================================
+ * COUNTDOWN TITLE
+ * =====================================================
+ */
+
+#subtitle {
+    font-size:
+        clamp(2rem, 5vw, 4rem);
+
+    line-height:
+        1;
+
+    font-weight:
+        800;
+
+    color:
+        #ffffff;
+
+    text-shadow:
+        0 5px 25px
+        rgba(0, 0, 0, 0.4);
+
+    margin-bottom:
+        28px;
+}
+
+/*
+ * =====================================================
+ * COUNTDOWN GLASS
+ * =====================================================
+ */
+
+#countdown {
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    min-width:
+        min(90%, 500px);
+
+    padding:
+        15px 25px;
+
+    border-radius:
+        999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.13),
+            rgba(255, 255, 255, 0.045)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.24);
+
+    backdrop-filter:
+        blur(11px)
+        saturate(180%);
+
+    -webkit-backdrop-filter:
+        blur(11px)
+        saturate(180%);
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.35),
+
+        inset 0 -1px 0
+            rgba(255, 255, 255, 0.07),
+
+        0 12px 35px
+            rgba(0, 0, 0, 0.20);
+
+    font-size:
+        clamp(1.1rem, 3vw, 1.7rem);
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        0.03em;
+
+    margin-bottom:
+        30px;
+
+    cursor: pointer;
+
+    touch-action: manipulation;
+}
+
+/*
+ * =====================================================
+ * DOUBLE-TAP DISPLAY TOGGLE
+ * =====================================================
+ */
+
+.song-wrapper {
+    margin-bottom:
+        28px;
+}
+
+/*
+ * Original song-info-only mode retained.
+ */
+
+.card.hide-song-info .song-wrapper {
+    display: none !important;
+}
+
+/*
  * =====================================================
  * COUNTDOWN FOCUS MODE
  *
  * Double-tapping the countdown:
  * - Keeps the glass card visible.
- * - Hides Christmas Radio information.
- * - Hides Christmas and Countdown headings.
+ * - Keeps the Live Radio badge, Christmas, and Countdown headings visible.
  * - Hides Now Playing and Up Next.
  * - Hides the play button and footer.
- * - Keeps only the countdown visible.
  * =====================================================
  */
 
@@ -753,7 +754,10 @@
     backdrop-filter: blur(14px) saturate(180%);
     -webkit-backdrop-filter: blur(14px) saturate(180%);
 
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
     overflow: visible;
 }
@@ -763,8 +767,11 @@
     display: none !important;
 }
 
-/* Keep the headings visible */
-.card.countdown-only > .live-label,
+/* Always keep the live label and headings visible */
+.card.countdown-only > .live-label {
+    display: inline-flex !important;
+}
+
 .card.countdown-only > #title,
 .card.countdown-only > #subtitle {
     display: block !important;
@@ -776,7 +783,7 @@
     display: block;
 }
 
-/* Show only the countdown */
+/* Show the countdown pill */
 .card.countdown-only #countdown {
     display: inline-flex !important;
 
@@ -824,1142 +831,1178 @@
     cursor: pointer;
     touch-action: manipulation;
 }
-    /*
-     * =====================================================
-     * NOW PLAYING
-     * =====================================================
-     */
+
+/*
+ * =====================================================
+ * NOW PLAYING
+ * =====================================================
+ */
+
+.now-playing {
+    font-size:
+        0.72rem;
+
+    font-weight:
+        800;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        0.18em;
+
+    opacity:
+        0.72;
+
+    margin-bottom:
+        9px;
+}
+
+#songName {
+    min-height:
+        1.5em;
+
+    font-size:
+        clamp(1rem, 3vw, 1.45rem);
+
+    font-weight:
+        700;
+
+    color:
+        #ffffff;
+
+    text-shadow:
+        0 2px 12px
+        rgba(0, 0, 0, 0.45);
+}
+
+.up-next-wrapper {
+    margin-top:
+        14px;
+
+    margin-bottom:
+        4px;
+}
+
+.up-next-label {
+    font-size:
+        0.62rem;
+
+    font-weight:
+        800;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        0.16em;
+
+    opacity:
+        0.52;
+
+    margin-bottom:
+        5px;
+}
+
+#upNext {
+    min-height:
+        1.3em;
+
+    font-size:
+        clamp(0.85rem, 2.5vw, 1rem);
+
+    font-weight:
+        700;
+
+    color:
+        rgba(255, 255, 255, 0.78);
+
+    text-shadow:
+        0 2px 10px
+        rgba(0, 0, 0, 0.35);
+}
+
+/*
+ * =====================================================
+ * PLAY BUTTON
+ * =====================================================
+ */
+
+#playButton {
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.25);
+
+    outline:
+        none;
+
+    padding:
+        15px 28px;
+
+    border-radius:
+        999px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.20),
+            rgba(215, 25, 32, 0.42),
+            rgba(141, 7, 16, 0.55)
+        );
+
+    color:
+        white;
+
+    font-size:
+        1rem;
+
+    font-weight:
+        800;
+
+    cursor:
+        pointer;
+
+    touch-action:
+        manipulation;
+
+    backdrop-filter:
+        blur(20px)
+        saturate(170%);
+
+    -webkit-backdrop-filter:
+        blur(20px)
+        saturate(170%);
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.4),
+
+        inset 0 -1px 0
+            rgba(0, 0, 0, 0.15),
+
+        0 12px 35px
+            rgba(120, 0, 0, 0.28);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+#playButton::before {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    left:
+        -40%;
+
+    width:
+        35%;
+
+    height:
+        100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.30),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    transition:
+        left 0.65s ease;
+}
+
+#playButton:hover::before {
+    left:
+        110%;
+}
+
+#playButton:active {
+    transform:
+        scale(0.96);
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.3),
+
+        0 5px 18px
+            rgba(0, 0, 0, 0.25);
+}
+
+#playButton:hover {
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.45),
+
+        0 16px 40px
+            rgba(120, 0, 0, 0.34);
+}
+
+#playButton.paused {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.18),
+            rgba(13, 122, 67, 0.45),
+            rgba(7, 85, 47, 0.55)
+        );
+
+    box-shadow:
+        inset 0 1px 0
+            rgba(255, 255, 255, 0.4),
+
+        0 12px 35px
+            rgba(0, 80, 40, 0.25);
+}
+
+/*
+ * =====================================================
+ * FOOTER
+ * =====================================================
+ */
+
+footer {
+    margin-top:
+        28px;
+
+    font-size:
+        0.78rem;
+
+    font-weight:
+        700;
+
+    opacity:
+        0.65;
+
+    letter-spacing:
+        0.08em;
+}
+
+audio {
+    display:
+        none !important;
+}
+
+/*
+ * =====================================================
+ * MOBILE PORTRAIT
+ * =====================================================
+ */
+
+@media (max-width: 768px) {
+
+    #container {
+        padding:
+            max(15px, env(safe-area-inset-top))
+            max(15px, env(safe-area-inset-right))
+            max(15px, env(safe-area-inset-bottom))
+            max(15px, env(safe-area-inset-left));
+    }
+
+    .card {
+        width:
+            94vw;
+
+        padding:
+            30px 20px;
+
+        border-radius:
+            28px;
+
+        backdrop-filter:
+            blur(12.5px)
+            saturate(180%);
+
+        -webkit-backdrop-filter:
+            blur(12.5px)
+            saturate(180%);
+    }
+
+    .card::before {
+        border-radius:
+            27px;
+    }
+
+    #countdown {
+        min-width:
+            0;
+
+        width:
+            100%;
+
+        padding:
+            13px 15px;
+
+        margin-bottom:
+            24px;
+    }
+
+    #songName {
+        padding:
+            0 8px;
+    }
+
+    #playButton {
+        width:
+            min(100%, 330px);
+    }
+
+    footer {
+        margin-top:
+            22px;
+    }
+}
+
+/*
+ * =====================================================
+ * PHONE LANDSCAPE
+ * =====================================================
+ */
+
+@media (max-width: 900px) and (orientation: landscape) {
+
+    #container {
+        padding:
+            max(8px, env(safe-area-inset-top))
+            max(12px, env(safe-area-inset-right))
+            max(8px, env(safe-area-inset-bottom))
+            max(12px, env(safe-area-inset-left));
+    }
+
+    .card {
+        width:
+            min(
+                94vw,
+                850px
+            );
+
+        height:
+            min(
+                92dvh,
+                440px
+            );
+
+        min-height:
+            0;
+
+        padding:
+            clamp(12px, 3vh, 22px)
+            clamp(18px, 4vw, 38px);
+
+        border-radius:
+            25px;
+
+        overflow:
+            hidden;
+
+        display:
+            grid;
+
+        grid-template-columns:
+            minmax(0, 1.15fr)
+            minmax(0, 0.95fr);
+
+        grid-template-rows:
+            auto
+            auto
+            auto
+            auto;
+
+        grid-template-areas:
+            "live live"
+            "title info"
+            "subtitle info"
+            "countdown button";
+
+        column-gap:
+            clamp(18px, 5vw, 48px);
+
+        row-gap:
+            clamp(2px, 0.8vh, 7px);
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        backdrop-filter:
+            blur(14px)
+            saturate(180%);
+
+        -webkit-backdrop-filter:
+            blur(14px)
+            saturate(180%);
+    }
+
+    .card::before {
+        border-radius:
+            24px;
+    }
+
+    .live-label {
+        grid-area:
+            live;
+
+        justify-self:
+            center;
+
+        padding:
+            5px 12px;
+
+        gap:
+            7px;
+
+        font-size:
+            0.58rem;
+
+        margin-bottom:
+            2px;
+    }
+
+    .live-dot {
+        width:
+            7px;
+
+        height:
+            7px;
+    }
+
+    #title {
+        grid-area:
+            title;
+
+        font-size:
+            clamp(
+                2.25rem,
+                9.5vh,
+                4.4rem
+            );
+
+        line-height:
+            0.86;
+
+        margin:
+            0;
+
+        white-space:
+            nowrap;
+    }
+
+    #subtitle {
+        grid-area:
+            subtitle;
+
+        font-size:
+            clamp(
+                1.45rem,
+                5.5vh,
+                2.5rem
+            );
+
+        line-height:
+            0.9;
+
+        margin:
+            0;
+
+        white-space:
+            nowrap;
+    }
+
+    #countdown {
+        grid-area:
+            countdown;
+
+        justify-self:
+            center;
+
+        width:
+            100%;
+
+        min-width:
+            0;
+
+        max-width:
+            100%;
+
+        padding:
+            8px 12px;
+
+        margin:
+            2px 0 0;
+
+        font-size:
+            clamp(
+                0.72rem,
+                3.2vh,
+                1.05rem
+            );
+
+        white-space:
+            nowrap;
+    }
+
+    .song-wrapper {
+        grid-area:
+            info;
+
+        width:
+            100%;
+
+        min-width:
+            0;
+
+        margin:
+            0;
+
+        padding:
+            0 2px;
+
+        text-align:
+            center;
+    }
 
     .now-playing {
         font-size:
-            0.72rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
+            0.55rem;
 
         letter-spacing:
-            0.18em;
-
-        opacity:
-            0.72;
+            0.16em;
 
         margin-bottom:
-            9px;
+            4px;
+
+        opacity:
+            0.68;
     }
 
     #songName {
         min-height:
-            1.5em;
+            1.2em;
+
+        padding:
+            0;
 
         font-size:
-            clamp(1rem, 3vw, 1.45rem);
+            clamp(
+                0.82rem,
+                3.2vh,
+                1.1rem
+            );
 
-        font-weight:
-            700;
+        line-height:
+            1.15;
 
-        color:
-            #ffffff;
+        white-space:
+            nowrap;
 
-        text-shadow:
-            0 2px 12px
-            rgba(0, 0, 0, 0.45);
+        overflow:
+            hidden;
+
+        text-overflow:
+            ellipsis;
+    }
+
+    .up-next-wrapper {
+        margin:
+            7px 0 0;
+    }
+
+    .up-next-label {
+        font-size:
+            0.47rem;
+
+        letter-spacing:
+            0.14em;
+
+        margin-bottom:
+            2px;
+    }
+
+    #upNext {
+        min-height:
+            1.1em;
+
+        font-size:
+            clamp(
+                0.64rem,
+                2.5vh,
+                0.86rem
+            );
+
+        line-height:
+            1.1;
+
+        white-space:
+            nowrap;
+
+        overflow:
+            hidden;
+
+        text-overflow:
+            ellipsis;
+    }
+
+    #playButton {
+        grid-area:
+            button;
+
+        justify-self:
+            center;
+
+        width:
+            min(
+                100%,
+                250px
+            );
+
+        min-width:
+            0;
+
+        padding:
+            8px 16px;
+
+        font-size:
+            clamp(
+                0.68rem,
+                2.7vh,
+                0.88rem
+            );
+
+        white-space:
+            nowrap;
+    }
+
+    footer {
+        position:
+            absolute;
+
+        left:
+            50%;
+
+        bottom:
+            7px;
+
+        transform:
+            translateX(-50%);
+
+        margin:
+            0;
+
+        font-size:
+            clamp(
+                0.45rem,
+                1.8vh,
+                0.6rem
+            );
+
+        white-space:
+            nowrap;
+
+        opacity:
+            0.55;
+    }
+}
+
+/*
+ * =====================================================
+ * VERY SHORT LANDSCAPE PHONES
+ * =====================================================
+ */
+
+@media (max-width: 900px)
+    and (orientation: landscape)
+    and (max-height: 430px) {
+
+    #container {
+        padding:
+            5px 10px;
+    }
+
+    .card {
+        width:
+            min(
+                95vw,
+                850px
+            );
+
+        height:
+            calc(
+                100dvh -
+                env(safe-area-inset-top) -
+                env(safe-area-inset-bottom) -
+                10px
+            );
+
+        padding:
+            8px 16px;
+
+        border-radius:
+            21px;
+
+        grid-template-columns:
+            minmax(0, 1.15fr)
+            minmax(0, 0.95fr);
+
+        column-gap:
+            20px;
+
+        row-gap:
+            1px;
+    }
+
+    .card::before {
+        border-radius:
+            20px;
+    }
+
+    .live-label {
+        padding:
+            3px 9px;
+
+        gap:
+            5px;
+
+        font-size:
+            0.48rem;
+    }
+
+    .live-dot {
+        width:
+            6px;
+
+        height:
+            6px;
+    }
+
+    #title {
+        font-size:
+            clamp(
+                1.85rem,
+                9vh,
+                3.2rem
+            );
+    }
+
+    #subtitle {
+        font-size:
+            clamp(
+                1.15rem,
+                5vh,
+                1.9rem
+            );
+    }
+
+    #countdown {
+        padding:
+            6px 9px;
+
+        font-size:
+            clamp(
+                0.62rem,
+                3vh,
+                0.88rem
+            );
+    }
+
+    .now-playing {
+        font-size:
+            0.46rem;
+
+        margin-bottom:
+            2px;
+    }
+
+    #songName {
+        font-size:
+            clamp(
+                0.68rem,
+                2.8vh,
+                0.88rem
+            );
     }
 
     .up-next-wrapper {
         margin-top:
-            14px;
-
-        margin-bottom:
             4px;
     }
 
     .up-next-label {
         font-size:
-            0.62rem;
-
-        font-weight:
-            800;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.16em;
-
-        opacity:
-            0.52;
+            0.4rem;
 
         margin-bottom:
-            5px;
+            1px;
     }
 
     #upNext {
-        min-height:
-            1.3em;
-
         font-size:
-            clamp(0.85rem, 2.5vw, 1rem);
-
-        font-weight:
-            700;
-
-        color:
-            rgba(255, 255, 255, 0.78);
-
-        text-shadow:
-            0 2px 10px
-            rgba(0, 0, 0, 0.35);
+            clamp(
+                0.55rem,
+                2.3vh,
+                0.73rem
+            );
     }
 
-    /*
-     * =====================================================
-     * PLAY BUTTON
-     * =====================================================
-     */
+    #playButton {
+        width:
+            min(
+                100%,
+                220px
+            );
+
+        padding:
+            6px 13px;
+
+        font-size:
+            clamp(
+                0.59rem,
+                2.4vh,
+                0.76rem
+            );
+    }
+
+    footer {
+        bottom:
+            4px;
+
+        font-size:
+            0.42rem;
+    }
+}
+
+/*
+ * =====================================================
+ * COUNTDOWN-ONLY LANDSCAPE
+ *
+ * Overrides the normal landscape card grid so the
+ * live badge, headings, and countdown stack cleanly.
+ * =====================================================
+ */
+
+@media (orientation: landscape) {
+
+    .card.countdown-only {
+        position: fixed;
+
+        inset: 0;
+
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+
+        max-width: none;
+        max-height: none;
+
+        padding:
+            max(16px, env(safe-area-inset-top))
+            max(24px, env(safe-area-inset-right))
+            max(16px, env(safe-area-inset-bottom))
+            max(24px, env(safe-area-inset-left));
+
+        margin: 0;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(6px, 2vh, 16px);
+
+        grid-template-columns: none;
+        grid-template-rows: none;
+        grid-template-areas: none;
+
+        border: 0;
+        border-radius: 0;
+
+        overflow: hidden;
+
+        background: transparent;
+
+        box-shadow: none;
+
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .card.countdown-only::before,
+    .card.countdown-only::after {
+        display: none;
+    }
+
+    .card.countdown-only > .live-label {
+        display: inline-flex !important;
+        margin-bottom: clamp(2px, 1vh, 8px);
+        padding: 6px 14px;
+        font-size: clamp(0.6rem, 2vh, 0.8rem);
+    }
+
+    .card.countdown-only > #title {
+        font-size: clamp(2.2rem, 11vh, 5.5rem);
+        line-height: 0.9;
+        margin: 0;
+    }
+
+    .card.countdown-only > #subtitle {
+        font-size: clamp(1.4rem, 6.5vh, 3.2rem);
+        line-height: 0.95;
+        margin: 0 0 clamp(6px, 2vh, 16px);
+    }
+
+    .card.countdown-only #countdown {
+        position: relative;
+
+        inset: auto;
+
+        width: auto;
+        height: auto;
+
+        min-width: min(85vw, 520px);
+        max-width: 92vw;
+
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+
+        padding: clamp(12px, 3vh, 24px) clamp(24px, 5vw, 48px);
+
+        margin: 0;
+
+        font-size: clamp(1.35rem, 6.5vh, 3.5rem);
+
+        white-space: nowrap;
+
+        text-align: center;
+    }
+}
+
+/*
+ * =====================================================
+ * SMALL PORTRAIT PHONES
+ * =====================================================
+ */
+
+@media (max-width: 380px)
+    and (orientation: portrait) {
+
+    .card {
+        padding:
+            25px 15px;
+
+        border-radius:
+            25px;
+    }
+
+    #countdown {
+        font-size:
+            0.95rem;
+    }
+
+    #songName {
+        font-size:
+            0.95rem;
+    }
+
+    #upNext {
+        font-size:
+            0.8rem;
+    }
 
     #playButton {
-        position:
-            relative;
+        font-size:
+            0.9rem;
+
+        padding:
+            13px 20px;
+    }
+}
+
+/*
+ * =====================================================
+ * TABLET LANDSCAPE
+ * =====================================================
+ */
+
+@media (min-width: 769px)
+    and (max-width: 1100px)
+    and (orientation: landscape) {
+
+    #container {
+        padding:
+            15px;
+    }
+
+    .card {
+        max-height:
+            94dvh;
 
         overflow:
             hidden;
+    }
 
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.25);
+    .card.countdown-only {
+        max-height: none;
 
-        outline:
-            none;
+        width: 100vw;
+        height: 100dvh;
 
         padding:
-            15px 28px;
+            max(16px, env(safe-area-inset-top))
+            max(24px, env(safe-area-inset-right))
+            max(16px, env(safe-area-inset-bottom))
+            max(24px, env(safe-area-inset-left));
 
-        border-radius:
-            999px;
-
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.20),
-                rgba(215, 25, 32, 0.42),
-                rgba(141, 7, 16, 0.55)
-            );
-
-        color:
-            white;
-
-        font-size:
-            1rem;
-
-        font-weight:
-            800;
-
-        cursor:
-            pointer;
-
-        touch-action:
-            manipulation;
-
-        backdrop-filter:
-            blur(20px)
-            saturate(170%);
-
-        -webkit-backdrop-filter:
-            blur(20px)
-            saturate(170%);
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            inset 0 -1px 0
-                rgba(0, 0, 0, 0.15),
-
-            0 12px 35px
-                rgba(120, 0, 0, 0.28);
-
-        transition:
-            transform 0.18s ease,
-            box-shadow 0.18s ease;
+        margin: 0;
     }
+}
 
-    #playButton::before {
-        content:
-            "";
+/*
+ * =====================================================
+ * REDUCED MOTION
+ * =====================================================
+ */
 
-        position:
-            absolute;
+@media (prefers-reduced-motion: reduce) {
 
-        top:
-            0;
+    *,
+    *::before,
+    *::after {
+        animation-duration:
+            0.001ms !important;
 
-        left:
-            -40%;
+        animation-iteration-count:
+            1 !important;
 
-        width:
-            35%;
-
-        height:
-            100%;
-
-        background:
-            linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.30),
-                transparent
-            );
-
-        transform:
-            skewX(-20deg);
-
-        transition:
-            left 0.65s ease;
+        transition-duration:
+            0.001ms !important;
     }
+}
 
-    #playButton:hover::before {
-        left:
-            110%;
-    }
+</style>
 
-    #playButton:active {
-        transform:
-            scale(0.96);
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.3),
-
-            0 5px 18px
-                rgba(0, 0, 0, 0.25);
-    }
-
-    #playButton:hover {
-        transform:
-            translateY(-2px);
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.45),
-
-            0 16px 40px
-                rgba(120, 0, 0, 0.34);
-    }
-
-    #playButton.paused {
-        background:
-            linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.18),
-                rgba(13, 122, 67, 0.45),
-                rgba(7, 85, 47, 0.55)
-            );
-
-        box-shadow:
-            inset 0 1px 0
-                rgba(255, 255, 255, 0.4),
-
-            0 12px 35px
-                rgba(0, 80, 40, 0.25);
-    }
-
-    /*
-     * =====================================================
-     * FOOTER
-     * =====================================================
-     */
-
-    footer {
-        margin-top:
-            28px;
-
-        font-size:
-            0.78rem;
-
-        font-weight:
-            700;
-
-        opacity:
-            0.65;
-
-        letter-spacing:
-            0.08em;
-    }
-
-    audio {
-        display:
-            none !important;
-    }
-
-    /*
-     * =====================================================
-     * MOBILE PORTRAIT
-     * =====================================================
-     */
-
-    @media (max-width: 768px) {
-
-        #container {
-            padding:
-                max(15px, env(safe-area-inset-top))
-                max(15px, env(safe-area-inset-right))
-                max(15px, env(safe-area-inset-bottom))
-                max(15px, env(safe-area-inset-left));
-        }
-
-        .card {
-            width:
-                94vw;
-
-            padding:
-                30px 20px;
-
-            border-radius:
-                28px;
-
-            backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(12.5px)
-                saturate(180%);
-        }
-
-        .card::before {
-            border-radius:
-                27px;
-        }
-
-        #countdown {
-            min-width:
-                0;
-
-            width:
-                100%;
-
-            padding:
-                13px 15px;
-
-            margin-bottom:
-                24px;
-        }
-
-        #songName {
-            padding:
-                0 8px;
-        }
-
-        #playButton {
-            width:
-                min(100%, 330px);
-        }
-
-        footer {
-            margin-top:
-                22px;
-        }
-    }
-
-    /*
-     * =====================================================
-     * PHONE LANDSCAPE
-     * =====================================================
-     */
-
-    @media (max-width: 900px) and (orientation: landscape) {
-
-        #container {
-            padding:
-                max(8px, env(safe-area-inset-top))
-                max(12px, env(safe-area-inset-right))
-                max(8px, env(safe-area-inset-bottom))
-                max(12px, env(safe-area-inset-left));
-        }
-
-        .card {
-            width:
-                min(
-                    94vw,
-                    850px
-                );
-
-            height:
-                min(
-                    92dvh,
-                    440px
-                );
-
-            min-height:
-                0;
-
-            padding:
-                clamp(12px, 3vh, 22px)
-                clamp(18px, 4vw, 38px);
-
-            border-radius:
-                25px;
-
-            overflow:
-                hidden;
-
-            display:
-                grid;
-
-            grid-template-columns:
-                minmax(0, 1.15fr)
-                minmax(0, 0.95fr);
-
-            grid-template-rows:
-                auto
-                auto
-                auto
-                auto;
-
-            grid-template-areas:
-                "live live"
-                "title info"
-                "subtitle info"
-                "countdown button";
-
-            column-gap:
-                clamp(18px, 5vw, 48px);
-
-            row-gap:
-                clamp(2px, 0.8vh, 7px);
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            backdrop-filter:
-                blur(14px)
-                saturate(180%);
-
-            -webkit-backdrop-filter:
-                blur(14px)
-                saturate(180%);
-        }
-
-        .card::before {
-            border-radius:
-                24px;
-        }
-
-        .live-label {
-            grid-area:
-                live;
-
-            justify-self:
-                center;
-
-            padding:
-                5px 12px;
-
-            gap:
-                7px;
-
-            font-size:
-                0.58rem;
-
-            margin-bottom:
-                2px;
-        }
-
-        .live-dot {
-            width:
-                7px;
-
-            height:
-                7px;
-        }
-
-        #title {
-            grid-area:
-                title;
-
-            font-size:
-                clamp(
-                    2.25rem,
-                    9.5vh,
-                    4.4rem
-                );
-
-            line-height:
-                0.86;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
-        }
-
-        #subtitle {
-            grid-area:
-                subtitle;
-
-            font-size:
-                clamp(
-                    1.45rem,
-                    5.5vh,
-                    2.5rem
-                );
-
-            line-height:
-                0.9;
-
-            margin:
-                0;
-
-            white-space:
-                nowrap;
-        }
-
-        #countdown {
-            grid-area:
-                countdown;
-
-            justify-self:
-                center;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            max-width:
-                100%;
-
-            padding:
-                8px 12px;
-
-            margin:
-                2px 0 0;
-
-            font-size:
-                clamp(
-                    0.72rem,
-                    3.2vh,
-                    1.05rem
-                );
-
-            white-space:
-                nowrap;
-        }
-
-        .song-wrapper {
-            grid-area:
-                info;
-
-            width:
-                100%;
-
-            min-width:
-                0;
-
-            margin:
-                0;
-
-            padding:
-                0 2px;
-
-            text-align:
-                center;
-        }
-
-        .now-playing {
-            font-size:
-                0.55rem;
-
-            letter-spacing:
-                0.16em;
-
-            margin-bottom:
-                4px;
-
-            opacity:
-                0.68;
-        }
-
-        #songName {
-            min-height:
-                1.2em;
-
-            padding:
-                0;
-
-            font-size:
-                clamp(
-                    0.82rem,
-                    3.2vh,
-                    1.1rem
-                );
-
-            line-height:
-                1.15;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
-        }
-
-        .up-next-wrapper {
-            margin:
-                7px 0 0;
-        }
-
-        .up-next-label {
-            font-size:
-                0.47rem;
-
-            letter-spacing:
-                0.14em;
-
-            margin-bottom:
-                2px;
-        }
-
-        #upNext {
-            min-height:
-                1.1em;
-
-            font-size:
-                clamp(
-                    0.64rem,
-                    2.5vh,
-                    0.86rem
-                );
-
-            line-height:
-                1.1;
-
-            white-space:
-                nowrap;
-
-            overflow:
-                hidden;
-
-            text-overflow:
-                ellipsis;
-        }
-
-        #playButton {
-            grid-area:
-                button;
-
-            justify-self:
-                center;
-
-            width:
-                min(
-                    100%,
-                    250px
-                );
-
-            min-width:
-                0;
-
-            padding:
-                8px 16px;
-
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.7vh,
-                    0.88rem
-                );
-
-            white-space:
-                nowrap;
-        }
-
-        footer {
-            position:
-                absolute;
-
-            left:
-                50%;
-
-            bottom:
-                7px;
-
-            transform:
-                translateX(-50%);
-
-            margin:
-                0;
-
-            font-size:
-                clamp(
-                    0.45rem,
-                    1.8vh,
-                    0.6rem
-                );
-
-            white-space:
-                nowrap;
-
-            opacity:
-                0.55;
-        }
-    }
-
-    /*
-     * =====================================================
-     * VERY SHORT LANDSCAPE PHONES
-     * =====================================================
-     */
-
-    @media (max-width: 900px)
-        and (orientation: landscape)
-        and (max-height: 430px) {
-
-        #container {
-            padding:
-                5px 10px;
-        }
-
-        .card {
-            width:
-                min(
-                    95vw,
-                    850px
-                );
-
-            height:
-                calc(
-                    100dvh -
-                    env(safe-area-inset-top) -
-                    env(safe-area-inset-bottom) -
-                    10px
-                );
-
-            padding:
-                8px 16px;
-
-            border-radius:
-                21px;
-
-            grid-template-columns:
-                minmax(0, 1.15fr)
-                minmax(0, 0.95fr);
-
-            column-gap:
-                20px;
-
-            row-gap:
-                1px;
-        }
-
-        .card::before {
-            border-radius:
-                20px;
-        }
-
-        .live-label {
-            padding:
-                3px 9px;
-
-            gap:
-                5px;
-
-            font-size:
-                0.48rem;
-        }
-
-        .live-dot {
-            width:
-                6px;
-
-            height:
-                6px;
-        }
-
-        #title {
-            font-size:
-                clamp(
-                    1.85rem,
-                    9vh,
-                    3.2rem
-                );
-        }
-
-        #subtitle {
-            font-size:
-                clamp(
-                    1.15rem,
-                    5vh,
-                    1.9rem
-                );
-        }
-
-        #countdown {
-            padding:
-                6px 9px;
-
-            font-size:
-                clamp(
-                    0.62rem,
-                    3vh,
-                    0.88rem
-                );
-        }
-
-        .now-playing {
-            font-size:
-                0.46rem;
-
-            margin-bottom:
-                2px;
-        }
-
-        #songName {
-            font-size:
-                clamp(
-                    0.68rem,
-                    2.8vh,
-                    0.88rem
-                );
-        }
-
-        .up-next-wrapper {
-            margin-top:
-                4px;
-        }
-
-        .up-next-label {
-            font-size:
-                0.4rem;
-
-            margin-bottom:
-                1px;
-        }
-
-        #upNext {
-            font-size:
-                clamp(
-                    0.55rem,
-                    2.3vh,
-                    0.73rem
-                );
-        }
-
-        #playButton {
-            width:
-                min(
-                    100%,
-                    220px
-                );
-
-            padding:
-                6px 13px;
-
-            font-size:
-                clamp(
-                    0.59rem,
-                    2.4vh,
-                    0.76rem
-                );
-        }
-
-        footer {
-            bottom:
-                4px;
-
-            font-size:
-                0.42rem;
-        }
-    }
-
-    /*
-     * =====================================================
-     * COUNTDOWN-ONLY LANDSCAPE
-     *
-     * Overrides the normal landscape card grid.
-     * The countdown is the only visible element.
-     * =====================================================
-     */
-
-    @media (orientation: landscape) {
-
-        .card.countdown-only {
-            position: fixed;
-
-            inset: 0;
-
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-
-            max-width: none;
-            max-height: none;
-
-            padding: 0;
-            margin: 0;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            grid-template-columns: none;
-            grid-template-rows: none;
-            grid-template-areas: none;
-
-            border: 0;
-            border-radius: 0;
-
-            overflow: hidden;
-
-            background: transparent;
-
-            box-shadow: none;
-
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-        }
-
-        .card.countdown-only #countdown {
-            position: absolute;
-
-            inset: 0;
-
-            width: 100%;
-            height: 100%;
-
-            max-width: none;
-            max-height: none;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            padding:
-                max(15px, env(safe-area-inset-top))
-                max(20px, env(safe-area-inset-right))
-                max(15px, env(safe-area-inset-bottom))
-                max(20px, env(safe-area-inset-left));
-
-            margin: 0;
-
-            font-size:
-                clamp(1.5rem, 7vw, 5.5rem);
-
-            white-space: nowrap;
-
-            text-align: center;
-        }
-    }
-
-    /*
-     * =====================================================
-     * SMALL PORTRAIT PHONES
-     * =====================================================
-     */
-
-    @media (max-width: 380px)
-        and (orientation: portrait) {
-
-        .card {
-            padding:
-                25px 15px;
-
-            border-radius:
-                25px;
-        }
-
-        #countdown {
-            font-size:
-                0.95rem;
-        }
-
-        #songName {
-            font-size:
-                0.95rem;
-        }
-
-        #upNext {
-            font-size:
-                0.8rem;
-        }
-
-        #playButton {
-            font-size:
-                0.9rem;
-
-            padding:
-                13px 20px;
-        }
-    }
-
-    /*
-     * =====================================================
-     * TABLET LANDSCAPE
-     * =====================================================
-     */
-
-    @media (min-width: 769px)
-        and (max-width: 1100px)
-        and (orientation: landscape) {
-
-        #container {
-            padding:
-                15px;
-        }
-
-        .card {
-            max-height:
-                94dvh;
-
-            overflow:
-                hidden;
-        }
-
-        .card.countdown-only {
-            max-height: none;
-
-            width: 100vw;
-            height: 100dvh;
-
-            padding: 0;
-            margin: 0;
-        }
-    }
-
-    /*
-     * =====================================================
-     * REDUCED MOTION
-     * =====================================================
-     */
-
-    @media (prefers-reduced-motion: reduce) {
-
-        *,
-        *::before,
-        *::after {
-            animation-duration:
-                0.001ms !important;
-
-            animation-iteration-count:
-                1 !important;
-
-            transition-duration:
-                0.001ms !important;
-        }
-    }
-
-    </style>
 </head>
+
 
 <body>
 
-    <div id="phonePortraitViewport">
 
-        <div id="bg"></div>
+<div id="phonePortraitViewport">
 
-        <div id="snowFar" class="snow-layer"></div>
-        <div id="snowMid" class="snow-layer"></div>
-        <div id="snowNear" class="snow-layer"></div>
-        <div id="snowAbove" class="snow-layer"></div>
+    <div id="bg"></div>
 
-        <main id="container">
+    <div id="snowFar" class="snow-layer"></div>
+    <div id="snowMid" class="snow-layer"></div>
+    <div id="snowNear" class="snow-layer"></div>
+    <div id="snowAbove" class="snow-layer"></div>
 
-            <section class="card">
+    <main id="container">
 
-              
+        <section class="card">
 
-                <h1 id="title">
-                    Christmas
-                </h1>
+            <div class="live-label">
+                <span class="live-dot"></span>
+                <span>LIVE RADIO</span>
+            </div>
 
-                <h1 id="subtitle">
-                    Countdown
-                </h1>
+            <h1 id="title">
+                Christmas
+            </h1>
 
-                <div id="countdown" aria-label="Christmas countdown">
-                    Loading...
+            <h1 id="subtitle">
+                Countdown
+            </h1>
+
+            <div id="countdown" aria-label="Christmas countdown">
+                Loading...
+            </div>
+
+            <div class="song-wrapper">
+
+                <div class="now-playing">
+                    Now Playing
                 </div>
 
-                <div class="song-wrapper">
+                <div id="songName">
+                    Loading radio...
+                </div>
 
-                    <div class="now-playing">
-                        Now Playing
+                <div class="up-next-wrapper">
+
+                    <div class="up-next-label">
+                        Up Next
                     </div>
 
-                    <div id="songName">
-                        Loading radio...
-                    </div>
-
-                    <div class="up-next-wrapper">
-
-                        <div class="up-next-label">
-                            Up Next
-                        </div>
-
-                        <div id="upNext">
-                            Loading...
-                        </div>
-
+                    <div id="upNext">
+                        Loading...
                     </div>
 
                 </div>
 
-                <button id="playButton">
-                    🎄 Start Live Radio
-                </button>
+            </div>
 
-                <footer>
-                    ❄️ Merry Christmas ❄️
-                </footer>
+            <button id="playButton">
+                🎄 Start Live Radio
+            </button>
 
-            </section>
+            <footer>
+                ❄️ Merry Christmas ❄️
+            </footer>
 
-        </main>
+        </section>
 
-        <audio
-            id="musicAudio"
-            preload="auto"
-            playsinline
-            controlslist="nodownload noplaybackrate noremoteplayback">
-        </audio>
+    </main>
 
-        <audio
-            id="speechAudio"
-            preload="auto"
-            playsinline
-            controlslist="nodownload noplaybackrate noremoteplayback">
-        </audio>
+    <audio
+        id="musicAudio"
+        preload="auto"
+        playsinline
+        controlslist="nodownload noplaybackrate noremoteplayback">
+    </audio>
 
-        <!-- Separate audio element for scheduled interruptions -->
-        <audio
-            id="interruptionAudio"
-            preload="auto"
-            playsinline
-            controlslist="nodownload noplaybackrate noremoteplayback">
-        </audio>
+    <audio
+        id="speechAudio"
+        preload="auto"
+        playsinline
+        controlslist="nodownload noplaybackrate noremoteplayback">
+    </audio>
 
-    </div>
+    <!-- Separate audio element for scheduled interruptions -->
+    <audio
+        id="interruptionAudio"
+        preload="auto"
+        playsinline
+        controlslist="nodownload noplaybackrate noremoteplayback">
+    </audio>
 
-    <script>
+</div>
+
+<script>
 
 "use strict";
 
-/* =========================================
+/* =====================================================
    SERVICE WORKER
-========================================= */
+   ===================================================== */
 
 let serviceWorkerRegistration = null;
 
@@ -1976,9 +2019,9 @@ const serviceWorkerPromise = ("serviceWorker" in navigator)
         })
     : Promise.resolve(null);
 
-/* =========================================
+/* =====================================================
    MOBILE GESTURE PREVENTION
-========================================= */
+   ===================================================== */
 
 let lastTouchEnd = 0;
 
@@ -1990,6 +2033,7 @@ document.addEventListener("touchend", event => {
     }
 
     lastTouchEnd = now;
+
 }, { passive: false });
 
 ["gesturestart", "gesturechange", "gestureend"].forEach(eventName => {
@@ -1998,9 +2042,9 @@ document.addEventListener("touchend", event => {
     }, { passive: false });
 });
 
-/* =========================================
+/* =====================================================
    ELEMENTS
-========================================= */
+   ===================================================== */
 
 const musicAudio = document.getElementById("musicAudio");
 const speechAudio = document.getElementById("speechAudio");
@@ -2013,14 +2057,12 @@ const countdownElement = document.getElementById("countdown");
 
 const countdownCard = document.querySelector(".card");
 
-/*
- * =========================================
- * DOUBLE-TAP COUNTDOWN FOCUS MODE
- *
- * Double-tap to show only the countdown.
- * Double-tap again to restore everything.
- * =========================================
- */
+/* =====================================================
+   DOUBLE-TAP COUNTDOWN FOCUS MODE
+
+   Double-tap to show only the countdown & headings.
+   Double-tap again to restore everything.
+   ===================================================== */
 
 let lastCountdownTap = 0;
 
@@ -2041,11 +2083,12 @@ countdownElement.addEventListener("pointerup", event => {
     }
 
     lastCountdownTap = now;
+
 });
 
-/* =========================================
+/* =====================================================
    RADIO CONFIGURATION
-========================================= */
+   ===================================================== */
 
 const SONG_FOLDER = "./songs/";
 const SPEECH_SRC = "./songs/speech.mp3";
@@ -2063,9 +2106,9 @@ const RADIO_START = Date.parse("2025-12-01T00:00:00-05:00");
 
 const EASTERN_ZONE = "America/New_York";
 
-/* =========================================
+/* =====================================================
    STATE
-========================================= */
+   ===================================================== */
 
 let songs = [];
 let interruptions = [];
@@ -2090,9 +2133,9 @@ let contentSignature = "";
 let segmentTimer = null;
 let driftStrikes = 0;
 
-/* =========================================
+/* =====================================================
    TIME FORMAT
-========================================= */
+   ===================================================== */
 
 function formatTime(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) {
@@ -2110,9 +2153,10 @@ function formatTime(seconds) {
     }
 
     return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+
 }
 
-/* =========================================
+/* =====================================================
    EASTERN TIME CONVERSION
 
    Interruption dates use:
@@ -2124,7 +2168,7 @@ function formatTime(seconds) {
    This converts the specified Eastern local
    time into an absolute timestamp. It also
    accounts for daylight-saving time.
-========================================= */
+   ===================================================== */
 
 const easternPartsFormatter = new Intl.DateTimeFormat("en-US", {
     timeZone: EASTERN_ZONE,
@@ -2151,6 +2195,7 @@ function getEasternParts(timestamp) {
     }
 
     return result;
+
 }
 
 function easternDateToTimestamp(year, month, day, hour, minute) {
@@ -2202,6 +2247,7 @@ function easternDateToTimestamp(year, month, day, hour, minute) {
     }
 
     return candidate;
+
 }
 
 function parseInterruptionDate(value) {
@@ -2249,11 +2295,12 @@ function parseInterruptionDate(value) {
         hour,
         minute
     );
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD durations.json
-========================================= */
+   ===================================================== */
 
 async function fetchJSON(path) {
     const response = await fetch(path, {
@@ -2267,6 +2314,7 @@ async function fetchJSON(path) {
     }
 
     return response.json();
+
 }
 
 function parseSongs(data) {
@@ -2309,25 +2357,26 @@ function parseSongs(data) {
     }
 
     return parsed;
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD interruptions.json
 
    Format:
    {
-     "interruptions": [
-       {
-         "date": "1/1/2026/12:00am",
-         "file": "new-year.mp3",
-         "duration": 30
-       }
-     ]
+       "interruptions": [
+           {
+               "date": "1/1/2026/12:00am",
+               "file": "new-year.mp3",
+               "duration": 30
+           }
+       ]
    }
 
    Duration is measured in seconds.
    Files are stored in ./songs/.
-========================================= */
+   ===================================================== */
 
 function parseInterruptions(data) {
     if (!data || !Array.isArray(data.interruptions)) {
@@ -2385,11 +2434,12 @@ function parseInterruptions(data) {
     parsed.sort((a, b) => a.start - b.start);
 
     return parsed;
+
 }
 
-/* =========================================
+/* =====================================================
    FIND ACTIVE INTERRUPTION
-========================================= */
+   ===================================================== */
 
 function findLiveInterruption(now = Date.now()) {
     if (!interruptions.length) {
@@ -2415,11 +2465,12 @@ function findLiveInterruption(now = Date.now()) {
     }
 
     return null;
+
 }
 
-/* =========================================
+/* =====================================================
    FIND NEXT INTERRUPTION BOUNDARY
-========================================= */
+   ===================================================== */
 
 function findNextInterruptionBoundary(now = Date.now()) {
     let next = Infinity;
@@ -2435,11 +2486,12 @@ function findNextInterruptionBoundary(now = Date.now()) {
     }
 
     return next;
+
 }
 
-/* =========================================
+/* =====================================================
    SCHEDULE INTERRUPTION BOUNDARY
-========================================= */
+   ===================================================== */
 
 let interruptionBoundaryTimer = null;
 
@@ -2466,11 +2518,12 @@ function scheduleInterruptionBoundary() {
             playLive();
         }
     }, delay);
+
 }
 
-/* =========================================
+/* =====================================================
    SPEECH DURATION
-========================================= */
+   ===================================================== */
 
 async function loadSpeechDuration(data) {
     const listed = Number(
@@ -2506,11 +2559,12 @@ async function loadSpeechDuration(data) {
     }
 
     return 0;
+
 }
 
-/* =========================================
+/* =====================================================
    CALCULATE PLAYLIST DURATION
-========================================= */
+   ===================================================== */
 
 function calculatePlaylistDuration() {
     let duration = 0;
@@ -2527,11 +2581,12 @@ function calculatePlaylistDuration() {
     }
 
     return duration;
+
 }
 
-/* =========================================
+/* =====================================================
    CONTENT SIGNATURE
-========================================= */
+   ===================================================== */
 
 function computeContentSignature(
     loadedSongs,
@@ -2563,6 +2618,7 @@ function computeContentSignature(
     }
 
     return (hash >>> 0).toString(16) + "-" + text.length;
+
 }
 
 function getSavedSignature() {
@@ -2579,9 +2635,9 @@ function saveSignature(signature) {
     } catch {}
 }
 
-/* =========================================
+/* =====================================================
    LOAD ALL METADATA
-========================================= */
+   ===================================================== */
 
 async function loadDurations() {
     if (metadataLoaded) {
@@ -2640,11 +2696,12 @@ async function loadDurations() {
     });
 
     return metadataLoadingPromise;
+
 }
 
-/* =========================================
+/* =====================================================
    CHRISTMAS COUNTDOWN
-========================================= */
+   ===================================================== */
 
 const easternYearFormatter = new Intl.DateTimeFormat("en-US", {
     timeZone: EASTERN_ZONE,
@@ -2674,15 +2731,16 @@ function updateCountdown() {
 
     countdownElement.textContent =
         `${days}d ${hours}h ${minutes}m ${secs}s`;
+
 }
 
 updateCountdown();
 
 setInterval(updateCountdown, 1000);
 
-/* =========================================
+/* =====================================================
    SNOW DRIFT
-========================================= */
+   ===================================================== */
 
 function setSnowDrift(snowflake, driftAmount) {
     const center = (Math.random() - 0.5) * driftAmount;
@@ -2707,11 +2765,12 @@ function setSnowDrift(snowflake, driftAmount) {
             `${value}px`
         );
     }
+
 }
 
-/* =========================================
+/* =====================================================
    CREATE SNOWFLAKES
-========================================= */
+   ===================================================== */
 
 function createSnowflakes(container, amount) {
     for (let i = 0; i < amount; i++) {
@@ -2747,11 +2806,12 @@ function createSnowflakes(container, amount) {
 
         container.appendChild(snowflake);
     }
+
 }
 
-/* =========================================
+/* =====================================================
    CREATE CIRCLE SNOW
-========================================= */
+   ===================================================== */
 
 function createCircleSnow(container, amount, depth) {
     for (let i = 0; i < amount; i++) {
@@ -2840,11 +2900,12 @@ function createCircleSnow(container, amount, depth) {
             container.appendChild(snowflake);
         }
     }
+
 }
 
-/* =========================================
+/* =====================================================
    INITIALIZE SNOW
-========================================= */
+   ===================================================== */
 
 createSnowflakes(
     document.getElementById("snowFar"),
@@ -2879,9 +2940,9 @@ createCircleSnow(
     "near"
 );
 
-/* =========================================
+/* =====================================================
    OFFLINE AUDIO CACHING
-========================================= */
+   ===================================================== */
 
 async function cacheRadioAudio() {
     if (!("serviceWorker" in navigator)) {
@@ -2959,6 +3020,7 @@ async function cacheRadioAudio() {
             error
         );
     }
+
 }
 
 if ("serviceWorker" in navigator) {
@@ -2976,14 +3038,15 @@ if ("serviceWorker" in navigator) {
             }
         }
     });
+
 }
 
-/* =========================================
+/* =====================================================
    FIND LIVE SEGMENT
 
    Interruptions take priority over the
    normal music and speech timeline.
-========================================= */
+   ===================================================== */
 
 function findLiveSegment() {
     if (
@@ -3005,11 +3068,12 @@ function findLiveSegment() {
     }
 
     return findNormalLiveSegment();
+
 }
 
-/* =========================================
+/* =====================================================
    DISPLAY SONG INDEX
-========================================= */
+   ===================================================== */
 
 function getDisplaySongIndex(segment) {
     if (segment.type === "interruption") {
@@ -3021,6 +3085,7 @@ function getDisplaySongIndex(segment) {
     }
 
     return segment.index;
+
 }
 
 function getDisplayNextSongIndex(segment) {
@@ -3029,12 +3094,12 @@ function getDisplayNextSongIndex(segment) {
     ) % songs.length;
 }
 
-/* =========================================
+/* =====================================================
    FIND NORMAL LIVE SEGMENT
 
    This ignores interruptions and calculates
    the underlying music/speech timeline.
-========================================= */
+   ===================================================== */
 
 function findNormalLiveSegment() {
     if (
@@ -3095,11 +3160,12 @@ function findNormalLiveSegment() {
         offset: 0,
         length: 0
     };
+
 }
 
-/* =========================================
+/* =====================================================
    UPDATE RADIO UI
-========================================= */
+   ===================================================== */
 
 function updateRadioUI(segment) {
     if (!songs.length) return;
@@ -3128,11 +3194,12 @@ function updateRadioUI(segment) {
 
     upNextElement.textContent =
         songs[next].name;
+
 }
 
-/* =========================================
+/* =====================================================
    MEDIA SESSION
-========================================= */
+   ===================================================== */
 
 function updateLiveMediaSession() {
     if (
@@ -3190,11 +3257,12 @@ function updateLiveMediaSession() {
             });
         }
     } catch {}
+
 }
 
-/* =========================================
+/* =====================================================
    MEDIA SESSION SETUP
-========================================= */
+   ===================================================== */
 
 function setupMediaSession() {
     if (!("mediaSession" in navigator)) return;
@@ -3227,13 +3295,14 @@ function setupMediaSession() {
             );
         } catch {}
     });
+
 }
 
 setupMediaSession();
 
-/* =========================================
+/* =====================================================
    AUDIO METADATA WAITING
-========================================= */
+   ===================================================== */
 
 function waitForAudioMetadata(audio) {
     if (
@@ -3301,11 +3370,12 @@ function waitForAudioMetadata(audio) {
             { once: true }
         );
     });
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD AUDIO
-========================================= */
+   ===================================================== */
 
 async function loadAudio(audio, src) {
     const absoluteURL = new URL(
@@ -3319,11 +3389,12 @@ async function loadAudio(audio, src) {
     }
 
     await waitForAudioMetadata(audio);
+
 }
 
-/* =========================================
+/* =====================================================
    SEEK AND WAIT UNTIL THE SEEK FINISHES
-========================================= */
+   ===================================================== */
 
 function seekAudio(audio, time) {
     return new Promise(resolve => {
@@ -3359,11 +3430,12 @@ function seekAudio(audio, time) {
 
         audio.currentTime = target;
     });
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD SONG
-========================================= */
+   ===================================================== */
 
 async function loadSong(index) {
     const song = songs[index];
@@ -3378,19 +3450,20 @@ async function loadSong(index) {
         musicAudio,
         SONG_FOLDER + encodeURIComponent(song.file)
     );
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD SPEECH
-========================================= */
+   ===================================================== */
 
 async function loadSpeech() {
     await loadAudio(speechAudio, SPEECH_SRC);
 }
 
-/* =========================================
+/* =====================================================
    LOAD INTERRUPTION
-========================================= */
+   ===================================================== */
 
 async function loadInterruption(index) {
     const interruption = interruptions[index];
@@ -3405,11 +3478,12 @@ async function loadInterruption(index) {
         interruptionAudio,
         SONG_FOLDER + encodeURIComponent(interruption.file)
     );
+
 }
 
-/* =========================================
+/* =====================================================
    PLAY BUTTON STATE
-========================================= */
+   ===================================================== */
 
 function updatePlayButton() {
     if (radioPlaying) {
@@ -3421,9 +3495,9 @@ function updatePlayButton() {
     }
 }
 
-/* =========================================
+/* =====================================================
    SEGMENT TIMER
-========================================= */
+   ===================================================== */
 
 function scheduleAfterSegment(live) {
     clearTimeout(segmentTimer);
@@ -3438,11 +3512,12 @@ function scheduleAfterSegment(live) {
             playLive();
         }
     }, remaining * 1000 + 50);
+
 }
 
-/* =========================================
+/* =====================================================
    LOAD THE CURRENT LIVE SEGMENT
-========================================= */
+   ===================================================== */
 
 async function prepareSegment(segment) {
     if (segment.type === "interruption") {
@@ -3469,19 +3544,20 @@ async function prepareSegment(segment) {
     await loadSong(segment.index);
 
     return musicAudio;
+
 }
 
-/* =========================================
+/* =====================================================
    SEGMENT KEY
-========================================= */
+   ===================================================== */
 
 function getSegmentKey(segment) {
     return `${segment.type}:${segment.index}`;
 }
 
-/* =========================================
+/* =====================================================
    START LIVE RADIO
-========================================= */
+   ===================================================== */
 
 async function playLive() {
     if (isChangingTrack) return;
@@ -3598,11 +3674,12 @@ async function playLive() {
     } finally {
         isChangingTrack = false;
     }
+
 }
 
-/* =========================================
+/* =====================================================
    PAUSE RADIO
-========================================= */
+   ===================================================== */
 
 function pauseRadio() {
     clearTimeout(segmentTimer);
@@ -3620,11 +3697,12 @@ function pauseRadio() {
         navigator.mediaSession.playbackState =
             "paused";
     } catch {}
+
 }
 
-/* =========================================
+/* =====================================================
    RESUME RADIO
-========================================= */
+   ===================================================== */
 
 async function resumeLive() {
     if (radioPlaying) return;
@@ -3634,11 +3712,12 @@ async function resumeLive() {
     interruptionAudio.pause();
 
     await playLive();
+
 }
 
-/* =========================================
+/* =====================================================
    PLAY BUTTON
-========================================= */
+   ===================================================== */
 
 playButton.addEventListener("click", async () => {
     if (radioPlaying) {
@@ -3648,9 +3727,9 @@ playButton.addEventListener("click", async () => {
     }
 });
 
-/* =========================================
+/* =====================================================
    TRACK END
-========================================= */
+   ===================================================== */
 
 async function handleTrackEnded() {
     if (!radioPlaying || isChangingTrack) return;
@@ -3663,15 +3742,16 @@ async function handleTrackEnded() {
     }
 
     await playLive();
+
 }
 
 musicAudio.addEventListener("ended", handleTrackEnded);
 speechAudio.addEventListener("ended", handleTrackEnded);
 interruptionAudio.addEventListener("ended", handleTrackEnded);
 
-/* =========================================
+/* =====================================================
    ERROR RECOVERY
-========================================= */
+   ===================================================== */
 
 function retryLive() {
     if (!radioPlaying) return;
@@ -3703,15 +3783,16 @@ function retryLive() {
             playLive();
         }
     }, 1500);
+
 }
 
 musicAudio.addEventListener("error", retryLive);
 speechAudio.addEventListener("error", retryLive);
 interruptionAudio.addEventListener("error", retryLive);
 
-/* =========================================
+/* =====================================================
    LIVE SYNCHRONIZATION
-========================================= */
+   ===================================================== */
 
 async function syncRadio(force = false) {
     if (!radioPlaying || isChangingTrack) return;
@@ -3765,13 +3846,14 @@ async function syncRadio(force = false) {
             error
         );
     }
+
 }
 
 setInterval(syncRadio, 1000);
 
-/* =========================================
+/* =====================================================
    MEDIA SESSION POSITION
-========================================= */
+   ===================================================== */
 
 setInterval(() => {
     if (radioPlaying) {
@@ -3779,9 +3861,9 @@ setInterval(() => {
     }
 }, 3000);
 
-/* =========================================
+/* =====================================================
    VISIBILITY SYNCHRONIZATION
-========================================= */
+   ===================================================== */
 
 document.addEventListener("visibilitychange", () => {
     if (
@@ -3792,9 +3874,9 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 
-/* =========================================
+/* =====================================================
    BLOCK TRACK-SKIPPING KEYS
-========================================= */
+   ===================================================== */
 
 document.addEventListener("keydown", event => {
     const blocked = [
@@ -3811,19 +3893,20 @@ document.addEventListener("keydown", event => {
     if (blocked.includes(event.key)) {
         event.preventDefault();
     }
+
 });
 
-/* =========================================
+/* =====================================================
    CONTEXT MENU
-========================================= */
+   ===================================================== */
 
 document.addEventListener("contextmenu", event => {
     event.preventDefault();
 });
 
-/* =========================================
+/* =====================================================
    INITIAL UI
-========================================= */
+   ===================================================== */
 
 updatePlayButton();
 
@@ -3833,9 +3916,9 @@ songNameElement.textContent =
 upNextElement.textContent =
     "Loading playlist...";
 
-/* =========================================
+/* =====================================================
    INITIALIZE RADIO
-========================================= */
+   ===================================================== */
 
 async function initializeRadio() {
     try {
@@ -3870,13 +3953,14 @@ async function initializeRadio() {
         upNextElement.textContent =
             error.message;
     }
+
 }
 
 initializeRadio();
 
-/* =========================================
+/* =====================================================
    CLEANUP
-========================================= */
+   ===================================================== */
 
 window.addEventListener("beforeunload", () => {
     musicAudio.pause();
@@ -3889,10 +3973,12 @@ window.addEventListener("beforeunload", () => {
     if (retryTimeout) {
         clearTimeout(retryTimeout);
     }
+
 });
 
-    </script>
+</script>
 
 </body>
+
 
 </html>
