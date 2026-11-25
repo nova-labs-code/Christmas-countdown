@@ -702,120 +702,137 @@
         display: none !important;
     }
 
-    /*
-     * =====================================================
-     * COUNTDOWN-ONLY MODE
-     *
-     * Double-tapping the countdown hides:
-     * - Christmas Radio label
-     * - Christmas title
-     * - Countdown subtitle
-     * - Now Playing and Up Next
-     * - Play button
-     * - Footer
-     *
-     * The countdown fills the entire screen.
-     * This also works in landscape.
-     * =====================================================
-     */
+   /*
+ * =====================================================
+ * COUNTDOWN FOCUS MODE
+ *
+ * Double-tapping the countdown:
+ * - Keeps the glass card visible.
+ * - Keeps Christmas Radio above the countdown.
+ * - Keeps Christmas and Countdown headings visible.
+ * - Keeps Now Playing and Up Next visible.
+ * - Keeps the play button and footer visible.
+ * - Highlights the countdown without taking it
+ *   out of the card.
+ * =====================================================
+ */
 
-    .card.countdown-only {
-        position: fixed;
+.card.countdown-only {
+    position: relative;
 
-        inset: 0;
+    inset: auto;
 
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
+    width: min(92vw, 900px);
+    height: auto;
 
-        max-width: none;
-        max-height: none;
+    max-width: 900px;
+    max-height: none;
 
-        min-width: 0;
-        min-height: 0;
+    min-width: 0;
+    min-height: 0;
 
-        margin: 0;
-        padding: 0;
+    margin: auto;
 
-        border: 0;
-        border-radius: 0;
+    padding: clamp(30px, 5vw, 60px);
 
-        background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 32px;
 
-        box-shadow: none;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.065),
+            rgba(255, 255, 255, 0.018) 45%,
+            rgba(255, 255, 255, 0.035)
+        );
 
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
+    box-shadow:
+        0 35px 100px rgba(0, 0, 0, 0.42),
+        0 10px 30px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
-        display: flex;
+    backdrop-filter:
+        blur(14px)
+        saturate(180%);
 
-        align-items: center;
-        justify-content: center;
+    -webkit-backdrop-filter:
+        blur(14px)
+        saturate(180%);
 
-        overflow: hidden;
-    }
+    display: block;
 
-    .card.countdown-only::before,
-    .card.countdown-only::after {
-        display: none !important;
-    }
+    overflow: visible;
+}
 
-    .card.countdown-only > .live-label,
-    .card.countdown-only > #title,
-    .card.countdown-only > #subtitle,
-    .card.countdown-only > .song-wrapper,
-    .card.countdown-only > #playButton,
-    .card.countdown-only > footer {
-        display: none !important;
-    }
+.card.countdown-only::before,
+.card.countdown-only::after {
+    display: block;
+}
 
-    .card.countdown-only #countdown {
-        display: flex;
+.card.countdown-only > .live-label,
+.card.countdown-only > #title,
+.card.countdown-only > #subtitle,
+.card.countdown-only > .song-wrapper,
+.card.countdown-only > #playButton,
+.card.countdown-only > footer {
+    display: block;
+}
 
-        position: absolute;
+.card.countdown-only #countdown {
+    display: inline-flex;
 
-        inset: 0;
+    position: relative;
 
-        width: 100%;
-        height: 100%;
+    inset: auto;
 
-        min-width: 0;
-        min-height: 0;
+    width: auto;
+    height: auto;
 
-        margin: 0;
-        padding:
-            max(20px, env(safe-area-inset-top))
-            max(20px, env(safe-area-inset-right))
-            max(20px, env(safe-area-inset-bottom))
-            max(20px, env(safe-area-inset-left));
+    min-width: min(90%, 500px);
+    min-height: 0;
 
-        border: 0;
-        border-radius: 0;
+    margin-bottom: 30px;
 
-        background: transparent;
+    padding: 20px 30px;
 
-        box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
 
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.20),
+            rgba(255, 255, 255, 0.075)
+        );
 
-        font-size:
-            clamp(1.35rem, 7vw, 5rem);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 15px 40px rgba(0, 0, 0, 0.25);
 
-        line-height: 1.2;
+    backdrop-filter:
+        blur(16px)
+        saturate(180%);
 
-        letter-spacing: 0.025em;
+    -webkit-backdrop-filter:
+        blur(16px)
+        saturate(180%);
 
-        white-space: normal;
+    font-size: clamp(1.35rem, 4vw, 2.2rem);
 
-        overflow-wrap: anywhere;
+    line-height: 1.2;
 
-        text-align: center;
+    letter-spacing: 0.025em;
 
-        cursor: pointer;
+    white-space: normal;
 
-        touch-action: manipulation;
-    }
+    overflow-wrap: anywhere;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    touch-action: manipulation;
+}
 
     /*
      * =====================================================
@@ -2010,18 +2027,18 @@ const countdownElement = document.getElementById("countdown");
 const countdownCard = document.querySelector(".card");
 
 /* =========================================
-   DOUBLE-TAP COUNTDOWN-ONLY MODE
+   DOUBLE-TAP COUNTDOWN FOCUS MODE
 
    Double-tap the countdown to:
-   - Hide the radio label.
-   - Hide the Christmas title.
-   - Hide the Countdown subtitle.
-   - Hide song information.
-   - Hide the play button.
-   - Hide the footer.
-   - Expand the countdown to the full screen.
+   - Keep the glass card visible.
+   - Keep Christmas Radio above the countdown.
+   - Keep Christmas and Countdown headings.
+   - Keep Now Playing and Up Next.
+   - Keep the play button and footer.
+   - Highlight the countdown inside the card.
 
-   Double-tap again to restore the page.
+   Double-tap again to restore the normal
+   countdown appearance.
 ========================================= */
 
 let lastCountdownTap = 0;
